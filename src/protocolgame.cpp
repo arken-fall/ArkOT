@@ -409,7 +409,51 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	OperatingSystem_t operatingSystem = static_cast<OperatingSystem_t>(msg.get<uint16_t>());
 	version = msg.get<uint16_t>();
 
-	msg.skipBytes(7); // U32 client version, U8 client type, U16 dat revision
+	// The port the client walked in through fixes the framing generation;
+	// the version it just claimed has to land in a profile of that same
+	// generation or there is nothing to talk about.
+	const TransportGeneration generation = usesModernFraming() ? TransportGeneration::Modern : TransportGeneration::Legacy;
+	protocol_profile = resolveProfile(version, generation);
+	if (not protocol_profile)
+	{
+		disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", allowedProtocolVersions()));
+		return;
+	}
+
+	const GameLoginLayout& layout = protocol_profile->loginLayout;
+
+	// Pre-RSA version block. Field ORDER is the #1 source of bogus
+	// "RSA decrypt failed" errors, so it is data-driven from the profile:
+	// see the layout comment in protocolprofile.h before touching this.
+	if (layout.clientVersionU32)
+	{
+		client_version = msg.get<uint32_t>();
+	}
+
+	if (layout.clientVersionString)
+	{
+		msg.getString(); // display version, e.g. "15.25.15286"
+	}
+
+	if (layout.assetHashString)
+	{
+		msg.getString(); // client asset catalog hash
+	}
+
+	if (layout.clientTypeU8)
+	{
+		msg.skipBytes(1);
+	}
+
+	if (layout.contentRevisionU16)
+	{
+		msg.skipBytes(2); // dat revision
+	}
+
+	if (layout.previewStateU8)
+	{
+		msg.skipBytes(1);
+	}
 
 	if (not Protocol::RSA_decrypt(msg))
 	{
@@ -425,6 +469,11 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	enableXTEAEncryption();
 	setXTEAKey(std::move(key));
 
+	if (hasFeature(ProtocolFeature::SequenceChecksum))
+	{
+		setChecksumMode(ChecksumMode::Sequence);
+	}
+
 	if (operatingSystem >= CLIENTOS_OTCLIENT_LINUX)
 	{
 		NetworkMessage opcodeMessage;
@@ -436,31 +485,70 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 
 	msg.skipBytes(1); // gamemaster flag
 
-	// acc name or email, password, token, timestamp divided by 30
-	auto sessionArgs = explodeString(msg.getString(), "\n", 4);
-	if (sessionArgs.size() != 4)
+	// Both generations bundle credentials into one string; they just disagree
+	// about what goes in it. Legacy 10.98: "acc\npass\ntoken\ntime". Modern: an
+	// opaque session key from the login service, or "email\npass[\ntoken[\ntime]]"
+	// when an OTClient-family client logs in directly against this server.
+	std::string_view accountName;
+	std::string_view password;
+	std::string_view token;
+	uint32_t tokenTime = 0;
+
+	auto credentialString = msg.getString();
+	auto sessionArgs = explodeString(credentialString, "\n", 4);
+
+	if (layout.sessionKeyLogin and sessionArgs.size() < 2)
+	{
+		// An opaque session key with no separators can only be checked against
+		// the sessions table - that lands with the login service integration.
+		disconnectClient("Session-key login is not available yet.\nUse an OTClient-based client with email and password.");
+		return;
+	}
+
+	if (sessionArgs.size() < 2)
 	{
 		disconnect();
 		return;
 	}
 
-	auto accountName = sessionArgs[0];
-	auto password = sessionArgs[1];
-	std::string_view token = sessionArgs[2];
-	uint32_t tokenTime = 0;
+	accountName = sessionArgs[0];
+	password = sessionArgs[1];
 
-	try
+	if (sessionArgs.size() > 2)
 	{
-		tokenTime = std::stoul(sessionArgs[3].data());
+		token = sessionArgs[2];
 	}
-	catch (const std::invalid_argument&) {
-		disconnectClient("Malformed token packet.");
+
+	if (sessionArgs.size() > 3)
+	{
+		try
+		{
+			tokenTime = std::stoul(std::string(sessionArgs[3]));
+		}
+		catch (const std::invalid_argument&) {
+			disconnectClient("Malformed token packet.");
+			return;
+		}
+		catch (const std::out_of_range&)
+		{
+			disconnectClient("Token time is too long.");
+			return;
+		}
+	}
+	else if (not layout.sessionKeyLogin)
+	{
+		// Legacy clients always send all four fields; a short bundle is a
+		// malformed packet, not an optional-field situation.
+		disconnect();
 		return;
 	}
-	catch (const std::out_of_range&)
+
+	if (layout.sessionKeyLogin and operatingSystem == CLIENTOS_NEW_LINUX)
 	{
-		disconnectClient("Token time is too long.");
-		return;
+		// CipSoft's linux client sends two extra strings here; contents
+		// currently undocumented (canary skips them the same way).
+		msg.getString();
+		msg.getString();
 	}
 
 	auto characterName = msg.getString();
@@ -473,10 +561,13 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
-	if (version < CLIENT_VERSION_MIN or version > CLIENT_VERSION_MAX)
+	if (layout.otcV8Probe)
 	{
-		disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", CLIENT_VERSION_STR));
-		return;
+		uint16_t probeLength = msg.get<uint16_t>();
+		if (probeLength == 5 and msg.getString(5) == "OTCv8")
+		{
+			msg.skipBytes(2); // OTCv8 build number
+		}
 	}
 
 	if (accountName.empty()
@@ -537,6 +628,25 @@ void ProtocolGame::onConnect()
 	static std::ranlux24 generator(rd());
 	static std::uniform_int_distribution<uint16_t> randNumber(0, 255);
 
+	challengeTimestamp = static_cast<uint32_t>(time(nullptr));
+	challengeRandom = randNumber(generator);
+
+	if (usesModernFraming())
+	{
+		// Modern challenge is a plain 8-byte body; onSendMessage frames it
+		// with the adler checksum and the block-count length. The 0x01 lead
+		// byte and 0x71 tail are what 13.40+ clients expect on this packet -
+		// layout referenced from canary's sendLoginChallenge.
+		output->addByte(0x01);
+		output->add(ServerCode::Challenge);
+		output->add<uint32_t>(challengeTimestamp);
+		output->addByte(challengeRandom);
+		output->addByte(0x71);
+
+		send(std::move(output));
+		return;
+	}
+
 	// Skip checksum
 	output->skipBytes(sizeof(uint32_t));
 
@@ -545,10 +655,7 @@ void ProtocolGame::onConnect()
 	output->add(ServerCode::Challenge);
 
 	// Add timestamp & random number
-	challengeTimestamp = static_cast<uint32_t>(time(nullptr));
 	output->add<uint32_t>(challengeTimestamp);
-
-	challengeRandom = randNumber(generator);
 	output->addByte(challengeRandom);
 
 	// Go back and write checksum

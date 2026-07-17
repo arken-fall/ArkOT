@@ -164,7 +164,15 @@ void Connection::parseHeader(const boost::system::error_code& error)
 		packetsSent = 0;
 	}
 
-	uint16_t size = msg->getLengthHeader();
+	uint32_t size = msg->getLengthHeader();
+	if (protocol and protocol->usesModernFraming())
+	{
+		// Modern clients send the outer length as a count of 8-byte XTEA
+		// blocks; the 4 sequence/checksum bytes ride on top of that. Widened
+		// to 32 bits so a hostile block count can't wrap the bounds check.
+		size = size * 8 + NetworkMessage::CHECKSUM_LENGTH;
+	}
+
 	if (size == 0 or size >= NETWORKMESSAGE_MAXSIZE - 16)
 	{
 		close(FORCE_CLOSE);
@@ -181,7 +189,7 @@ void Connection::parseHeader(const boost::system::error_code& error)
 					Connection::handleTimeout(thisPtr, error);
 				}));
 
-		msg->setLength(size + NetworkMessage::HEADER_LENGTH);
+		msg->setLength(static_cast<NetworkMessage::MsgSize_t>(size + NetworkMessage::HEADER_LENGTH));
 		boost::asio::async_read(socket,
 			boost::asio::buffer(msg->getBodyBuffer(), size),
 			boost::asio::bind_executor(strand,
@@ -211,47 +219,67 @@ void Connection::parsePacket(const boost::system::error_code& error)
 		return;
 	}
 
-	uint32_t checksum;
-	int32_t len = msg->getLength() - msg->getBufferPosition() - NetworkMessage::CHECKSUM_LENGTH;
-
-	if (len > 0)
+	if (protocol and protocol->usesModernFraming())
 	{
-		checksum = adlerChecksum(msg->getBuffer() + msg->getBufferPosition() + NetworkMessage::CHECKSUM_LENGTH, len);
-	}
-	else
-	{
-		checksum = 0;
-	}
-
-	uint32_t recvChecksum = msg->get<uint32_t>();
-	if (recvChecksum != checksum)
-	{
-		msg->skipBytes(-NetworkMessage::CHECKSUM_LENGTH);
-	}
-
-	if (not receivedFirst)
-	{
-		receivedFirst = true;
-
-		if (not protocol)
+		// Modern frames carry a sequence number where legacy carries adler32;
+		// Protocol::onRecvMessage verifies it. Nothing to pre-check here.
+		if (not receivedFirst)
 		{
-			protocol = service_port->make_protocol(recvChecksum == checksum, *msg, shared_from_this());
-			if (not protocol)
-			{
-				close(FORCE_CLOSE);
-				return;
-			}
+			receivedFirst = true;
+			// First frame layout: sequence u32, padding count u8, then the
+			// 0x0A ClientPendingGame byte that legacy also skips.
+			msg->skipBytes(NetworkMessage::CHECKSUM_LENGTH + 2);
+			protocol->onRecvFirstMessage(*msg);
 		}
 		else
 		{
-			msg->skipBytes(1); // Skip protocol ID
+			protocol->onRecvMessage(*msg);
 		}
-
-		protocol->onRecvFirstMessage(*msg);
 	}
 	else
 	{
-		protocol->onRecvMessage(*msg); // Send the packet to the current protocol
+		uint32_t checksum;
+		int32_t len = msg->getLength() - msg->getBufferPosition() - NetworkMessage::CHECKSUM_LENGTH;
+
+		if (len > 0)
+		{
+			checksum = adlerChecksum(msg->getBuffer() + msg->getBufferPosition() + NetworkMessage::CHECKSUM_LENGTH, len);
+		}
+		else
+		{
+			checksum = 0;
+		}
+
+		uint32_t recvChecksum = msg->get<uint32_t>();
+		if (recvChecksum != checksum)
+		{
+			msg->skipBytes(-NetworkMessage::CHECKSUM_LENGTH);
+		}
+
+		if (not receivedFirst)
+		{
+			receivedFirst = true;
+
+			if (not protocol)
+			{
+				protocol = service_port->make_protocol(recvChecksum == checksum, *msg, shared_from_this());
+				if (not protocol)
+				{
+					close(FORCE_CLOSE);
+					return;
+				}
+			}
+			else
+			{
+				msg->skipBytes(1); // Skip protocol ID
+			}
+
+			protocol->onRecvFirstMessage(*msg);
+		}
+		else
+		{
+			protocol->onRecvMessage(*msg); // Send the packet to the current protocol
+		}
 	}
 
 	try

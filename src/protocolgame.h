@@ -67,7 +67,7 @@ enum class StoreError : uint8_t
 } // namespace Store
 } // namespace BlackTek
 
-class ProtocolGame final : public Protocol
+class ProtocolGame : public Protocol
 {
 	public:
 		// static protocol information
@@ -86,6 +86,13 @@ class ProtocolGame final : public Protocol
 
 		uint16_t getVersion() const {
 			return version;
+		}
+
+		// Packet code branches on capabilities, never on version numbers.
+		// Before the profile is resolved (first packet still in flight) every
+		// feature reads as absent, which is the right default for 10.98.
+		[[nodiscard]] bool hasFeature(BlackTek::Network::ProtocolFeature feature) const {
+			return protocol_profile and protocol_profile->hasFeature(feature);
 		}
 
 	private:
@@ -428,6 +435,33 @@ class ProtocolGame final : public Protocol
 
 		bool debugAssertSent = false;
 		bool acceptPackets = false;
+
+	protected:
+		// Resolved from the first packet's protocol version + the port's
+		// transport generation; stays null until then.
+		const BlackTek::Network::ProtocolProfile* protocol_profile = nullptr;
+		// Full build number from the login packet's u32 (e.g. 13400604);
+		// `version` above stays the u16 protocol version (e.g. 1340).
+		uint32_t client_version = 0;
+};
+
+// Same gameworld protocol, listening on the modern port. The server talks
+// first (challenge), and the two framing generations need differently shaped
+// challenges - so the port, not byte-sniffing, decides the generation.
+// Modern clients learn this port from the login webservice.
+class ProtocolGameModern final : public ProtocolGame
+{
+	public:
+		enum {server_sends_first = true};
+		enum {protocol_identifier = 0}; // Not required as we send first
+		enum {use_checksum = true};
+		static const char* protocol_name() {
+			return "modern gameworld protocol";
+		}
+
+		explicit ProtocolGameModern(Connection_ptr connection) : ProtocolGame(std::move(connection)) {
+			setTransportGeneration(BlackTek::Network::TransportGeneration::Modern);
+		}
 };
 
 #endif

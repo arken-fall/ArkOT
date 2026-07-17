@@ -132,6 +132,7 @@ public:
         FRAG_TIME,
         WHITE_SKULL_TIME,
         GAME_PORT,
+        GAME_PORT_MODERN,
         LOGIN_PORT,
         STATUS_PORT,
         STAIRHOP_DELAY,

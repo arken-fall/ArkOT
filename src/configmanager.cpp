@@ -135,6 +135,14 @@ bool ConfigManager::Load()
             integers[LOGIN_PORT] = static_cast<int32_t>(serverTbl["network"]["login_port"].value_or(int64_t{7171}));
         }
 
+        if (integers[GAME_PORT_MODERN] == 0)
+        {
+            // Modern (13.40+) clients handshake on their own port because the
+            // server-first challenge is framed differently per generation.
+            // 0 disables the listener.
+            integers[GAME_PORT_MODERN] = static_cast<int32_t>(serverTbl["network"]["game_port_modern"].value_or(int64_t{7173}));
+        }
+
         integers[STATUS_PORT] = static_cast<int32_t>(serverTbl["network"]["status_port"].value_or(int64_t{7171}));
     }
 

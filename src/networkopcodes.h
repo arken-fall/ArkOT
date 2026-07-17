@@ -127,7 +127,105 @@ namespace BlackTek {
             StoreSelectCategory = 0xFB,
             StoreBuyOffer       = 0xFC,
             StoreOpenHistory    = 0xFD,
-            StoreRequestHistory = 0xFE
+            StoreRequestHistory = 0xFE,
+
+            // --- Modern clients (13.40+) below this line ---
+            // Verified against opentibiabr/canary's dispatch switch. Handlers
+            // arrive with their systems; the names land first so nothing in
+            // the codebase ever has to say "case 0x28:".
+            // Three legacy bytes are reused by modern clients with different
+            // payloads and stay under their legacy names above until the
+            // feature-gated handlers land: 0xC9 (UpdateTile -> transaction
+            // details), 0xE7 (ThankYou -> wheel gem action), 0xE8
+            // (DebugAssert -> store offer description), 0xCA
+            // (UpdateContainer -> exiva restrictions).
+
+            // Stash & depot search
+            StashWithdraw = 0x28,
+            RetrieveDepotSearch = 0x29,
+            OpenDepotSearch = 0x92,
+            CloseDepotSearch = 0x93,
+            DepotSearchItemRequest = 0x94,
+
+            // Cyclopedia & analytics
+            CyclopediaMonsterTracker = 0x2A,
+            PartyAnalyzerAction = 0x2B,
+            LeaderFinderWindow = 0x2C,
+            MemberFinderWindow = 0x2D,
+            CyclopediaHouseAuction = 0xAD,
+            RequestHighscores = 0xB1,
+            CyclopediaMapAction = 0xDB,
+            CyclopediaCharacterInfo = 0xE5,
+
+            // Client state & misc
+            SetClientOptions = 0x2E,
+            PlayerTyping = 0x38,
+            ClientCheck = 0x63,
+            Teleport = 0x73,
+            StartOfflineTraining = 0x74,
+            ContainerAction = 0x75,
+            CharacterTradeConfiguration = 0x76,
+            FriendSystemAction = 0x81,
+            ClientDetails = 0xC1,
+            AimAtTarget = 0xC8,
+            GetTextForReport = 0x9D,
+            Greet = 0xEE,
+
+            // Imbuements
+            InventoryImbuements = 0x60,
+            ImbuementDurations = 0xB2,
+            ApplyImbuement = 0xD5,
+            ClearImbuement = 0xD6,
+            CloseImbuementWindow = 0xD7,
+
+            // Wheel of Destiny
+            OpenWheel = 0x61,
+            SaveWheel = 0x62,
+
+            // Quickloot
+            QuickLoot = 0x8F,
+            LootContainer = 0x90,
+            QuickLootBlackWhitelist = 0x91,
+            OpenParentContainer = 0x95,
+
+            // Guild & VIP extensions
+            EditGuildMessage = 0x9C,
+            VipGroupActions = 0xDF,
+
+            // Podium
+            SetMonsterPodium = 0x9F,
+            ConfigureShowOffSocket = 0x86,
+
+            // Bosstiary & bestiary
+            RequestBosstiary = 0xAE,
+            RequestBosstiarySlots = 0xAF,
+            BosstiarySlot = 0xB0,
+            BossDifficultySelection = 0xC2,
+            BestiaryRaces = 0xE1,
+            BestiaryCreatures = 0xE2,
+            BestiaryMonsterData = 0xE3,
+            BuyCharmRune = 0xE4,
+
+            // Weapon proficiency (14.x+)
+            WeaponProficiency = 0xB3,
+
+            // Hunting tasks & prey
+            TaskHuntingAction = 0xBA,
+            PreyAction = 0xEB,
+
+            // Forge
+            ForgeEnter = 0xBF,
+            ForgeBrowseHistory = 0xC0,
+
+            // Inspection
+            InspectionObject = 0xCD,
+            InspectPlayer = 0xCE,
+
+            // Misc systems
+            RequestBlessingsDialog = 0xCF,
+            SetHirelingName = 0xEC,
+            RequestResourceBalance = 0xED,
+            RewardChestCollect = 0xFF
         };
 
         // Again, for clarity, the server codes are the

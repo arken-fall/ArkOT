@@ -141,6 +141,11 @@ enum OperatingSystem_t : uint8_t {
 	CLIENTOS_WINDOWS = 2,
 	CLIENTOS_FLASH = 3,
 
+	// Modern (12.x+) CipSoft clients report these instead
+	CLIENTOS_NEW_LINUX = 4,
+	CLIENTOS_NEW_WINDOWS = 5,
+	CLIENTOS_NEW_MAC = 6,
+
 	CLIENTOS_OTCLIENT_LINUX = 10,
 	CLIENTOS_OTCLIENT_WINDOWS = 11,
 	CLIENTOS_OTCLIENT_MAC = 12,

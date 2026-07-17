@@ -519,6 +519,12 @@ void mainLoader(int, char*[], ServiceManager* services)
 	services->add<ProtocolGame>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::GAME_PORT)));
 	services->add<ProtocolLogin>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::LOGIN_PORT)));
 
+	// Modern (13.40+) clients handshake on a separate port; see ProtocolGameModern
+	if (auto modernPort = g_config.GetNumber(ConfigManager::GAME_PORT_MODERN); modernPort != 0)
+	{
+		services->add<ProtocolGameModern>(static_cast<uint16_t>(modernPort));
+	}
+
 	// OT protocols
 	services->add<ProtocolStatus>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::STATUS_PORT)));
 

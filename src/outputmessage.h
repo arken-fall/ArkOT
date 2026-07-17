@@ -35,6 +35,32 @@ class OutputMessage : public NetworkMessage
 			writeMessageLength();
 		}
 
+		// Modern (13.40+) framing helpers. The encrypted payload leads with a
+		// padding-count byte instead of trailing an inner length, and the outer
+		// length header counts 8-byte XTEA blocks, with the 4 checksum bytes
+		// included in the count's base. See Protocol::onSendMessage.
+		void writePaddingAmount() {
+			uint8_t paddingAmount = static_cast<uint8_t>(8 - (info.length % 8) - 1);
+			addPaddingBytes(paddingAmount);
+			add_header(paddingAmount);
+		}
+
+		void writeBlockCountLength() {
+			add_header(static_cast<uint16_t>((info.length - NetworkMessage::CHECKSUM_LENGTH) / 8));
+		}
+
+		void writeChecksumHeader(uint32_t checksum) {
+			add_header(checksum);
+		}
+
+		// Wipes the buffered payload so a compressed copy can replace it.
+		void rewriteWith(const uint8_t* data, size_t size) {
+			info.length = 0;
+			info.position = INITIAL_BUFFER_POSITION;
+			outputBufferStart = INITIAL_BUFFER_POSITION;
+			addBytes(reinterpret_cast<const char*>(data), size);
+		}
+
 		void append(const NetworkMessage& msg) {
 			auto msgLen = msg.getLength();
 			memcpy(buffer + info.position, msg.getBuffer() + 8, msgLen);

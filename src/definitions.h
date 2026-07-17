@@ -10,6 +10,9 @@ static constexpr auto STATUS_SERVER_DEVELOPERS = "github.com/Black-Tek";
 static constexpr auto STATUS_SERVER_MAINTAINER = "Codinablack@Github.com";
 static constexpr auto STATUS_SERVER_COMMUNITY_LINK = "discord.gg/dy5wXSzbPG";
 
+// Which protocol versions may actually connect is decided by the profile
+// registry in protocolprofile.h - these constants only feed the status
+// protocol and the legacy login protocol's version gate.
 static constexpr auto CLIENT_VERSION_MIN = 1097;
 static constexpr auto CLIENT_VERSION_MAX = 1098;
 static constexpr auto CLIENT_VERSION_STR = "10.98";

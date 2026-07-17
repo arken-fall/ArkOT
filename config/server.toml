@@ -29,6 +29,10 @@ ipv6_fallback_to_ipv4    = true
 bind_only_global_address = false
 login_port               = 7171
 game_port                = 7172
+# 13.40+ clients connect here (they learn the port from the login webservice).
+# The modern handshake is framed differently, so it gets its own listener.
+# Set to 0 to disable.
+game_port_modern         = 7173
 status_port              = 7171
 # 0 = no limit
 max_players              = 0
