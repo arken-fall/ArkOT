@@ -10,8 +10,8 @@ Reference checkouts: `~/Documents/canary`, `~/Documents/login-server` (both shal
 | H — harness | **PASS** | `harness/packet_diff.py` decodes/diffs legacy+modern fixtures; `blacktek_tests` 7/7 green |
 | 0 — merge, legacy intact | **PASS** | scripted 10.98 client (`harness/legacy_client.py`) logs in + walks against live server; full build clean (GCC 14, release_64) |
 | A — session login | **PASS** | POST /login on opentibiabr/login-server → session key → modern handshake on 7173 → "Tester has logged in." → walk answered. Legacy re-run green. |
-| B — asset/ID pipeline | **NOT STARTED** | |
-| C — enter world (mehah) | **NOT STARTED** | blocked on B; also needs a mehah client (GUI) for the real gate |
+| B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId with client-flag agreement; full 21,840-row table verified appearance-backed (41 stale rows auto-pruned); blacktek_tests 10/10; live legacy+modern gates re-run green |
+| C — enter world (mehah) | **NOT STARTED** | needs a mehah Redemption client at 15.25 (Josh confirmed that's the target client) for the real gate |
 | D — feature stubs | **NOT STARTED** | |
 | E — long tail | **NOT STARTED** | |
 
@@ -99,21 +99,57 @@ Build: `~/.local/bin/premake5 gmake2 && make -j24 config=release_64 CC=gcc-14 CX
 from the repo root. Do NOT also install x64-linux-static — manifest mode
 removes the other triplet's files; the Linux link only uses x64-linux.)
 
-## Exact next actions (Phase B)
+## Phase B facts (established this session)
 
-1. Vendor canary's appearances `.proto` (`src/protobuf/appearances.proto` in
-   canary) and add `protobuf` to vcpkg.json; premake needs a codegen step —
-   check how canary's CMake invokes protoc and mirror minimally.
-2. `src/appearances.h/cpp`: load `appearances.dat`, expose client-id → flags;
-   gate behind `ProtocolFeature::ProtobufAppearances`.
-3. Audit `getClientID()` call sites; add u16→u32 handling behind
-   `ItemsOverU16Capacity` in the NetworkMessage item writers.
-4. GATE B: golden round-trip 20 representative items (stackable, fluid,
-   container, podium) server-id ↔ 15.25 client-id. Needs a 13/14/15.x
-   `appearances.dat` — get one from a mehah-compatible client package.
-5. Then Phase C in the listed writer order, each with a golden test; the
-   0x32-greeting + 0x17 bundling behavior seen by `modern_client.py` is a
-   handy smoke reference for frame bundling.
+- **BlackTek's unified item ids are TFS server ids** (assets.dat is indexed
+  by them; the wire writes them raw). The handoff's "items.otb stays the
+  server-id source" was stale — there is no OTB anymore, and no clientId
+  field anywhere.
+- **CipSoft appearance ids are append-only across generations**: a 10.98
+  client id IS the 15.25 appearance id (verified: gold coin 3031, bag 2853,
+  red apple 3585, torch 2920). So the modern mapping is simply the classic
+  TFS 10.98 OTB server→client table.
+- `harness/build_modern_ids.py` regenerates `data/items/modern_client_ids.tsv`
+  (21,881 rows, 76.4% name-verified against canary's items.xml; needs
+  ~/Documents/forgottenserver-ref + ~/Documents/canary checkouts).
+- `data/items/appearances.dat` is **canary's in-repo file** (their custom
+  15.25-compatible asset data, 42,107 objects) — fine for validation and
+  flag-parity work, but Phase C testing against a real client should use the
+  client's own appearances file (config: `[world] appearances_dat_path`).
+- Loader: `src/appearances.h/cpp` (protobuf-lite; proto vendored at
+  `src/protobuf/appearances.proto`, codegen runs AT PREMAKE TIME into
+  `src/protobuf/generated/` — leave that dir untracked; re-run premake after
+  vcpkg install, bootstrap.sh now does this itself).
+- `Items::getModernClientId()/getItemIdByModernClientId()`; rows whose
+  appearance no longer exists (CipSoft deleted 41 of them) are pruned at
+  load when appearances are present.
+- Client-flag drift is real and the flag test catches it: food (red apple,
+  brown mushroom) is stackable client-side in modern clients even though the
+  10.98 server types aren't. Phase C writers must consult AppearanceInfo for
+  wire classes, not ItemType alone.
+- Wire-write audit: all 28 item-id writes live in protocolgame.cpp via
+  NetworkMessage::addItem/addItemId (plus Lua's networkMessage:addItemId).
+  NetworkMessage has no protocol context, so Phase C should funnel modern
+  translation through one ProtocolGame-level helper rather than touching
+  NetworkMessage. Appearance ids fit u16 today (max ~42k... they do NOT fit
+  u16 above 65535 — current max is below that; the mapper is u32 internally
+  and a Phase C writer must guard the u16 narrowing).
+
+## Exact next actions (Phase C)
+
+1. Get a mehah OTClient Redemption build + 15.25 assets on the desktop
+   (Josh confirmed Redemption/15.25 as the target client). First capture:
+   the game-login packet, to validate the ASSUMED first-frame layout
+   (`[seq u32][pad u8][0x0A]`) and the 13.40-vs-15.25 login layout rows.
+2. Port writers in the handoff's Phase C order, each with a golden test:
+   login success block, pending state, map description, creature add/update,
+   player stats 0xA0 (PlayerLevelPercentU16), skills, magic effects
+   (ExtendedMagicEffects), text messages, channels, walking codes.
+3. Add the ProtocolGame item-write helper (server id → appearance id via
+   Items::getModernClientId, wire class from AppearanceInfo, u16 guard),
+   feature-gated on ProtobufAppearances.
+4. Phase D stubs (protocolgame_stubs.cpp) can start in parallel once the
+   enter-world skeleton exists.
 
 ## Watch out for
 

@@ -100,6 +100,7 @@ public:
         MAP_AUTHOR,
         ACCOUNT_MANAGER_AUTH,
         ASSETS_DAT_PATH,
+        APPEARANCES_DAT_PATH,
         IPV6,
         STORE_IMAGES_URL,
 

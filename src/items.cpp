@@ -3,6 +3,7 @@
 
 #include "otpch.h"
 
+#include "appearances.h"
 #include "items.h"
 #include "spells.h"
 #include "movement.h"
@@ -363,6 +364,59 @@ bool Items::loadFromToml()
 
     buildInventoryList();
     return true;
+}
+
+bool Items::loadModernClientIds(const std::string& path)
+{
+	std::ifstream file(path);
+	if (not file.is_open())
+	{
+		return false;
+	}
+
+	modernClientIds.clear();
+	modernClientIdsReverse.clear();
+
+	// When the appearances file is already loaded, mappings pointing at
+	// appearances that no longer exist (CipSoft deletes a handful between
+	// generations) are dropped here - an unmapped item is recoverable, an
+	// unrenderable id on the wire is not.
+	const auto& appearances = BlackTek::Assets::Appearances::getInstance();
+	size_t pruned = 0;
+
+	std::string line;
+	while (std::getline(file, line))
+	{
+		if (line.empty() or line.front() == '#')
+		{
+			continue;
+		}
+
+		uint32_t serverId = 0;
+		uint32_t appearanceId = 0;
+		if (std::sscanf(line.c_str(), "%u\t%u", &serverId, &appearanceId) != 2 or serverId > std::numeric_limits<uint16_t>::max())
+		{
+			continue;
+		}
+
+		if (appearances.isLoaded() and not appearances.getObject(appearanceId))
+		{
+			++pruned;
+			continue;
+		}
+
+		modernClientIds[static_cast<uint16_t>(serverId)] = appearanceId;
+		// first mapping wins in reverse: ranged/aliased server ids can share
+		// one appearance, and the lowest server id is the canonical item
+		modernClientIdsReverse.try_emplace(appearanceId, static_cast<uint16_t>(serverId));
+	}
+
+	if (pruned != 0)
+	{
+		BlackTek::Console::Warn("Dropped {} modern client id mappings whose appearances no longer exist", pruned);
+	}
+
+	return not modernClientIds.empty();
 }
 
 void Items::buildInventoryList()

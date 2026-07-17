@@ -5,6 +5,33 @@ workspace "Black-Tek-Server"
     location ""
     editorintegration "On"
 
+-- Protobuf codegen (appearances.pb.cc/h) runs at premake time so the file
+-- globs below pick the outputs up. protoc comes from vcpkg, which bootstrap
+-- installs AFTER the first premake run - so on a fresh checkout this prints
+-- a warning and premake must be re-run once after vcpkg install.
+local protocCandidates = {
+    "vcpkg_installed/x64-linux/tools/protobuf/protoc",
+    "vcpkg_installed/arm64-linux/tools/protobuf/protoc",
+    "vcpkg_installed/x64-windows/tools/protobuf/protoc.exe",
+}
+local protoc = nil
+for _, candidate in ipairs(protocCandidates) do
+    if os.isfile(candidate) then
+        protoc = candidate
+        break
+    end
+end
+if protoc then
+    os.mkdir("src/protobuf/generated")
+    local ok = os.execute(protoc .. " --proto_path=src/protobuf --cpp_out=src/protobuf/generated src/protobuf/appearances.proto")
+    if not ok then
+        error("protoc failed on src/protobuf/appearances.proto")
+    end
+else
+    print("WARNING: protoc not found under vcpkg_installed - protobuf sources not (re)generated.")
+    print("         Run vcpkg install, then re-run premake5.")
+end
+
 -- Project configuration
 project "Black-Tek-Server"
     kind "ConsoleApp"
@@ -13,7 +40,8 @@ project "Black-Tek-Server"
     targetdir "%{wks.location}"
     objdir "build/%{cfg.buildcfg}/obj"
     location ""
-    files { "src/**.cpp", "src/**.h" }
+    files { "src/**.cpp", "src/**.h", "src/protobuf/generated/**.cc", "src/protobuf/generated/**.h" }
+    includedirs { "src/protobuf/generated" }
     multiprocessorcompile "On"
     enableunitybuild "On"
     intrinsics "On"
@@ -136,6 +164,9 @@ project "Black-Tek-Server"
     filter { "system:linux", "architecture:x86_64" }
         libdirs { "vcpkg_installed/x64-linux/lib" }
         includedirs { "vcpkg_installed/x64-linux/include" }
+        -- protobuf-lite drags a pile of abseil archives along; let pkg-config
+        -- keep that list correct instead of hand-maintaining it
+        linkoptions { "$(shell PKG_CONFIG_PATH=vcpkg_installed/x64-linux/lib/pkgconfig pkg-config --libs --static protobuf-lite)" }
 
     filter "system:linux"
         libdirs { "/usr/lib" }
@@ -163,9 +194,9 @@ project "blacktek_tests"
     targetdir "%{wks.location}"
     objdir "build/tests/%{cfg.buildcfg}/obj"
     location ""
-    files { "src/**.cpp", "src/**.h", "tests/**.cpp", "tests/**.h" }
+    files { "src/**.cpp", "src/**.h", "src/protobuf/generated/**.cc", "src/protobuf/generated/**.h", "tests/**.cpp", "tests/**.h" }
     removefiles { "src/otserv.cpp" }
-    includedirs { "src" }
+    includedirs { "src", "src/protobuf/generated" }
     multiprocessorcompile "On"
     enableunitybuild "On"
     intrinsics "On"
@@ -238,6 +269,9 @@ project "blacktek_tests"
     filter { "system:linux", "architecture:x86_64" }
         libdirs { "vcpkg_installed/x64-linux/lib" }
         includedirs { "vcpkg_installed/x64-linux/include" }
+        -- protobuf-lite drags a pile of abseil archives along; let pkg-config
+        -- keep that list correct instead of hand-maintaining it
+        linkoptions { "$(shell PKG_CONFIG_PATH=vcpkg_installed/x64-linux/lib/pkgconfig pkg-config --libs --static protobuf-lite)" }
 
     filter "system:linux"
         libdirs { "/usr/lib" }

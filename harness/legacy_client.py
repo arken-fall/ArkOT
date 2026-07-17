@@ -114,32 +114,33 @@ def main():
     sock.sendall(struct.pack("<H", len(frame)) + frame)
 
     # --- read login response frames ---
+    # A frame can carry several packets and saved conditions may push e.g. a
+    # stats packet in front of the LoginSuccess block, so the leading opcode
+    # is informational only. The authoritative in-world proof is the answered
+    # walk below - the server only answers walks for a placed creature.
     seen = []
-    logged_in = False
-    sock.settimeout(5)
+    refused = None
+    sock.settimeout(3)
     try:
-        while len(seen) < 40:
+        while len(seen) < 8:
             payload = decrypt_frame(read_frame(sock))
             if not payload:
                 continue
-            op = payload[0]
-            seen.append(op)
-            if op == 0x14:
+            seen.append(payload[0])
+            if payload[0] == 0x14:
                 (length,) = struct.unpack_from("<H", payload, 1)
-                print(f"FAIL: server refused login: {payload[3:3+length].decode('latin-1')}")
-                return 1
-            if op in (0x0A, 0x17, 0x64):
-                logged_in = True
-            if op == 0x64:
+                refused = payload[3 : 3 + length].decode("latin-1")
                 break
     except (TimeoutError, socket.timeout):
         pass
 
-    print("login opcodes:", " ".join(f"0x{op:02X}" for op in seen))
-    if not logged_in:
-        print("FAIL: never saw pending state / login success / map description")
+    print("login frame leading opcodes:", " ".join(f"0x{op:02X}" for op in seen))
+    if refused is not None:
+        print(f"FAIL: server refused login: {refused}")
         return 1
-    print("PASS: logged in, map received")
+    if not seen:
+        print("FAIL: no response to login packet")
+        return 1
 
     # --- walk one tile north and expect an answer ---
     send_encrypted(sock, bytes([0x65]))
@@ -148,7 +149,6 @@ def main():
     try:
         while len(answers) < 20:
             payload = decrypt_frame(read_frame(sock))
-            offset = 0
             if payload:
                 answers.append(payload[0])
                 break
@@ -158,7 +158,7 @@ def main():
     print("walk answer opcodes:", " ".join(f"0x{op:02X}" for op in answers))
     # 0x65 = map shift north, 0x6D = creature moved, 0xB5 = cancel walk (blocked)
     if any(op in (0x65, 0x6D, 0xB5) for op in answers):
-        print("PASS: server answered the walk")
+        print("PASS: logged in and server answered the walk")
         return 0
 
     print("FAIL: no walk-related answer")

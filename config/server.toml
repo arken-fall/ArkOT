@@ -14,6 +14,9 @@ type            = "pvp"
 map_name        = "forgotten"
 map_author      = "Unknown"
 assets_dat_path = "data/items/assets.dat"
+# protobuf appearances from a modern (13.40+) client; optional - used to
+# validate the modern client id mapping and, later, wire-format parity
+appearances_dat_path = "data/items/appearances.dat"
 
 [startup]
 # Windows only. Valid values: "normal", "above-normal", "high"

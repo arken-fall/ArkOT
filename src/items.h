@@ -445,7 +445,7 @@ class Items
 		void parseItemToml(const toml::table& itemTable, uint16_t id);
 
 		void buildInventoryList();
-	
+
 		const InventoryVector& getInventory() const {
 			return inventory;
 		}
@@ -454,12 +454,35 @@ class Items
 			return items.size();
 		}
 
+		// Modern (13.40+) clients address objects by CipSoft appearance id,
+		// not by our item ids. The table comes from data/items/
+		// modern_client_ids.tsv (see harness/build_modern_ids.py for how it
+		// is derived and why it can be trusted). Returns 0 when unmapped -
+		// callers decide whether that means "hide it" or "refuse".
+		bool loadModernClientIds(const std::string& path);
+
+		[[nodiscard]] uint32_t getModernClientId(uint16_t itemId) const {
+			auto it = modernClientIds.find(itemId);
+			return it != modernClientIds.end() ? it->second : 0;
+		}
+
+		[[nodiscard]] uint16_t getItemIdByModernClientId(uint32_t appearanceId) const {
+			auto it = modernClientIdsReverse.find(appearanceId);
+			return it != modernClientIdsReverse.end() ? it->second : 0;
+		}
+
+		[[nodiscard]] size_t modernClientIdCount() const {
+			return modernClientIds.size();
+		}
+
 		NameMap nameToItems;
 		CurrencyMap currencyItems;
 
 	private:
 		std::vector<ItemType> items;
 		InventoryVector inventory;
+		gtl::flat_hash_map<uint16_t, uint32_t> modernClientIds;
+		gtl::flat_hash_map<uint32_t, uint16_t> modernClientIdsReverse;
 
 		bool unserializeDatItem(ItemType& itemType, std::ifstream& fin);
 };

@@ -17,6 +17,7 @@
     },
     "libmariadb",
     "cryptopp",
+    "protobuf",
     "pugixml",
     "zlib",
     "curl"

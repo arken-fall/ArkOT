@@ -21,6 +21,7 @@
 #include "script.h"
 #include <fstream>
 #include <fmt/color.h>
+#include "appearances.h"
 #include "augments.h"
 #include "zones.h"
 #include "console.h"
@@ -463,6 +464,20 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 	Console::printProgress("Items", true, std::to_string(Item::items.size()));
+
+	// Modern (13.40+) client support data. Both are optional: without them
+	// legacy clients are unaffected and modern clients simply can't be
+	// served item content yet. Appearances load first so the id mapper can
+	// prune rows whose appearance no longer exists.
+	if (BlackTek::Assets::Appearances::getInstance().load(g_config.GetString(ConfigManager::APPEARANCES_DAT_PATH)))
+	{
+		Console::printProgress("Appearances", true, std::to_string(BlackTek::Assets::Appearances::getInstance().objectCount()));
+	}
+
+	if (Item::items.loadModernClientIds("data/items/modern_client_ids.tsv"))
+	{
+		Console::printProgress("Modern client ids", true, std::to_string(Item::items.modernClientIdCount()));
+	}
 
 	// Load script systems
 	if (not ScriptingManager::getInstance().loadScriptSystems())

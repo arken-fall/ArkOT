@@ -121,6 +121,7 @@ bool ConfigManager::Load()
         strings[MYSQL_DB]          = databaseTbl["mysql"]["database"].value_or<std::string>("forgottenserver");
         strings[MYSQL_SOCK]        = databaseTbl["mysql"]["socket"].value_or<std::string>("");
         strings[ASSETS_DAT_PATH]   = serverTbl["world"]["assets_dat_path"].value_or<std::string>("data/items/assets.dat");
+        strings[APPEARANCES_DAT_PATH] = serverTbl["world"]["appearances_dat_path"].value_or<std::string>("data/items/appearances.dat");
 
         integers[SQL_PORT]              = static_cast<int32_t>(databaseTbl["mysql"]["port"].value_or(int64_t{3306}));
         integers[MARKET_OFFER_DURATION] = static_cast<int32_t>(gameplayTbl["market"]["offer_duration"].value_or(int64_t{2592000}));

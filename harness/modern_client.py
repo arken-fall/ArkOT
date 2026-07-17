@@ -157,41 +157,42 @@ def main():
     sock.sendall(struct.pack("<H", len(inner) // 8) + struct.pack("<I", 0) + inner)
 
     # --- responses ---
+    # Frames bundle packets and saved conditions can reorder the leading
+    # opcode, so this only screens for an explicit refusal; the authoritative
+    # in-world proof is the answered walk below.
     seen = []
-    entered = False
-    sock.settimeout(5)
+    refused = None
+    sock.settimeout(3)
     try:
-        while len(seen) < 40 and not entered:
+        while len(seen) < 8:
             seq, payload = decrypt_modern(read_modern_frame(sock))
-            offset = 0
-            # walk leading fixed-size packets; stop at the first one whose
-            # grammar we don't know
-            while offset < len(payload):
-                op = payload[offset]
-                seen.append(op)
-                if op == 0x14:
-                    (length,) = struct.unpack_from("<H", payload, offset + 1)
-                    print(f"FAIL: server refused login: {payload[offset+3:offset+3+length].decode('latin-1')}")
-                    return 1
-                if op in (0x0A, 0x17, 0x64):
-                    entered = True
-                    break
-                if op == 0x32:  # extended-opcode greeting: opcode u8 u16
-                    offset += 4
-                    continue
+            if not payload:
+                continue
+            seen.append(payload[0])
+            op = payload[0]
+            if op == 0x32 and len(payload) > 4:
+                seen.append(payload[4])  # greeting is fixed-size; peek behind it
+                op = payload[4]
+            if op == 0x14:
+                offset = 1 if payload[0] == 0x14 else 5
+                (length,) = struct.unpack_from("<H", payload, offset)
+                refused = payload[offset+2 : offset+2+length].decode("latin-1")
                 break
     except (TimeoutError, socket.timeout):
         pass
 
-    print("login opcodes:", " ".join(f"0x{op:02X}" for op in seen))
-    if not entered:
-        print("FAIL: no pending state / login success / map description")
+    print("login frame opcodes:", " ".join(f"0x{op:02X}" for op in seen))
+    if refused is not None:
+        print(f"FAIL: server refused login: {refused}")
         return 1
-    print("PASS: session accepted, character entered world")
+    if not seen:
+        print("FAIL: no response to login packet")
+        return 1
 
     # --- walk one tile (also proves inbound sequence checksums parse) ---
     send_modern(sock, bytes([0x65]), 1)
     answers = []
+    sock.settimeout(5)
     try:
         while not answers:
             seq, payload = decrypt_modern(read_modern_frame(sock))
@@ -202,7 +203,7 @@ def main():
 
     print("walk answer opcodes:", " ".join(f"0x{op:02X}" for op in answers))
     if any(op in (0x65, 0x6D, 0xB5) for op in answers):
-        print("PASS: server answered the walk over modern transport")
+        print("PASS: session accepted, in world, walk answered over modern transport")
         return 0
     print("FAIL: no walk-related answer")
     return 1

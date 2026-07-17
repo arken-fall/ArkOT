@@ -223,6 +223,14 @@ if [ ! $skip_vcpkg ]; then
 	fi
 fi
 
+# Re-run premake now that vcpkg has installed protoc: the protobuf sources
+# (src/protobuf/generated) are generated at premake time and the first run
+# above happened before vcpkg install.
+if ! ${premake_cmd} gmake2 ${premake_args}; then
+	echo -e "${RED}=== An error occured while executing premake. Configuration is not complete. ===${END}"
+	exit 1
+fi
+
 echo -e "${GREEN}=== Configuration Finished ===${END}"
 echo
 read -p "Would you like to compile the server now? (n: No, d: Debug, r: Release) " compile
