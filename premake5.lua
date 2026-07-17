@@ -152,3 +152,103 @@ project "Black-Tek-Server"
     -- macOS-specific settings
     filter { "system:macosx", "action:gmake" }
         buildoptions { "-fvisibility=hidden" }
+
+-- Golden-byte protocol tests. Links every server translation unit except
+-- otserv.cpp (tests/main.cpp provides main() and the same globals) so tests
+-- exercise the real packet writers, not copies of them.
+project "blacktek_tests"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++23"
+    targetdir "%{wks.location}"
+    objdir "build/tests/%{cfg.buildcfg}/obj"
+    location ""
+    files { "src/**.cpp", "src/**.h", "tests/**.cpp", "tests/**.h" }
+    removefiles { "src/otserv.cpp" }
+    includedirs { "src" }
+    multiprocessorcompile "On"
+    enableunitybuild "On"
+    intrinsics "On"
+    editandcontinue "Off"
+
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        staticruntime "Off"
+        symbols "On"
+        optimize "Debug"
+        incrementallink "Off"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        staticruntime "On"
+        symbols "Off"
+        optimize "Full"
+
+    filter "platforms:64"
+        architecture "x86_64"
+
+    filter "platforms:ARM64"
+        architecture "ARM64"
+
+    filter "platforms:ARM"
+        architecture "ARM"
+
+    filter "system:not windows"
+        buildoptions { "-Wall", "-Wextra", "-pedantic", "-pipe", "-fvisibility=hidden", "-Wno-unused-local-typedefs" }
+        linkoptions { "-flto=auto" }
+
+    filter "system:windows"
+        openmp "On"
+        characterset "MBCS"
+        linkoptions { "/IGNORE:4099" }
+        buildoptions { "/bigobj", "/utf-8" }
+        vsprops { VcpkgEnableManifest = "true" }
+        symbolspath "$(OutDir)$(TargetName).pdb"
+        pchheader "otpch.h"
+        pchsource "src/otpch.cpp"
+        enablepch "On"
+
+    filter { "system:windows", "configurations:Release" }
+        vsprops { VcpkgTriplet = "x64-windows-static" }
+        links { "Crypt32", "Secur32", "Iphlpapi", "Shlwapi" }
+
+    filter { "system:windows", "configurations:Debug" }
+        vsprops { VcpkgTriplet = "x64-windows" }
+
+    filter "architecture:x86_64"
+        vectorextensions "AVX"
+
+    filter { "system:linux", "options:verbose" }
+        linkoptions { "-v" }
+        warnings "Extra"
+
+    filter { "system:linux", "not options:verbose" }
+        warnings "Off"
+
+    filter { "system:linux", "architecture:ARM" }
+        libdirs { "vcpkg_installed/arm-linux/lib", "/usr/arm-linux-gnueabihf" }
+        includedirs { "vcpkg_installed/arm-linux/include", "/usr/arm-linux-gnueabihf" }
+
+    filter { "system:linux", "architecture:ARM64" }
+        libdirs { "vcpkg_installed/arm64-linux/lib", "/usr/arm-linux-gnueabi" }
+        includedirs { "vcpkg_installed/arm64-linux/include", "/usr/arm-linux-gnueabi" }
+
+    filter { "system:linux", "architecture:x86_64" }
+        libdirs { "vcpkg_installed/x64-linux/lib" }
+        includedirs { "vcpkg_installed/x64-linux/include" }
+
+    filter "system:linux"
+        libdirs { "/usr/lib" }
+        includedirs { "/usr/include", "/usr/include/lua5.*" }
+        links { "pugixml", _OPTIONS["lua"], "fmt", "mariadb", "cryptopp", "boost_iostreams", "zstd", "z", "curl", "ssl", "crypto" }
+
+    filter "toolset:gcc"
+        buildoptions { "-fno-strict-aliasing" }
+
+    filter "toolset:clang"
+        buildoptions { "-Wimplicit-fallthrough", "-Wmove" }
+
+    filter { "system:macosx", "action:gmake" }
+        buildoptions { "-fvisibility=hidden" }
