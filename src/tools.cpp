@@ -6,6 +6,7 @@
 #include "tools.h"
 #include "configmanager.h"
 
+#include <cryptopp/sha.h>
 #include <fmt/chrono.h>
 #include <gtl/phmap.hpp>
 
@@ -180,6 +181,22 @@ std::string transformToSHA1(std::string_view input)
 		hexstring[index + 1] = hexDigits[byte & 15];
 	}
 	return std::string(hexstring, 40);
+}
+
+std::string transformToSHA256(std::string_view input)
+{
+	CryptoPP::SHA256 hash;
+	std::array<CryptoPP::byte, CryptoPP::SHA256::DIGESTSIZE> digest;
+	hash.CalculateDigest(digest.data(), reinterpret_cast<const CryptoPP::byte*>(input.data()), input.size());
+
+	static const char hexDigits[] = {"0123456789abcdef"};
+	std::string hexstring(digest.size() * 2, '0');
+	for (size_t i = 0; i < digest.size(); ++i)
+	{
+		hexstring[i * 2] = hexDigits[digest[i] >> 4];
+		hexstring[i * 2 + 1] = hexDigits[digest[i] & 15];
+	}
+	return hexstring;
 }
 
 std::string generateToken(const std::string& key, uint32_t ticks)

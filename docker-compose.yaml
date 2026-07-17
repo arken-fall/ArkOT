@@ -32,6 +32,32 @@ services:
     networks:
       - blacktek-net
 
+  # Login webservice for modern (13.40+) clients: validates email/password
+  # over HTTP, writes a session into account_sessions, and points the client
+  # at game_port_modern. Legacy 10.98 clients keep using port 7171.
+  login-server:
+    image: opentibiabr/login-server:latest
+    restart: always
+    ports:
+      - "8090:8090"
+    environment:
+      - LOGIN_HTTP_PORT=8090
+      - LOGIN_GRPC_PORT=9090
+      - MYSQL_HOST=server-db
+      - MYSQL_PORT=3306
+      - MYSQL_DBNAME=blacktekserver
+      - MYSQL_USER=blacktekserver
+      - MYSQL_PASS=blacktekpassword
+      - SERVER_NAME=BlackTek
+      - SERVER_IP=127.0.0.1
+      - SERVER_PORT=7173
+      - SERVER_LOCATION=USA
+    networks:
+      - blacktek-net
+    depends_on:
+      server-db:
+        condition: service_healthy
+
   server:
     build:
       context: .
@@ -39,6 +65,7 @@ services:
     ports:
       - "7171:7171"
       - "7172:7172"
+      - "7173:7173"
     volumes:
       - .:/srv
     networks:

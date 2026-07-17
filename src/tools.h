@@ -49,6 +49,8 @@ void printXMLError(const std::string& where, const std::string& fileName, const 
 const std::vector<Direction>& getShuffleDirections();
 
 std::string transformToSHA1(std::string_view input);
+// Lowercase hex, matching how the login webservice stores session keys
+std::string transformToSHA256(std::string_view input);
 std::string generateToken(const std::string& key, uint32_t ticks);
 
 void replaceString(std::string& str, const std::string& sought, const std::string& replacement);

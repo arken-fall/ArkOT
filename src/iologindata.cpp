@@ -132,6 +132,33 @@ std::pair<uint32_t, uint32_t> IOLoginData::gameworldAuthentication(std::string_v
 	return std::make_pair(accountId, characterId);
 }
 
+std::pair<uint32_t, uint32_t> IOLoginData::sessionKeyAuthentication(std::string_view sessionKey, std::string_view characterName)
+{
+	Database& db = Database::getInstance();
+
+	// The login webservice writes account_sessions keyed by the SHA-256 of
+	// the key it hands the client; this side only reads them. A session bound
+	// to a character name (nullable column) only admits that character; an
+	// unbound one admits any character on the account.
+	DBResult_ptr result = db.storeQuery(fmt::format(
+		"SELECT `s`.`account_id`, `s`.`expires`, `s`.`character_name`, `p`.`id` AS `character_id` FROM `account_sessions` `s` JOIN `players` `p` ON `p`.`account_id` = `s`.`account_id` WHERE `s`.`id` = {:s} AND `p`.`name` = {:s} AND `p`.`deletion` = 0",
+		db.escapeString(transformToSHA256(sessionKey)), db.escapeString(characterName)));
+	if (not result) {
+		return {};
+	}
+
+	if (result->getNumber<int64_t>("expires") < time(nullptr)) {
+		return {};
+	}
+
+	auto boundCharacter = result->getString("character_name");
+	if (not boundCharacter.empty() and boundCharacter != characterName) {
+		return {};
+	}
+
+	return std::make_pair(result->getNumber<uint32_t>("account_id"), result->getNumber<uint32_t>("character_id"));
+}
+
 void IOLoginData::loadPlayerAugments(std::vector<std::shared_ptr<BlackTek::Augment>>& augmentList, const DBResult_ptr& result) {
 	try {
 		if (!result) {

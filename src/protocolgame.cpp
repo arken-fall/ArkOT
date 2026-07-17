@@ -497,50 +497,50 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	auto credentialString = msg.getString();
 	auto sessionArgs = explodeString(credentialString, "\n", 4);
 
-	if (layout.sessionKeyLogin and sessionArgs.size() < 2)
-	{
-		// An opaque session key with no separators can only be checked against
-		// the sessions table - that lands with the login service integration.
-		disconnectClient("Session-key login is not available yet.\nUse an OTClient-based client with email and password.");
-		return;
-	}
+	// A modern credential string without separators is an opaque session key
+	// issued by the login webservice; anything with '\n' in it is direct
+	// email/password login (OTClient-family clients support both).
+	const bool opaqueSessionKey = layout.sessionKeyLogin and sessionArgs.size() < 2;
 
-	if (sessionArgs.size() < 2)
+	if (not opaqueSessionKey)
 	{
-		disconnect();
-		return;
-	}
-
-	accountName = sessionArgs[0];
-	password = sessionArgs[1];
-
-	if (sessionArgs.size() > 2)
-	{
-		token = sessionArgs[2];
-	}
-
-	if (sessionArgs.size() > 3)
-	{
-		try
+		if (sessionArgs.size() < 2)
 		{
-			tokenTime = std::stoul(std::string(sessionArgs[3]));
-		}
-		catch (const std::invalid_argument&) {
-			disconnectClient("Malformed token packet.");
+			disconnect();
 			return;
 		}
-		catch (const std::out_of_range&)
+
+		accountName = sessionArgs[0];
+		password = sessionArgs[1];
+
+		if (sessionArgs.size() > 2)
 		{
-			disconnectClient("Token time is too long.");
+			token = sessionArgs[2];
+		}
+
+		if (sessionArgs.size() > 3)
+		{
+			try
+			{
+				tokenTime = std::stoul(std::string(sessionArgs[3]));
+			}
+			catch (const std::invalid_argument&) {
+				disconnectClient("Malformed token packet.");
+				return;
+			}
+			catch (const std::out_of_range&)
+			{
+				disconnectClient("Token time is too long.");
+				return;
+			}
+		}
+		else if (not layout.sessionKeyLogin)
+		{
+			// Legacy clients always send all four fields; a short bundle is a
+			// malformed packet, not an optional-field situation.
+			disconnect();
 			return;
 		}
-	}
-	else if (not layout.sessionKeyLogin)
-	{
-		// Legacy clients always send all four fields; a short bundle is a
-		// malformed packet, not an optional-field situation.
-		disconnect();
-		return;
 	}
 
 	if (layout.sessionKeyLogin and operatingSystem == CLIENTOS_NEW_LINUX)
@@ -570,14 +570,15 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		}
 	}
 
-	if (accountName.empty()
+	if (not opaqueSessionKey
+		and accountName.empty()
 		and password.empty()
 		and g_config.GetBoolean(ConfigManager::ENABLE_ACCOUNT_MANAGER)
 		and g_config.GetBoolean(ConfigManager::ENABLE_NO_PASS_LOGIN))
 	{
 		accountName = g_config.GetString(ConfigManager::ACCOUNT_MANAGER_AUTH);
 		password = g_config.GetString(ConfigManager::ACCOUNT_MANAGER_AUTH);
-	} 
+	}
 
 	if (g_game.getGameState() == GAME_STATE_STARTUP)
 	{
@@ -603,7 +604,9 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
-	auto [accountId, characterId] = IOLoginData::gameworldAuthentication(accountName, password, characterName, token, tokenTime);
+	auto [accountId, characterId] = opaqueSessionKey
+		? IOLoginData::sessionKeyAuthentication(credentialString, characterName)
+		: IOLoginData::gameworldAuthentication(accountName, password, characterName, token, tokenTime);
 	if (characterName == AccountManager::NAME)
 	{
 		if (accountId == 0)
@@ -614,6 +617,12 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 
 	if (accountId == 0)
 	{
+		if (opaqueSessionKey)
+		{
+			disconnectClient("Your session has expired. Please log in again.");
+			return;
+		}
+
 		disconnectClient("Account name or password is not correct.");
 		return;
 	}

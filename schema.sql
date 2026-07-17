@@ -40,7 +40,11 @@ CREATE TABLE `accounts` (
     `type` int NOT NULL DEFAULT '1',
     `premium_ends_at` int UNSIGNED NOT NULL DEFAULT '0',
     `email` varchar(255) NOT NULL DEFAULT '',
-    `creation` int NOT NULL DEFAULT '0'
+    `creation` int NOT NULL DEFAULT '0',
+    -- read (not written) by the opentibiabr login webservice; premium_ends_at
+    -- stays the authoritative premium source for the game server
+    `premdays` int NOT NULL DEFAULT '0',
+    `lastday` int UNSIGNED NOT NULL DEFAULT '0'
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
 -- --------------------------------------------------------
@@ -542,6 +546,28 @@ CREATE TABLE `player_storeinboxitems` (
     `augments` blob NOT NULL,
     `skills` blob NOT NULL,
     `stats` blob NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `account_sessions`
+--
+-- Session keys issued by the login webservice (opentibiabr/login-server) for
+-- modern (13.40+) clients. The login service writes rows keyed by the SHA-256
+-- of the session key it hands the client; the game server only reads them.
+-- Layout matches what the login-server INSERTs, plus nullable audit columns
+-- it leaves at their defaults.
+--
+
+CREATE TABLE `account_sessions` (
+    `id` varchar(191) NOT NULL PRIMARY KEY,
+    `account_id` int NOT NULL,
+    `ip` int UNSIGNED NOT NULL DEFAULT '0',
+    `created` bigint NOT NULL DEFAULT '0',
+    `expires` bigint NOT NULL DEFAULT '0',
+    `character_name` varchar(255) DEFAULT NULL,
+    FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
 -- --------------------------------------------------------
