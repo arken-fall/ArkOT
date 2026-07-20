@@ -116,6 +116,10 @@ def main():
 
     sock = socket.create_connection((args.host, args.port), timeout=10)
 
+    # real clients (mehah, >= 1200) open with a plaintext world-name line
+    # before any framed traffic; mirror that for wire parity
+    sock.sendall(b"BlackTek\n")
+
     # --- modern challenge: [u16 blocks][u32 adler][01 1F ts rand 71] ---
     challenge = read_modern_frame(sock)
     checksum, lead, opcode = struct.unpack_from("<IBB", challenge, 0)

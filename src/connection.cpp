@@ -164,6 +164,28 @@ void Connection::parseHeader(const boost::system::error_code& error)
 		packetsSent = 0;
 	}
 
+	if (protocol and protocol->usesModernFraming() and !modernWorldNameConsumed)
+	{
+		modernWorldNameConsumed = true;
+		const uint8_t b0 = msg->getBuffer()[0];
+		const uint8_t b1 = msg->getBuffer()[1];
+		const bool printable0 = b0 >= 0x20 and b0 < 0x7F;
+		if (printable0 and (b1 == '\n' or (b1 >= 0x20 and b1 < 0x7F)))
+		{
+			modernWorldLine.assign(1, static_cast<char>(b0));
+			if (b1 == '\n')
+			{
+				accept();
+				return;
+			}
+			modernWorldLine.push_back(static_cast<char>(b1));
+			modernLineSkipped = 2;
+			skipWorldNameByte();
+			return;
+		}
+		// no world-name line (e.g. harness clients) - fall through to framing
+	}
+
 	uint32_t size = msg->getLengthHeader();
 	if (protocol and protocol->usesModernFraming())
 	{
@@ -201,6 +223,55 @@ void Connection::parseHeader(const boost::system::error_code& error)
 	catch (boost::system::system_error& e)
 	{
 		std::cout << "[Network error - Connection::parseHeader] " << e.what() << std::endl;
+		close(FORCE_CLOSE);
+	}
+}
+
+void Connection::skipWorldNameByte()
+{
+	if (++modernLineSkipped > 32)
+	{
+		close(FORCE_CLOSE);
+		return;
+	}
+
+	try
+	{
+		readTimer.expires_after(std::chrono::seconds(CONNECTION_READ_TIMEOUT));
+		readTimer.async_wait(
+			boost::asio::bind_executor(strand,
+				[thisPtr = std::weak_ptr<Connection>(shared_from_this())](const boost::system::error_code& error)
+				{
+					Connection::handleTimeout(thisPtr, error);
+				}));
+
+		boost::asio::async_read(socket,
+			boost::asio::buffer(&modernLineByte, 1),
+			boost::asio::bind_executor(strand,
+				[thisPtr = shared_from_this()](const boost::system::error_code& error, auto /*bytes_transferred*/)
+				{
+					thisPtr->readTimer.cancel();
+					if (error or thisPtr->closed)
+					{
+						thisPtr->close(FORCE_CLOSE);
+						return;
+					}
+
+					if (thisPtr->modernLineByte == '\n')
+					{
+						std::cout << "[Modern] world-name preamble: " << thisPtr->modernWorldLine << std::endl;
+						thisPtr->accept();
+					}
+					else
+					{
+						thisPtr->modernWorldLine.push_back(static_cast<char>(thisPtr->modernLineByte));
+						thisPtr->skipWorldNameByte();
+					}
+				}));
+	}
+	catch (boost::system::system_error& e)
+	{
+		std::cout << "[Network error - Connection::skipWorldNameByte] " << e.what() << std::endl;
 		close(FORCE_CLOSE);
 	}
 }

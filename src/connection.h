@@ -77,6 +77,7 @@ class Connection : public std::enable_shared_from_this<Connection>
 	private:
 		void parseHeader(const boost::system::error_code& error);
 		void parsePacket(const boost::system::error_code& error);
+		void skipWorldNameByte();
 
 		void onWriteOperation(const boost::system::error_code& error);
 
@@ -104,6 +105,15 @@ class Connection : public std::enable_shared_from_this<Connection>
 
 		bool closed = false;
 		bool receivedFirst = false;
+
+		// Modern (13.40+) clients open the game connection with a plaintext
+		// world-name line ("BlackTek\n") before any framed traffic; it has to
+		// be consumed before the first header parse. Ground truth: mehah
+		// Protocol::onConnect sends it for clientVersion >= 1200.
+		bool modernWorldNameConsumed = false;
+		uint8_t modernLineByte = 0;
+		uint8_t modernLineSkipped = 0;
+		std::string modernWorldLine;
 };
 
 #endif
