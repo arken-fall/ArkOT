@@ -2057,6 +2057,13 @@ void ProtocolGame::sendContainer(uint8_t cid, const ContainerConstPtr& container
 
 	msg.add(hasParent ? CommonCode::True : CommonCode::Zero);
 
+	const bool modernContainer = protocol_profile
+		and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern;
+	if (modernContainer)
+	{
+		msg.addByte(0); // show search icon (12.81+)
+	}
+
 	msg.add(container->isUnlocked() ? CommonCode::True : CommonCode::Zero); // Drag and drop
 	msg.add(container->hasPagination() ? CommonCode::True : CommonCode::Zero); // Pagination
 
@@ -2076,6 +2083,17 @@ void ProtocolGame::sendContainer(uint8_t cid, const ContainerConstPtr& container
 	else
 	{
 		msg.add(CommonCode::Zero);
+	}
+
+	if (modernContainer)
+	{
+		msg.addByte(0); // container filter: selected category (GameContainerFilter, 13.21+)
+		msg.addByte(0); // filter category count
+		if (version >= 1340)
+		{
+			msg.addByte(1); // isMoveable
+			msg.addByte(0); // isHolding
+		}
 	}
 	writeToOutputBuffer(msg);
 }
