@@ -2933,6 +2933,11 @@ void ProtocolGame::sendCreatureSay(const CreatureConstPtr& creature, SpeakClasse
 
 	msg.addString(creature->getName());
 
+	if (usesModernLayout())
+	{
+		msg.add(CommonCode::Zero); // statement suffix, read when statement id != 0 (12.81+)
+	}
+
 	//Add level only for players
 	if (const auto& speaker = creature->getPlayer())
 	{
@@ -2967,11 +2972,26 @@ void ProtocolGame::sendToChannel(const CreatureConstPtr& creature, SpeakClasses 
 	msg.add<uint32_t>(++statementId);
 	if (not creature)
 	{
-		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::Zero));
+		// empty name + level 0; the u32 trick from the else-branch below
+		// can't carry the modern suffix byte, so spell the fields out
+		if (usesModernLayout())
+		{
+			msg.addString("");
+			msg.add(CommonCode::Zero); // statement suffix (12.81+)
+			msg.add<SpecialCode>(SpecialCode::Zero);
+		}
+		else
+		{
+			msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::Zero));
+		}
 	}
 	else
 	{
 		msg.addString(creature->getName());
+		if (usesModernLayout())
+		{
+			msg.add(CommonCode::Zero); // statement suffix (12.81+)
+		}
 		//Add level only for players
 		if (const auto& speaker = creature->getPlayer())
 		{
@@ -2998,7 +3018,17 @@ void ProtocolGame::sendPrivateMessage(const PlayerConstPtr& speaker, SpeakClasse
 	if (speaker)
 	{
 		msg.addString(speaker->getName());
+		if (usesModernLayout())
+		{
+			msg.add(CommonCode::Zero); // statement suffix (12.81+)
+		}
 		msg.add<uint16_t>(speaker->getLevel());
+	}
+	else if (usesModernLayout())
+	{
+		msg.addString("");
+		msg.add(CommonCode::Zero); // statement suffix (12.81+)
+		msg.add<SpecialCode>(SpecialCode::Zero);
 	}
 	else
 	{
@@ -4053,7 +4083,9 @@ void ProtocolGame::AddCreature(NetworkMessage& msg, const CreatureConstPtr& crea
 		msg.addByte(player->isAccessPlayer() ? 255 : modernLight.level);
 		msg.addByte(modernLight.color);
 
-		msg.add<uint16_t>(creature->getStepSpeed()); // modern clients take speed unscaled
+		// same half-scale as legacy: the speed-formula constants sent in the
+		// login block are calibrated for it, and sendChangeSpeed halves too
+		msg.add<uint16_t>(creature->getStepSpeed() / 2);
 
 		msg.add(CommonCode::Zero); // creature icon list: count
 
@@ -4214,7 +4246,7 @@ void ProtocolGame::AddPlayerStats(NetworkMessage& msg) const
 
 		msg.addByte(player->getSoul());
 		msg.add<uint16_t>(player->getStaminaMinutes());
-		msg.add<uint16_t>(player->getBaseSpeed()); // modern clients take speed unscaled
+		msg.add<uint16_t>(player->getBaseSpeed() / 2); // same half-scale as legacy
 
 		Condition* regenCondition = player->getCondition(CONDITION_REGENERATION, CONDITIONID_DEFAULT);
 		msg.add<uint16_t>(regenCondition ? regenCondition->getTicks() / 1000 : 0);
