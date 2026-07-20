@@ -4015,22 +4015,24 @@ void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
 		return;
 	}
 
-	const ItemType& it = Item::items[item->getID()];
 	const uint16_t clientId = modernItemId(item->getID());
 	msg.add<uint16_t>(clientId);
 
+	// the count/fluid decision keys off what the CLIENT believes about the
+	// appearance, not ItemType - generated 15.25 items are stackable
+	// client-side without any server stackable flag
+	const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(clientId);
 	uint8_t countOrSubType;
-	if (it.stackable)
-	{
-		countOrSubType = static_cast<uint8_t>(std::min<uint16_t>(0xFF, item->getItemCount()));
-	}
-	else
+	if (app and (app->liquidContainer or app->liquidPool))
 	{
 		countOrSubType = static_cast<uint8_t>(item->getFluidType() & 7);
 	}
+	else
+	{
+		countOrSubType = static_cast<uint8_t>(std::min<uint16_t>(0xFF, std::max<uint16_t>(1, item->getItemCount())));
+	}
 
-	addModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId),
-	                    countOrSubType, item->getDuration() / 1000, item->getCharges());
+	addModernItemExtras(msg, app, countOrSubType, item->getDuration() / 1000, item->getCharges());
 }
 
 void ProtocolGame::addItemId(NetworkMessage& msg, uint16_t itemId) const
