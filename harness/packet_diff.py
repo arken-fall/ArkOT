@@ -98,6 +98,11 @@ def split_frames(data, layout, key, decrypt=True):
     frames = []
     pos = 0
     index = 0
+    # the server compresses with ONE deflate stream across the whole session
+    # (Z_SYNC_FLUSH per frame), so the inflate context must be shared too;
+    # each frame gets the sync-flush footer appended, mirroring mehah's
+    # InputMessage::addCompressionFooter
+    inflater = zlib.decompressobj(-15)
     while pos + 2 <= len(data):
         (header,) = struct.unpack_from("<H", data, pos)
         pos += 2
@@ -124,7 +129,12 @@ def split_frames(data, layout, key, decrypt=True):
                 body = plain[1 : len(plain) - padding]
                 if checksum & 0x80000000:
                     compressed = True
-                    body = zlib.decompressobj(-15).decompress(body)
+                    # server deflates per-message (Z_FINISH + deflateReset),
+                    # but tolerate stream-style output too via the footer
+                    try:
+                        body = zlib.decompressobj(-15).decompress(body)
+                    except zlib.error:
+                        body = inflater.decompress(body + b"\x00\x00\xff\xff")
                     checksum &= 0x7FFFFFFF
             else:
                 (inner,) = struct.unpack_from("<H", plain, 0)

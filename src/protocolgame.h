@@ -322,6 +322,14 @@ class ProtocolGame : public Protocol
 		void GetMapDescription(int32_t x, int32_t y, int32_t z,
 		                       int32_t width, int32_t height, NetworkMessage& msg);
 
+		// Item wire writes funnel through these instead of NetworkMessage so
+		// the profile can pick the modern (12.6+) layout: modern client ids
+		// plus appearance-flag-driven extra fields. NetworkMessage::addItem
+		// stays legacy-only.
+		void addItem(NetworkMessage& msg, const ItemConstPtr& item) const;
+		void addItem(NetworkMessage& msg, uint16_t id, uint8_t count) const;
+		void addItemId(NetworkMessage& msg, uint16_t itemId) const;
+
 		void AddCreature(NetworkMessage& msg, const CreatureConstPtr& creature, bool known, uint32_t remove);
 		void AddPlayerStats(NetworkMessage& msg) const;
 		void AddOutfit(NetworkMessage& msg, const Outfit_t& outfit);

@@ -53,6 +53,15 @@ namespace BlackTek::Assets
 			info.unwrappable = flags.unwrap();
 			info.pickupable = flags.take();
 			info.marketable = flags.has_market();
+			if (flags.has_upgradeclassification())
+			{
+				info.classification = flags.upgradeclassification().upgrade_classification();
+			}
+			info.wearOut = flags.wearout();
+			info.clockExpire = flags.clockexpire();
+			info.expire = flags.expire();
+			info.expireStop = flags.expirestop();
+			info.wrapKit = flags.wrapkit();
 			objects.emplace(object.id(), std::move(info));
 		}
 

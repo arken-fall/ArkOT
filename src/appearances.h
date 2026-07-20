@@ -32,6 +32,14 @@ namespace BlackTek {
 			bool unwrappable = false;
 			bool pickupable = false;
 			bool marketable = false;
+			// 12.6+ wire-format extras: each one makes the client read more
+			// bytes after the item id (tier, duration, charges, kit id)
+			uint32_t classification = 0;
+			bool wearOut = false;
+			bool clockExpire = false;
+			bool expire = false;
+			bool expireStop = false;
+			bool wrapKit = false;
 		};
 
 		// Parsed view of a modern client's protobuf appearances.dat. Loading

@@ -80,6 +80,13 @@ namespace BlackTek {
 			Analyzers             = 1ULL << 22,
 			Podiums               = 1ULL << 23,
 			ObjectInspection      = 1ULL << 24,
+
+			// player-data layout deltas (bit per delta, per mehah features.lua)
+			ConcoctionsByte       = 1ULL << 25, // 13.00+: 0xA1 gains a trailing concoctions u8
+			CharacterSkillStats   = 1ULL << 26, // 14.10+: 0xA1 tail block replaces additional/forge skill stats
+			MonkMantra            = 1ULL << 27, // 15.00+: mantra u16 inside the 0xA1 defense info
+			PlayerStateU64        = 1ULL << 28, // 14.05+: 0xA2 states widen u32 -> u64
+			PlayerStateCounter    = 1ULL << 29, // 13.20+: 0xA2 gains a trailing icon-counter u8
 		};
 
 		[[nodiscard]] constexpr ProtocolFeature operator|(ProtocolFeature left, ProtocolFeature right)
@@ -156,7 +163,8 @@ namespace BlackTek {
 				| ProtocolFeature::ProtobufAppearances
 				| ProtocolFeature::ItemsOverU16Capacity
 				| ProtocolFeature::ExtendedMagicEffects
-				| ProtocolFeature::PlayerLevelPercentU16
+				| ProtocolFeature::ConcoctionsByte
+				| ProtocolFeature::PlayerStateCounter
 				| ProtocolFeature::ResourceBalance
 				| ProtocolFeature::PreySystem
 				| ProtocolFeature::Bestiary
@@ -204,7 +212,10 @@ namespace BlackTek {
 				.versionMin = 1405,
 				.versionMax = 1412,
 				.loginLayout = Detail::modernLayout,
-				.features = Detail::modernCommonFeatures | static_cast<uint64_t>(ProtocolFeature::WeaponProficiency),
+				.features = Detail::modernCommonFeatures
+					| static_cast<uint64_t>(ProtocolFeature::WeaponProficiency
+						| ProtocolFeature::CharacterSkillStats
+						| ProtocolFeature::PlayerStateU64),
 				.name = "14.12",
 			},
 			{
@@ -213,7 +224,12 @@ namespace BlackTek {
 				.versionMin = 1520,
 				.versionMax = 1525,
 				.loginLayout = Detail::modernLayout,
-				.features = Detail::modernCommonFeatures | static_cast<uint64_t>(ProtocolFeature::WeaponProficiency),
+				.features = Detail::modernCommonFeatures
+					| static_cast<uint64_t>(ProtocolFeature::WeaponProficiency
+						| ProtocolFeature::CharacterSkillStats
+						| ProtocolFeature::MonkMantra
+						| ProtocolFeature::PlayerStateU64
+						| ProtocolFeature::PlayerLevelPercentU16),
 				.name = "15.25",
 			},
 		} };

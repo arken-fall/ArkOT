@@ -16,6 +16,7 @@
 
 #include "configmanager.h"
 #include "console.h"
+#include "appearances.h"
 #include "actions.h"
 #include "game.h"
 #include "iologindata.h"
@@ -466,6 +467,13 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	key[1] = msg.get<uint32_t>();
 	key[2] = msg.get<uint32_t>();
 	key[3] = msg.get<uint32_t>();
+
+	// session key dump for harness/packet_diff.py --xtea; dev-rig only
+	if (std::getenv("BLACKTEK_DEBUG_XTEA") != nullptr)
+	{
+		BlackTek::Console::Info("XTEA session key: {:08x} {:08x} {:08x} {:08x}", key[0], key[1], key[2], key[3]);
+	}
+
 	enableXTEAEncryption();
 	setXTEAKey(std::move(key));
 
@@ -850,12 +858,16 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 
 void ProtocolGame::GetTileDescription(const TileConstPtr& tile, NetworkMessage& msg)
 {
-	msg.add<SpecialCode>(SpecialCode::Zero); //environmental effects
+	if (not protocol_profile
+		or protocol_profile->generation != BlackTek::Network::TransportGeneration::Modern)
+	{
+		msg.add<SpecialCode>(SpecialCode::Zero); //environmental effects (dropped in 12.81+)
+	}
 
 	int32_t count;
 	if (const auto& ground = tile->getGround())
 	{
-		msg.addItem(ground);
+		addItem(msg, ground);
 		count = 1;
 	} 
 	else
@@ -868,7 +880,7 @@ void ProtocolGame::GetTileDescription(const TileConstPtr& tile, NetworkMessage& 
 	{
 		for (auto it = items->getBeginTopItem(), end = items->getEndTopItem(); it != end; ++it)
 		{
-			msg.addItem(*it);
+			addItem(msg, *it);
 
 			if (++count == 10)
 			{
@@ -898,7 +910,7 @@ void ProtocolGame::GetTileDescription(const TileConstPtr& tile, NetworkMessage& 
 	{
 		for (auto it = items->getBeginDownItem(), end = items->getEndDownItem(); it != end; ++it)
 		{
-			msg.addItem(*it);
+			addItem(msg, *it);
 
 			if (++count == 10)
 			{
@@ -1843,6 +1855,18 @@ void ProtocolGame::sendBasicData()
 	{
 		msg.addByte(player->getVocation()->getId() != VOCATION_NONE ? 0x01 : 0x00);
 	}
+
+	if (protocol_profile and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern)
+	{
+		// 13.00+ reads u16 spell ids (GameUshortSpell) and a trailing
+		// magic-shield byte; the legacy all-255-spells trick would parse as
+		// garbage, so send none until the spell list is really wired up
+		msg.add<uint16_t>(0); // number of known spells
+		msg.addByte(0);       // magic shield active
+		writeToOutputBuffer(msg);
+		return;
+	}
+
 	msg.add<uint16_t>(255); // number of known spells
 
 	// todo: figure out why the hell we send every last spell id
@@ -1982,9 +2006,32 @@ void ProtocolGame::sendChannelMessage(const std::string& author, const std::stri
 
 void ProtocolGame::sendIcons(uint16_t icons)
 {
+	using BlackTek::Network::ProtocolFeature;
+	using BlackTek::Network::TransportGeneration;
+
 	NetworkMessage msg;
 	msg.add(ServerCode::Icons);
-	msg.add<uint16_t>(icons);
+	if (protocol_profile and protocol_profile->generation == TransportGeneration::Modern)
+	{
+		// mehah parsePlayerState: u64 states for 14.05+ (u32 for 13.40),
+		// plus a trailing icon-counter byte since 13.20
+		if (protocol_profile->hasFeature(ProtocolFeature::PlayerStateU64))
+		{
+			msg.add<uint64_t>(icons);
+		}
+		else
+		{
+			msg.add<uint32_t>(icons);
+		}
+		if (protocol_profile->hasFeature(ProtocolFeature::PlayerStateCounter))
+		{
+			msg.addByte(0); // icons counter
+		}
+	}
+	else
+	{
+		msg.add<uint16_t>(icons);
+	}
 	writeToOutputBuffer(msg);
 }
 
@@ -1997,12 +2044,12 @@ void ProtocolGame::sendContainer(uint8_t cid, const ContainerConstPtr& container
 
 	if (container->getOwner()->getID() == ITEM_BROWSEFIELD)
 	{
-		msg.addItem(ITEM_BAG, 1);
+		addItem(msg, ITEM_BAG, 1);
 		msg.addString("Browse Field");
 	}
 	else
 	{
-		msg.addItem(container->getOwner());
+		addItem(msg, container->getOwner());
 		msg.addString(container->getName());
 	}
 
@@ -2023,7 +2070,7 @@ void ProtocolGame::sendContainer(uint8_t cid, const ContainerConstPtr& container
 		msg.addByte(itemsToSend);
 		for (auto it = container->getItemList().begin() + firstIndex, end = it + itemsToSend; it != end; ++it)
 		{
-			msg.addItem(*it);
+			addItem(msg, *it);
 		}
 	}
 	else
@@ -2151,7 +2198,7 @@ void ProtocolGame::sendSaleItemList(const std::list<ShopInfo>& shop)
 	uint8_t i = 0;
 	for (std::map<uint16_t, uint32_t>::const_iterator it = saleMap.begin(); i < itemsToSend; ++it, ++i)
 	{
-		msg.addItemId(it->first);
+		addItemId(msg, it->first);
 		msg.addByte(std::min<uint32_t>(it->second, std::numeric_limits<uint8_t>::max()));
 	}
 
@@ -2245,7 +2292,7 @@ void ProtocolGame::sendMarketBrowseItem(uint16_t itemId, const MarketOfferList& 
 	NetworkMessage msg;
 	msg.reset();
 	msg.add(ServerCode::MarketAction);
-	msg.addItemId(itemId);
+	addItemId(msg, itemId);
 
 	msg.add<uint32_t>(buyOffers.size());
 
@@ -2276,7 +2323,7 @@ void ProtocolGame::sendMarketAcceptOffer(const MarketOfferEx& offer)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketAction);
-	msg.addItemId(offer.itemId);
+	addItemId(msg, offer.itemId);
 
 	if (offer.type == MARKETACTION_BUY)
 	{
@@ -2313,7 +2360,7 @@ void ProtocolGame::sendMarketBrowseOwnOffers(const MarketOfferList& buyOffers, c
 	{
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		msg.addItemId(offer.itemId);
+		addItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
 		msg.add<uint32_t>(offer.price);
 	}
@@ -2323,7 +2370,7 @@ void ProtocolGame::sendMarketBrowseOwnOffers(const MarketOfferList& buyOffers, c
 	{
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		msg.addItemId(offer.itemId);
+		addItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
 		msg.add<uint32_t>(offer.price);
 	}
@@ -2342,7 +2389,7 @@ void ProtocolGame::sendMarketCancelOffer(const MarketOfferEx& offer)
 		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::True));
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		msg.addItemId(offer.itemId);
+		addItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
 		msg.add<uint32_t>(offer.price);
 		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::Zero));
@@ -2353,7 +2400,7 @@ void ProtocolGame::sendMarketCancelOffer(const MarketOfferEx& offer)
 		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::True));
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		msg.addItemId(offer.itemId);
+		addItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
 		msg.add<uint32_t>(offer.price);
 	}
@@ -2377,7 +2424,7 @@ void ProtocolGame::sendMarketBrowseOwnHistory(const HistoryMarketOfferList& buyO
 	{
 		msg.add<uint32_t>(it->timestamp);
 		msg.add<uint16_t>(counterMap[it->timestamp]++);
-		msg.addItemId(it->itemId);
+		addItemId(msg, it->itemId);
 		msg.add<uint16_t>(it->amount);
 		msg.add<uint32_t>(it->price);
 		msg.addByte(it->state);
@@ -2391,7 +2438,7 @@ void ProtocolGame::sendMarketBrowseOwnHistory(const HistoryMarketOfferList& buyO
 	{
 		msg.add<uint32_t>(it->timestamp);
 		msg.add<uint16_t>(counterMap[it->timestamp]++);
-		msg.addItemId(it->itemId);
+		addItemId(msg, it->itemId);
 		msg.add<uint16_t>(it->amount);
 		msg.add<uint32_t>(it->price);
 		msg.addByte(it->state);
@@ -2404,7 +2451,7 @@ void ProtocolGame::sendMarketDetail(uint16_t itemId)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketDetail);
-	msg.addItemId(itemId);
+	addItemId(msg, itemId);
 
 	const ItemType& it = Item::items[itemId];
 	if (it.armor != 0)
@@ -2805,14 +2852,14 @@ void ProtocolGame::sendTradeItemRequest(const std::string& traderName, const Ite
 		{
 			if (listItem)
 			{
-				msg.addItem(listItem);
+				addItem(msg, listItem);
 			}
 		}
 	}
 	else
 	{
 		msg.add(CommonCode::True);
-		msg.addItem(item);
+		addItem(msg, item);
 	}
 
 	writeToOutputBuffer(msg);
@@ -2997,6 +3044,24 @@ void ProtocolGame::sendPingBack()
 
 void ProtocolGame::sendDistanceShoot(const Position& from, const Position& to, uint8_t type)
 {
+	if (protocol_profile
+		and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern)
+	{
+		// 12.03+ distance effects ride the magic-effect loop: anchored at
+		// `from`, with a signed offset to the target
+		NetworkMessage msg;
+		msg.add(ServerCode::MagicEffect);
+		msg.addPosition(from);
+		msg.addByte(4); // MAGIC_EFFECTS_CREATE_DISTANCEEFFECT
+		msg.add<uint16_t>(type);
+		msg.addByte(static_cast<uint8_t>(static_cast<int8_t>(to.x - from.x)));
+		msg.addByte(static_cast<uint8_t>(static_cast<int8_t>(to.y - from.y)));
+		msg.addByte(0); // effect source (15.14+)
+		msg.addByte(0); // MAGIC_EFFECTS_END_LOOP
+		writeToOutputBuffer(msg);
+		return;
+	}
+
 	NetworkMessage msg;
 	msg.add(ServerCode::DistanceShoot);
 	msg.addPosition(from);
@@ -3014,7 +3079,20 @@ void ProtocolGame::sendMagicEffect(const Position& pos, uint8_t type)
 	NetworkMessage msg;
 	msg.add(ServerCode::MagicEffect);
 	msg.addPosition(pos);
-	msg.addByte(type);
+	if (protocol_profile
+		and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern)
+	{
+		// 12.03+ effects are a typed loop; effect ids are appearance ids and
+		// CipSoft keeps those append-only, so legacy CONST_ME values hold
+		msg.addByte(3); // MAGIC_EFFECTS_CREATE_EFFECT
+		msg.add<uint16_t>(type);
+		msg.addByte(0); // effect source: own (15.14+)
+		msg.addByte(0); // MAGIC_EFFECTS_END_LOOP
+	}
+	else
+	{
+		msg.addByte(type);
+	}
 	writeToOutputBuffer(msg);
 }
 
@@ -3073,7 +3151,7 @@ void ProtocolGame::sendAddTileItem(const Position& pos, uint32_t stackpos, const
 	msg.add(ServerCode::AddTileThing);
 	msg.addPosition(pos);
 	msg.addByte(stackpos);
-	msg.addItem(item);
+	addItem(msg, item);
 	writeToOutputBuffer(msg);
 }
 
@@ -3087,7 +3165,7 @@ void ProtocolGame::sendUpdateTileItem(const Position& pos, uint32_t stackpos, co
 	msg.add(ServerCode::UpdateTileThing);
 	msg.addPosition(pos);
 	msg.addByte(stackpos);
-	msg.addItem(item);
+	addItem(msg, item);
 	writeToOutputBuffer(msg);
 }
 
@@ -3253,14 +3331,21 @@ void ProtocolGame::sendAddCreature(const CreatureConstPtr& creature, const Posit
 	msg.addDouble(Creature::speedB, 3);
 	msg.addDouble(Creature::speedC, 3);
 
-	// can report bugs?
-	if (player->getAccountType() >= ACCOUNT_TYPE_TUTOR)
+	const bool modernLogin = protocol_profile
+		and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern;
+
+	// can report bugs? 13.20+ clients dropped this byte from the login
+	// block (GameDynamicBugReporter) - it moved to its own packet
+	if (not modernLogin)
 	{
-		msg.add(CommonCode::True);
-	}
-	else
-	{
-		msg.add(CommonCode::False);
+		if (player->getAccountType() >= ACCOUNT_TYPE_TUTOR)
+		{
+			msg.add(CommonCode::True);
+		}
+		else
+		{
+			msg.add(CommonCode::False);
+		}
 	}
 
 	msg.add(CommonCode::Zero); // can change pvp framing option
@@ -3268,6 +3353,12 @@ void ProtocolGame::sendAddCreature(const CreatureConstPtr& creature, const Posit
 
 	msg.addString(g_config.GetString(ConfigManager::STORE_IMAGES_URL));
 	msg.add<uint16_t>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::STORE_COIN_PACKAGE_SIZE)));
+
+	if (modernLogin)
+	{
+		msg.add(CommonCode::Zero); // exiva button enabled (12.81+)
+		// no tournament byte - GameTournamentPackets is off since 13.14
+	}
 
 	writeToOutputBuffer(msg);
 
@@ -3415,7 +3506,7 @@ void ProtocolGame::sendInventoryItem(slots_t slot, const ItemConstPtr& item)
 	{
 		msg.add(ServerCode::InventoryItem);
 		msg.addByte(slot);
-		msg.addItem(item);
+		addItem(msg, item);
 	}
 	else
 	{
@@ -3427,6 +3518,39 @@ void ProtocolGame::sendInventoryItem(slots_t slot, const ItemConstPtr& item)
 
 void ProtocolGame::sendItems()
 {
+	using BlackTek::Network::TransportGeneration;
+	const bool modern = protocol_profile
+		and protocol_profile->generation == TransportGeneration::Modern;
+	// 15.00+ clients read the per-entry amount as a packed varint
+	// (readPackedCount1500); 13.40/14.12 still read a plain u16
+	const bool packedCount = modern and version >= 1500;
+
+	// writes the action-bar inventory count the way the target client reads it
+	const auto addInventoryCount = [&](NetworkMessage& out, uint32_t amount)
+	{
+		if (not packedCount)
+		{
+			out.add<uint16_t>(static_cast<uint16_t>(amount));
+			return;
+		}
+		if (amount < 0x40)
+		{
+			out.addByte(static_cast<uint8_t>(amount));
+		}
+		else if (amount < 0x4000)
+		{
+			out.addByte(static_cast<uint8_t>(0x40 + (amount >> 8)));
+			out.addByte(static_cast<uint8_t>(amount & 0xFF));
+		}
+		else
+		{
+			out.addByte(static_cast<uint8_t>(0x80 | (amount >> 24)));
+			out.addByte(static_cast<uint8_t>((amount >> 16) & 0xFF));
+			out.addByte(static_cast<uint8_t>((amount >> 8) & 0xFF));
+			out.addByte(static_cast<uint8_t>(amount & 0xFF));
+		}
+	};
+
 	NetworkMessage msg;
 	msg.add(ServerCode::SendItems);
 
@@ -3438,14 +3562,14 @@ void ProtocolGame::sendItems()
 	{
 		msg.add<uint16_t>(i);
 		msg.add(CommonCode::Zero); //always 0
-		msg.add<uint16_t>(static_cast<uint16_t>(CommonCode::True)); // always 1
+		addInventoryCount(msg, 1);
 	}
 
 	for (auto itemTypeID : inventory)
 	{
-		msg.add<uint16_t>(itemTypeID);
+		addItemId(msg, itemTypeID); // modern clients need client ids here
 		msg.add(CommonCode::Zero); //always 0
-		msg.add<uint16_t>(1);
+		addInventoryCount(msg, 1);
 	}
 
 	writeToOutputBuffer(msg);
@@ -3457,7 +3581,7 @@ void ProtocolGame::sendAddContainerItem(uint8_t cid, uint16_t slot, const ItemCo
 	msg.add(ServerCode::AddContainerItem);
 	msg.addByte(cid);
 	msg.add<uint16_t>(slot);
-	msg.addItem(item);
+	addItem(msg, item);
 	writeToOutputBuffer(msg);
 }
 
@@ -3467,7 +3591,7 @@ void ProtocolGame::sendUpdateContainerItem(uint8_t cid, uint16_t slot, const Ite
 	msg.add(ServerCode::UpdateContainerItem);
 	msg.addByte(cid);
 	msg.add<uint16_t>(slot);
-	msg.addItem(item);
+	addItem(msg, item);
 	writeToOutputBuffer(msg);
 }
 
@@ -3479,7 +3603,7 @@ void ProtocolGame::sendRemoveContainerItem(uint8_t cid, uint16_t slot, const Ite
 	msg.add<uint16_t>(slot);
 	if (lastItem)
 	{
-		msg.addItem(lastItem);
+		addItem(msg, lastItem);
 	}
 	else
 	{
@@ -3493,7 +3617,7 @@ void ProtocolGame::sendTextWindow(uint32_t windowTextId, const ItemPtr& item, ui
 	NetworkMessage msg;
 	msg.add(ServerCode::TextWindow);
 	msg.add<uint32_t>(windowTextId);
-	msg.addItem(item);
+	addItem(msg, item);
 
 	if (canWrite)
 	{
@@ -3535,7 +3659,7 @@ void ProtocolGame::sendTextWindow(uint32_t windowTextId, uint32_t itemId, const 
 	NetworkMessage msg;
 	msg.add(ServerCode::TextWindow);
 	msg.add<uint32_t>(windowTextId);
-	msg.addItem(itemId, 1);
+	addItem(msg, itemId, 1);
 	msg.add<uint16_t>(text.size());
 	msg.addString(text);
 	msg.add<SpecialCode>(SpecialCode::Zero);
@@ -3558,7 +3682,7 @@ void ProtocolGame::sendAccountManagerTextBox(uint32_t windowTextId, const std::s
 	NetworkMessage msg;
 	msg.add(ServerCode::TextWindow);
 	msg.add<uint32_t>(windowTextId);
-	msg.addItem(ITEM_LETTER, 1);
+	addItem(msg, ITEM_LETTER, 1);
 	msg.add<uint16_t>(18); // max string length aka max chars
 	msg.addString(text);
 	msg.add<SpecialCode>(SpecialCode::Zero);
@@ -3660,6 +3784,10 @@ void ProtocolGame::sendVIP(uint32_t guid, const std::string& name, const std::st
 	msg.add<uint32_t>(std::min<uint32_t>(10, icon));
 	msg.add(notify ? CommonCode::True : CommonCode::False);
 	msg.addByte(status);
+	if (protocol_profile and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern)
+	{
+		msg.addByte(0); // vip group count (GameVipGroups, 12.00+)
+	}
 	writeToOutputBuffer(msg);
 }
 
@@ -3731,8 +3859,226 @@ void ProtocolGame::sendModalWindow(const ModalWindow& modalWindow)
 }
 
 ////////////// Add CommonCode messages
+namespace
+{
+	// mapped id for a modern client, with a visible placeholder when the
+	// server id has no surviving appearance - a wrong-looking item beats a
+	// client-side parse exception on id 0
+	uint16_t modernItemId(uint16_t serverId)
+	{
+		constexpr uint16_t FALLBACK_GOLD_COIN = 3031;
+		const uint32_t mapped = Item::items.getModernClientId(serverId);
+		if (mapped == 0 or mapped > std::numeric_limits<uint16_t>::max())
+		{
+			return FALLBACK_GOLD_COIN;
+		}
+		return static_cast<uint16_t>(mapped);
+	}
+
+	// extras the 15.25 client reads after the id, driven by what IT believes
+	// about the appearance (mehah getItem with the 15.25 feature set). The
+	// count/subtype byte is the caller's; everything else is neutral filler
+	// until the underlying systems (tiers, charges, podiums) get ported.
+	void addModernItemExtras(NetworkMessage& msg, const BlackTek::Assets::AppearanceInfo* app,
+	                         uint8_t countOrSubType, uint32_t durationSeconds, uint16_t charges)
+	{
+		if (not app)
+		{
+			return;
+		}
+
+		if (app->stackable or app->liquidContainer or app->liquidPool)
+		{
+			msg.addByte(countOrSubType);
+		}
+
+		if (app->container)
+		{
+			msg.addByte(0); // container type: plain
+		}
+
+		if (app->podium)
+		{
+			msg.add<uint16_t>(0); // looktype
+			msg.add<uint16_t>(0); // looktype-ex (13.90+ reads it when looktype is 0)
+			msg.add<uint16_t>(0); // mount looktype
+			msg.addByte(2);       // direction
+			msg.addByte(1);       // visible
+		}
+
+		if (app->classification > 0)
+		{
+			msg.addByte(0); // tier
+		}
+
+		if (app->clockExpire or app->expire or app->expireStop)
+		{
+			msg.add<uint32_t>(durationSeconds);
+			msg.addByte(0); // is brand-new
+		}
+
+		if (app->wearOut)
+		{
+			msg.add<uint32_t>(charges);
+			msg.addByte(0); // is brand-new
+		}
+
+		if (app->wrapKit)
+		{
+			msg.add<uint16_t>(0); // wrapped item id
+		}
+	}
+}
+
+void ProtocolGame::addItem(NetworkMessage& msg, uint16_t id, uint8_t count) const
+{
+	using BlackTek::Network::TransportGeneration;
+	if (not protocol_profile or protocol_profile->generation != TransportGeneration::Modern)
+	{
+		msg.addItem(id, count);
+		return;
+	}
+
+	const uint16_t clientId = modernItemId(id);
+	msg.add<uint16_t>(clientId);
+	addModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId), count, 0, 0);
+}
+
+void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
+{
+	using BlackTek::Network::TransportGeneration;
+	if (not protocol_profile or protocol_profile->generation != TransportGeneration::Modern)
+	{
+		msg.addItem(item);
+		return;
+	}
+
+	const ItemType& it = Item::items[item->getID()];
+	const uint16_t clientId = modernItemId(item->getID());
+	msg.add<uint16_t>(clientId);
+
+	uint8_t countOrSubType;
+	if (it.stackable)
+	{
+		countOrSubType = static_cast<uint8_t>(std::min<uint16_t>(0xFF, item->getItemCount()));
+	}
+	else
+	{
+		countOrSubType = static_cast<uint8_t>(item->getFluidType() & 7);
+	}
+
+	addModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId),
+	                    countOrSubType, item->getDuration() / 1000, item->getCharges());
+}
+
+void ProtocolGame::addItemId(NetworkMessage& msg, uint16_t itemId) const
+{
+	using BlackTek::Network::TransportGeneration;
+	if (not protocol_profile or protocol_profile->generation != TransportGeneration::Modern)
+	{
+		msg.addItemId(itemId);
+		return;
+	}
+	msg.add<uint16_t>(modernItemId(itemId));
+}
+
 void ProtocolGame::AddCreature(NetworkMessage& msg, const CreatureConstPtr& creature, bool known, uint32_t remove)
 {
+	using BlackTek::Network::TransportGeneration;
+	if (protocol_profile and protocol_profile->generation == TransportGeneration::Modern)
+	{
+		// Layout ground truth: mehah getCreature at 1525. Deltas from 10.98:
+		// summon-own master ids, a per-creature icon list, a vocation byte
+		// for players, an inspection byte, no speech bubble and no helpers,
+		// unscaled speed, and mount color bytes inside the outfit.
+		CreatureType_t modernType = creature->getType();
+		if (modernType == CREATURETYPE_MONSTER)
+		{
+			if (const auto& master = creature->getMaster())
+			{
+				if (const auto& masterPlayer = master->getPlayer())
+				{
+					modernType = (masterPlayer == player) ? CREATURETYPE_SUMMON_OWN : CREATURETYPE_MONSTER;
+				}
+			}
+		}
+
+		const auto& modernOtherPlayer = creature->getPlayer();
+
+		if (known)
+		{
+			msg.add<SpecialCode>(SpecialCode::AddKnownCreature);
+			msg.add<uint32_t>(creature->getID());
+		}
+		else
+		{
+			msg.add<SpecialCode>(SpecialCode::AddCreature);
+			msg.add<uint32_t>(remove);
+			msg.add<uint32_t>(creature->getID());
+			msg.addByte(modernType);
+			if (modernType == CREATURETYPE_SUMMON_OWN)
+			{
+				msg.add<uint32_t>(creature->getMaster()->getID());
+			}
+			msg.addString(creature->getName());
+		}
+
+		if (creature->isHealthHidden())
+		{
+			msg.add(CommonCode::Zero);
+		}
+		else
+		{
+			msg.addByte(std::ceil((static_cast<double>(creature->getHealth()) / std::max<int32_t>(creature->getMaxHealth(), 1)) * 100));
+		}
+
+		msg.addByte(creature->getDirection());
+
+		if (not creature->isInGhostMode() and not creature->isInvisible())
+		{
+			AddOutfit(msg, creature->getCurrentOutfit());
+		}
+		else
+		{
+			static Outfit_t invisibleOutfit;
+			AddOutfit(msg, invisibleOutfit);
+		}
+
+		LightInfo modernLight = creature->getCreatureLight();
+		msg.addByte(player->isAccessPlayer() ? 255 : modernLight.level);
+		msg.addByte(modernLight.color);
+
+		msg.add<uint16_t>(creature->getStepSpeed()); // modern clients take speed unscaled
+
+		msg.addByte(0); // creature icon list: count
+
+		msg.addByte(player->getSkullClient(creature));
+		msg.addByte(player->getPartyShield(modernOtherPlayer));
+
+		if (not known)
+		{
+			msg.addByte(player->getGuildEmblem(modernOtherPlayer));
+		}
+
+		msg.addByte(modernType);
+		if (modernType == CREATURETYPE_SUMMON_OWN)
+		{
+			msg.add<uint32_t>(creature->getMaster()->getID());
+		}
+		else if (modernType == CREATURETYPE_PLAYER and modernOtherPlayer)
+		{
+			msg.addByte(modernOtherPlayer->getVocation()->getClientId());
+		}
+
+		msg.addByte(0);           // creature icon (GameCreatureIcons, 12.x)
+
+		msg.add(CommonCode::End); // mark: 0xFF = unmarked
+		msg.addByte(0);           // inspection type
+
+		msg.add(player->canWalkthroughEx(creature) ? CommonCode::False : CommonCode::True);
+		return;
+	}
+
 	CreatureType_t creatureType = creature->getType();
 
 	const auto& otherPlayer = creature->getPlayer();
@@ -3825,7 +4171,61 @@ void ProtocolGame::AddCreature(NetworkMessage& msg, const CreatureConstPtr& crea
 
 void ProtocolGame::AddPlayerStats(NetworkMessage& msg) const
 {
+	using BlackTek::Network::ProtocolFeature;
+	using BlackTek::Network::TransportGeneration;
+	const bool modern = protocol_profile
+		and protocol_profile->generation == TransportGeneration::Modern;
+
 	msg.add(ServerCode::PlayerStats);
+
+	if (modern)
+	{
+		// Layout ground truth: mehah parsePlayerStats at >= 1281 with the
+		// 15.25 feature set (features.lua), cross-checked against canary.
+		msg.add<uint32_t>(std::max<int32_t>(player->getHealth(), 0));
+		msg.add<uint32_t>(std::max<int32_t>(player->getMaxHealth(), 0));
+
+		msg.add<uint32_t>(player->getFreeCapacity());
+		// no total capacity for >= 1281
+
+		msg.add<uint64_t>(player->getExperience());
+
+		msg.add<uint16_t>(player->getLevel());
+		if (protocol_profile->hasFeature(ProtocolFeature::PlayerLevelPercentU16))
+		{
+			msg.add<uint16_t>(std::min<uint16_t>(static_cast<uint16_t>(player->getLevelPercent()) * 100, 10000));
+		}
+		else
+		{
+			msg.addByte(player->getLevelPercent());
+		}
+
+		msg.add<uint16_t>(100); // base xp gain rate
+		// no xp voucher field for >= 1281
+		msg.add<uint16_t>(0);   // low level bonus
+		msg.add<uint16_t>(0);   // store xp boost
+		msg.add<uint16_t>(100); // stamina multiplier (100 = x1.0)
+
+		msg.add<uint32_t>(std::max<int32_t>(player->getMana(), 0));
+		msg.add<uint32_t>(std::max<int32_t>(player->getMaxMana(), 0));
+		// no magic level here for >= 1281 - it moved into 0xA1
+
+		msg.addByte(player->getSoul());
+		msg.add<uint16_t>(player->getStaminaMinutes());
+		msg.add<uint16_t>(player->getBaseSpeed()); // modern clients take speed unscaled
+
+		Condition* regenCondition = player->getCondition(CONDITION_REGENERATION, CONDITIONID_DEFAULT);
+		msg.add<uint16_t>(regenCondition ? regenCondition->getTicks() / 1000 : 0);
+
+		msg.add<uint16_t>(player->getOfflineTrainingTime() / 60 / 1000);
+
+		msg.add<uint16_t>(0); // store xp boost time (seconds)
+		msg.addByte(0);       // enables xp boost buying in the store
+
+		msg.add<uint32_t>(0); // remaining mana shield
+		msg.add<uint32_t>(0); // total mana shield
+		return;
+	}
 
 	msg.add<uint16_t>(std::min<int32_t>(player->getHealth(), std::numeric_limits<uint16_t>::max()));
 	msg.add<uint16_t>(std::min<int32_t>(player->getMaxHealth(), std::numeric_limits<uint16_t>::max()));
@@ -3869,7 +4269,77 @@ void ProtocolGame::AddPlayerStats(NetworkMessage& msg) const
 
 void ProtocolGame::AddPlayerSkills(NetworkMessage& msg) const
 {
+	using BlackTek::Network::ProtocolFeature;
+	using BlackTek::Network::TransportGeneration;
+	const bool modern = protocol_profile
+		and protocol_profile->generation == TransportGeneration::Modern;
+
 	msg.add(ServerCode::PlayerSkills);
+
+	if (modern)
+	{
+		// Layout ground truth: mehah parsePlayerSkills at >= 1281 with the
+		// 15.25 feature set. Magic level moved here from 0xA0, every skill
+		// is a quad of u16s, and 14.10+ replaced the additional/forge skill
+		// lists with the big character-skill-stats tail block.
+		msg.add<uint16_t>(std::min<uint32_t>(player->getMagicLevel(), std::numeric_limits<uint16_t>::max()));
+		msg.add<uint16_t>(std::min<uint32_t>(player->getBaseMagicLevel(), std::numeric_limits<uint16_t>::max()));
+		msg.add<uint16_t>(std::min<uint32_t>(player->getBaseMagicLevel(), std::numeric_limits<uint16_t>::max())); // base + loyalty
+		msg.add<uint16_t>(static_cast<uint16_t>(player->getMagicLevelPercent()) * 100);
+
+		for (uint8_t i = SKILL_FIRST; i <= SKILL_LAST; ++i)
+		{
+			msg.add<uint16_t>(std::min<int32_t>(player->getSkillLevel(i), std::numeric_limits<uint16_t>::max()));
+			msg.add<uint16_t>(player->getBaseSkill(i));
+			msg.add<uint16_t>(player->getBaseSkill(i)); // base + loyalty
+			msg.add<uint16_t>(static_cast<uint16_t>(player->getSkillPercent(i)) * 100);
+		}
+
+		// 13.40 would need the pre-14.10 additional-skills and forge lists
+		// here instead of the block below; that band stays unported until a
+		// 13.40 client is testable.
+		if (protocol_profile->hasFeature(ProtocolFeature::ConcoctionsByte))
+		{
+			msg.addByte(0); // active concoctions count
+		}
+
+		if (protocol_profile->hasFeature(ProtocolFeature::CharacterSkillStats))
+		{
+			msg.add<uint32_t>(player->getCapacity()); // base + bonus capacity
+			msg.add<uint32_t>(player->getCapacity()); // base capacity
+
+			msg.add<uint16_t>(0); // flat damage/healing bonus
+
+			msg.add<uint16_t>(0); // weapon attack value
+			msg.addByte(0);       // weapon attack element
+
+			msg.addDouble(0.0, 2); // converted damage
+			msg.addByte(0);        // converted element
+
+			msg.addDouble(0.0, 2); // life leech
+			msg.addDouble(0.0, 2); // mana leech
+			msg.addDouble(0.0, 2); // crit chance
+			msg.addDouble(0.0, 2); // crit damage
+			msg.addDouble(0.0, 2); // onslaught
+
+			msg.add<uint16_t>(std::max<int32_t>(player->getDefense(), 0));
+			msg.add<uint16_t>(static_cast<uint16_t>(player->getArmor()));
+			if (protocol_profile->hasFeature(ProtocolFeature::MonkMantra))
+			{
+				msg.add<uint16_t>(0); // mantra
+			}
+			msg.addDouble(0.0, 2); // mitigation
+			msg.addDouble(0.0, 2); // dodge
+			msg.add<uint16_t>(0);  // damage reflection
+
+			msg.addByte(0); // combat absorb entry count
+
+			msg.addDouble(0.0, 2); // forge momentum
+			msg.addDouble(0.0, 2); // forge transcendence
+			msg.addDouble(0.0, 2); // forge amplification
+		}
+		return;
+	}
 
 	for (uint8_t i = SKILL_FIRST; i <= SKILL_LAST; ++i)
 	{
@@ -3917,10 +4387,20 @@ void ProtocolGame::AddOutfit(NetworkMessage& msg, const Outfit_t& outfit)
 	}
 	else
 	{
-		msg.addItemId(outfit.lookTypeEx);
+		addItemId(msg, outfit.lookTypeEx);
 	}
 
 	msg.add<uint16_t>(outfit.lookMount);
+	if (protocol_profile
+		and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern
+		and outfit.lookMount != 0)
+	{
+		// 12.81+ mounts are colorable; BlackTek has no mount colors yet
+		msg.addByte(0); // mount head
+		msg.addByte(0); // mount body
+		msg.addByte(0); // mount legs
+		msg.addByte(0); // mount feet
+	}
 }
 
 void ProtocolGame::AddWorldLight(NetworkMessage& msg, LightInfo lightInfo) const
