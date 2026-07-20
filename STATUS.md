@@ -60,12 +60,30 @@ Reference checkouts: `~/Documents/canary`, `~/Documents/login-server` (both shal
    hints; the port split is simpler and testable. Revisit only if a single
    port becomes a hard requirement.
 
-## Layout assumptions still UNVALIDATED (needs a real mehah capture)
+## Layout assumptions — VALIDATED against a real client (2026-07-20)
 
-- Modern first client frame = `[u16 blockCount][u32 seq][u8 padCount][0x0A]
-  [fields...]` — inferred from canary skipping `CHECKSUM_LENGTH + 2`. My
-  scripted client and the server agree with each other (proves internal
-  consistency only, not client compat).
+A live mehah OTClient Redemption 15.25 (built from source at
+~/Documents/BlackTek15, assets auto-installed by its client_assets module)
+logged in end-to-end. Results:
+
+- **NEW ground truth**: clients >= 1200 send a plaintext `"<worldName>\n"`
+  line as the very first bytes on the game connection, BEFORE any framed
+  traffic (mehah `Protocol::onConnect`). Server consumes it now
+  (Connection::skipWorldNameByte, commit 0a38c61). Captures 4/5 in
+  harness/captures/ show the original failure.
+- Modern first-frame layout otherwise CONFIRMED: client computes remaining
+  size as `blockCount * 8 + 4` for >= 1405 (mehah
+  `Protocol::internalRecvHeader`) — matches our writer exactly.
+- Challenge frame CONFIRMED parseable by the real client (pad byte consumed
+  by first-recv `getU8()`, 0x1F handled, login packet sent in reply).
+- Session-key login, RSA, XTEA, sequence framing, and compression all
+  CONFIRMED — server log shows "Tester has logged in" from the real client.
+- The client then parses world packets until drift after opcode 0xA0
+  (player stats): `Unhandled opcode 0x00 with 11525 unread bytes; previous
+  opcode 0xA0; next bytes 40 9C 00 00 68`. That is the 10.98-vs-15.25
+  writer boundary — Phase C's porting surface, now precisely located.
+
+Still unvalidated:
 - 13.40 and 14.12 login layouts assumed identical to 15.25's.
 - Modern challenge tail byte `0x71` copied from canary verbatim; meaning
   unknown.
@@ -79,19 +97,32 @@ Reference checkouts: `~/Documents/canary`, `~/Documents/login-server` (both shal
 # root/bt_test, db blacktek, user forgottenserver/bt_test)
 docker start blacktek-test-db
 
-# login webservice (source-built image login-server-local, host network,
-# HTTP 8090, points clients at 7173)
+# login webservice (container blacktek-login, HTTP on 127.0.0.1:5185).
+# CRITICAL: SERVER_PORT env must be 7174 (the capture proxy) for capture
+# work, or 7183 (game_port_modern) to bypass it. Another agent session's
+# rig scripts recreate this container with SERVER_PORT=7182 (legacy port),
+# which silently breaks modern logins - re-check after any rig restart.
 docker start blacktek-login
 
-# game server (config/database.toml is locally modified to point at the
-# test DB - intentionally NOT committed)
+# game server (config/database.toml + config/server.toml locally modified -
+# intentionally NOT committed; ports moved to 7181/7182/7183 because the
+# ArkEngine dev server owns 7171/7172 on this machine)
 cd ~/Documents/BlackTek-Server && ./Black-Tek-Server
+
+# capture proxy (byte captures land in harness/captures/, written on
+# connection close)
+python3 harness/capture_proxy.py --listen 7174 --target 127.0.0.1:7183
 
 # gates
 python3 harness/legacy_client.py --character Legacy
-python3 harness/modern_client.py --webservice http://127.0.0.1:8090 \
-    --email test@test.com --password test --character Tester
+python3 harness/modern_client.py --webservice http://127.0.0.1:5185 \
+    --email test@test.com --password test --character Tester --port 7174
 ./blacktek_tests
+
+# real client (mehah Redemption 15.25, built from source)
+cd ~/Documents/BlackTek15 && ./otclient
+# Enter Game: HTTP login on, server http://127.0.0.1:5185/login,
+# version 1525, test@test.com / test
 ```
 
 Build: `~/.local/bin/premake5 gmake2 && make -j24 config=release_64 CC=gcc-14 CXX=g++-14`
