@@ -1,19 +1,39 @@
 # Modern Protocol Port — STATUS
 
-Branch: `modern-protocol` (local only). Last session: 2026-07-16.
+Branch: `modern-protocol` (local only). Last session: 2026-07-20.
 Reference checkouts: `~/Documents/canary`, `~/Documents/login-server` (both shallow clones).
+Real client: `~/Documents/BlackTek15` (mehah OTClient Redemption, built from source, 15.25 assets auto-installed).
 
 ## Gates
 
 | Gate | State | Evidence |
 |------|-------|----------|
-| H — harness | **PASS** | `harness/packet_diff.py` decodes/diffs legacy+modern fixtures; `blacktek_tests` 7/7 green |
-| 0 — merge, legacy intact | **PASS** | scripted 10.98 client (`harness/legacy_client.py`) logs in + walks against live server; full build clean (GCC 14, release_64) |
-| A — session login | **PASS** | POST /login on opentibiabr/login-server → session key → modern handshake on 7173 → "Tester has logged in." → walk answered. Legacy re-run green. |
-| B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId with client-flag agreement; full 21,840-row table verified appearance-backed (41 stale rows auto-pruned); blacktek_tests 10/10; live legacy+modern gates re-run green |
-| C — enter world (mehah) | **NOT STARTED** | needs a mehah Redemption client at 15.25 (Josh confirmed that's the target client) for the real gate |
-| D — feature stubs | **NOT STARTED** | |
-| E — long tail | **NOT STARTED** | |
+| H — harness | **PASS** | `harness/packet_diff.py` decodes/diffs legacy+modern fixtures; `blacktek_tests` 10/10 green |
+| 0 — merge, legacy intact | **PASS** | scripted 10.98 client (`harness/legacy_client.py --account testacc --port 7182`) logs in + walks; full build clean (GCC 14, release_64) |
+| A — session login | **PASS** | POST /login on opentibiabr/login-server → session key → modern handshake → "Tester has logged in." → walk answered |
+| B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId; full table appearance-backed (41 stale rows pruned); blacktek_tests 10/10 |
+| C — enter world (mehah) | **PASS** | **real mehah 15.25 client renders the world and walks, zero parse errors / zero invalid-thing warnings** (2026-07-20). Autonomous edit/build/launch/screenshot loop via `otclientrc.lua` auto-login harness |
+| D — feature stubs | IN PROGRESS | side systems (prey/bestiary/forge/wheel/store) still stubbed off; client is in-world without them |
+| E — long tail | NOT STARTED | containers, trade, NPC windows, market, cyclopedia, etc. as they get exercised |
+
+### Phase C ground truth (2026-07-20)
+
+Real client caught two desyncs internal consistency never could:
+- **AddCreature** was missing the `GameCreatureIcons` single-icon byte
+  (between the vocation/summon block and the mark). One byte shifted the
+  entire map stream → `getThing: invalid thing id`.
+- **sendItems (0xF5)** wrote u16 counts where 15.25 reads a *packed
+  varint* (`readPackedCount1500`). One byte per entry drifted the
+  action-bar list → 42 bogus `0xXX00` item ids.
+
+All modern writers are gated on `protocol_profile->generation == Modern`
+(and finer `ProtocolFeature` bits). Legacy 10.98 path is byte-for-byte
+untouched and re-verified each session. To decode a live capture set
+`BLACKTEK_DEBUG_XTEA=1` and feed the logged key to `packet_diff.py --xtea`.
+
+Auto-login harness: `~/Documents/BlackTek15/otclientrc.lua` fills the
+Enter Game form, logs in via the webservice, picks `Tester`, and walks a
+short loop on `onGameStart`. Delete that block for a normal client.
 
 ## What exists now
 
