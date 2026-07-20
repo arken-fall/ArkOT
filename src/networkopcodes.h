@@ -385,5 +385,17 @@ namespace BlackTek {
             Zero = False
         };
 
+        // Modern (12.03+) clients read MagicEffect / DistanceShoot as one
+        // typed loop inside opcode 0x83; every entry leads with one of these
+        enum class EffectLoopCode : uint8_t
+        {
+            EndLoop = 0x00,
+            Delta = 0x01,
+            Delay = 0x02,
+            CreateEffect = 0x03,
+            CreateDistanceEffect = 0x04,
+            CreateDistanceEffectReversed = 0x05,
+        };
+
     }
 }

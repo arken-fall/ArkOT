@@ -448,6 +448,13 @@ class ProtocolGame : public Protocol
 		// Resolved from the first packet's protocol version + the port's
 		// transport generation; stays null until then.
 		const BlackTek::Network::ProtocolProfile* protocol_profile = nullptr;
+
+		// true once the connection resolved to a modern (13.40+) profile;
+		// every writer with a per-generation payload branches on this
+		[[nodiscard]] bool usesModernLayout() const {
+			return protocol_profile
+				and protocol_profile->generation == BlackTek::Network::TransportGeneration::Modern;
+		}
 		// Full build number from the login packet's u32 (e.g. 13400604);
 		// `version` above stays the u16 protocol version (e.g. 1340).
 		uint32_t client_version = 0;
