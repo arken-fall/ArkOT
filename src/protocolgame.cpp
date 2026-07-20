@@ -37,6 +37,24 @@ using namespace BlackTek::Store;
 
 namespace
 {
+	// the modern wire only knows creature types 0-5; the extended server
+	// types have to collapse onto them or the client throws (and mehah
+	// crashes on the null creature that leaves behind). Bosses render as
+	// monsters, guild/party summons as hostile summons.
+	CreatureType_t modernCreatureType(CreatureType_t type)
+	{
+		switch (type)
+		{
+			case CREATURETYPE_SUMMON_GUILD:
+			case CREATURETYPE_SUMMON_PARTY:
+				return CREATURETYPE_SUMMON_HOSTILE;
+			case CREATURETYPE_BOSS:
+				return CREATURETYPE_MONSTER;
+			default:
+				return type;
+		}
+	}
+
 	std::deque<std::pair<int64_t, uint32_t>> waitList; // (timeout, player guid)
 	auto priorityEnd = waitList.end();
 
@@ -1767,7 +1785,14 @@ void ProtocolGame::sendCreatureType(uint32_t creatureId, uint8_t creatureType)
 	NetworkMessage msg;
 	msg.add(ServerCode::CreatureType);
 	msg.add<uint32_t>(creatureId);
-	msg.addByte(creatureType);
+	if (usesModernLayout())
+	{
+		msg.addByte(modernCreatureType(static_cast<CreatureType_t>(creatureType)));
+	}
+	else
+	{
+		msg.addByte(creatureType);
+	}
 	writeToOutputBuffer(msg);
 }
 
@@ -4026,7 +4051,7 @@ void ProtocolGame::AddCreature(NetworkMessage& msg, const CreatureConstPtr& crea
 		// summon-own master ids, a per-creature icon list, a vocation byte
 		// for players, an inspection byte, no speech bubble and no helpers,
 		// unscaled speed, and mount color bytes inside the outfit.
-		CreatureType_t modernType = creature->getType();
+		CreatureType_t modernType = modernCreatureType(creature->getType());
 		if (modernType == CREATURETYPE_MONSTER)
 		{
 			if (const auto& master = creature->getMaster())
