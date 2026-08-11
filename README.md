@@ -4,6 +4,22 @@ __________________
 [![Linux Build](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/linux_build_runner.yml/badge.svg?branch=master)](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/linux_build_runner.yml) 
 [![Windows Build](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/windows_build_runner.yml/badge.svg)](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/windows_build_runner.yml)
 
+## About this fork — ArkOT, by the ArkenFall team
+__________________
+This repository (**ArkOT**) is the ArkenFall team's fork of BlackTek Server, updated to speak the **modern Tibia 15.25 client protocol**. We are **not part of the BlackTek team** and this fork is not affiliated with or endorsed by them — all credit for the base server belongs to the BlackTek project and its upstream lineage (TFS / OpenTibia). Everything below this section is their original README.
+
+What we changed to get from 10.98 to 15.25:
+
+- **Protocol profiles** (`src/protocolprofile.h`) — a registry describing each supported protocol generation (10.98 / 13.40 / 14.12 / 15.25) with per-version feature bits and a data-driven login layout. It is the only place version numbers appear; everything else asks the profile.
+- **Modern transport** — the 13.40+ wire framing: sequence-number checksums, the padded XTEA layout, block-count outer lengths, and raw-deflate compression, golden-tested against independently generated fixtures.
+- **HTTP login flow** — modern clients authenticate through a login webservice (compatible with [opentibiabr/login-server](https://github.com/opentibiabr/login-server)) that hands out opaque session keys; the server validates them via SHA-256 lookup in a new `account_sessions` table (DB migration included).
+- **A dedicated modern game port** (`game_port_modern`) — the modern handshake is framed differently from the legacy one, so each generation gets its own listener instead of byte-sniffing.
+- **Protobuf appearances** — the server loads a 15.25 `appearances.dat` and maps its unified item ids to modern appearance ids (~42k entries), pruning stale rows at load.
+- **Ported game-packet writers** — login, stats, skills, creatures, items, effects, and map descriptions rewritten for the 15.25 wire format where it diverges, gated on the protocol profile. Verified end-to-end with a real [mehah OTClient](https://github.com/mehah/otclient) 15.25 build entering the world with zero parse errors.
+- **Legacy retired** — this fork is 15.25-only: the 10.98 game/login listeners ship disabled (`game_port = 0`, `login_port = 0`; `0` disables a listener).
+
+To connect, use a mehah OTClient build with 15.25 assets and HTTP login pointed at your login webservice — the client section further down describes upstream's 10.98 setup, which does not apply to this fork.
+
 ## What is BlackTek Server?
 __________________
 **BlackTek Server** is an open source **2D Top Down MMORPG Game Server**, with tailor-made gameplay and tile based movement,  developed in modern C++. 
@@ -56,6 +72,9 @@ This will compile your `/src` sources, start MariaDB, and run the game server on
 
 ## Where to find a compatible client?
 ____________
+> [!NOTE]
+> Upstream section — does not apply to this fork. ArkOT is 15.25-only; see "About this fork" at the top.
+
 The BlackTek server is currently using the Tibia 10.98 client protocol. You can use either the original client which you can find [here](https://downloads.ots.me/data/tibia-clients/windows/exe/Tibia1098.exe) as an .exe, or [here](https://downloads.ots.me/data/tibia-clients/windows/zip/Tibia1098.zip) as a .zip. 
 
 Alternatives which support this protocol include [Open Tibia Client](https://github.com/edubart/otclient) and any of it's derivatives such as [OTC Redemption](https://github.com/mehah/otclient#-otclient---redemption) & [OTCv8 (OTA)](https://github.com/OTAcademy/otclientv8).
