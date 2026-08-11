@@ -26,3 +26,16 @@ db-data
 
 # Log files
 blacktek.log
+
+# Linux build artifacts (premake gmake2)
+/Makefile
+*.make
+/Black-Tek-Server
+/Black-Tek-Server.g14bak
+/blacktek_tests
+
+# Protocol harness output
+/harness/captures/
+
+# Generated at premake time
+/src/protobuf/generated/

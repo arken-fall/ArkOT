@@ -30,16 +30,18 @@ ipv6                     = "::"
 enable_ipv6              = false
 ipv6_fallback_to_ipv4    = true
 bind_only_global_address = false
-login_port               = 7171
-game_port                = 7172
+# Legacy (10.98) listeners retired 2026-08-11 — this server is 15.25-only.
+# 0 disables; modern clients learn their port from the login webservice.
+login_port               = 0
+game_port                = 0
 # 13.40+ clients connect here (they learn the port from the login webservice).
 # The modern handshake is framed differently, so it gets its own listener.
 # Set to 0 to disable.
-game_port_modern         = 7173
-status_port              = 7171
+game_port_modern         = 7183
+status_port              = 7184
 # 0 = no limit
 max_players              = 0
-max_packets_per_second   = 25
+max_packets_per_second   = 10000
 status_timeout           = 5000
 replace_kick_on_login    = true
 allow_clones             = false

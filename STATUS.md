@@ -1,6 +1,13 @@
 # Modern Protocol Port — STATUS
 
-Branch: `modern-protocol` (local only). Last session: 2026-07-20.
+Branch: `modern-protocol`. Last session: 2026-08-11.
+Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
+
+**2026-08-11 — legacy 10.98 retired.** This server is 15.25-only by decision:
+`game_port`/`login_port` now support 0-to-disable (like `game_port_modern`)
+and ship disabled, so no listener speaks the legacy framing. Gate 0's
+scripted 10.98 client and the legacy half of the packet-diff harness are
+kept for reference but no longer run against a live port.
 Reference checkouts: `~/Documents/canary`, `~/Documents/login-server` (both shallow clones).
 Real client: `~/Documents/BlackTek15` (mehah OTClient Redemption, built from source, 15.25 assets auto-installed).
 

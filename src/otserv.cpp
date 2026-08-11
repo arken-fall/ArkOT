@@ -530,9 +530,18 @@ void mainLoader(int, char*[], ServiceManager* services)
 	// Initialize game state
 	g_game.setGameState(GAME_STATE_INIT);
 
-	// Game client protocols
-	services->add<ProtocolGame>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::GAME_PORT)));
-	services->add<ProtocolLogin>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::LOGIN_PORT)));
+	// Game client protocols; 0 disables a listener, matching game_port_modern.
+	// Legacy (pre-13.40) clients use game_port/login_port; a modern-only server
+	// runs with both set to 0 and serves game_port_modern alone.
+	if (auto gamePort = g_config.GetNumber(ConfigManager::GAME_PORT); gamePort != 0)
+	{
+		services->add<ProtocolGame>(static_cast<uint16_t>(gamePort));
+	}
+
+	if (auto loginPort = g_config.GetNumber(ConfigManager::LOGIN_PORT); loginPort != 0)
+	{
+		services->add<ProtocolLogin>(static_cast<uint16_t>(loginPort));
+	}
 
 	// Modern (13.40+) clients handshake on a separate port; see ProtocolGameModern
 	if (auto modernPort = g_config.GetNumber(ConfigManager::GAME_PORT_MODERN); modernPort != 0)
@@ -544,7 +553,10 @@ void mainLoader(int, char*[], ServiceManager* services)
 	services->add<ProtocolStatus>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::STATUS_PORT)));
 
 	// Legacy login protocol
-	services->add<ProtocolOld>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::LOGIN_PORT)));
+	if (auto loginPort = g_config.GetNumber(ConfigManager::LOGIN_PORT); loginPort != 0)
+	{
+		services->add<ProtocolOld>(static_cast<uint16_t>(loginPort));
+	}
 
 	// House rent
 	RentPeriod_t rentPeriod;
