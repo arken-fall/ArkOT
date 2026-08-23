@@ -610,6 +610,12 @@ LuaScriptInterface& ItemEvents::getScriptInterface()
 
 bool ItemEvents::AddRegistration(ItemEvent& definition)
 {
+	if (definition.hook == BlackTek::ItemEvents::HookType::Last)
+	{
+		BlackTek::Console::Warn("ItemEvents::AddRegistration: Event has no hook assigned, skipping registration");
+		return false;
+	}
+
 	if ((definition.hook == BlackTek::ItemEvents::HookType::OnEquip or definition.hook == BlackTek::ItemEvents::HookType::OnDeEquip) and definition.slot == SLOTP_WHEREEVER and not definition.itemIds.empty())
 		definition.slot = Item::items.getItemType(definition.itemIds.front()).slotPosition;
 

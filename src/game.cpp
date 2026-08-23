@@ -284,7 +284,7 @@ BlackTek::ItemLocation Game::resolveItemLocation(const PlayerPtr& player, const 
 
 ItemPtr Game::filterHangableItem(const PlayerPtr& player, const TilePtr& tile, ItemPtr item) const
 {
-	if (item and player and tile->hasFlag(TILESTATE_SUPPORTS_HANGABLE))
+	if (item and player and item->isHangable() and tile->hasFlag(TILESTATE_SUPPORTS_HANGABLE))
 	{
 		if (tile->hasProperty(CONST_PROP_ISVERTICAL))
 		{
@@ -349,7 +349,10 @@ ItemPtr Game::resolveItem(const PlayerPtr& player, const Position& pos, int32_t 
 			return nullptr;
 		}
 
-		if (parentContainer->getOwner()->getID() == ITEM_BROWSEFIELD)
+		uint8_t slot = pos.z;
+		auto containerItem = parentContainer->getItemByIndex(player->getContainerIndex(fromCid) + slot);
+
+		if (containerItem and containerItem->isHangable() and parentContainer->getOwner()->getID() == ITEM_BROWSEFIELD)
 		{
 			auto tile = parentContainer->getOwner()->getTile();
 			if (tile && tile->hasFlag(TILESTATE_SUPPORTS_HANGABLE)) {
@@ -365,8 +368,7 @@ ItemPtr Game::resolveItem(const PlayerPtr& player, const Position& pos, int32_t 
 			}
 		}
 
-		uint8_t slot = pos.z;
-		return parentContainer->getItemByIndex(player->getContainerIndex(fromCid) + slot);
+		return containerItem;
 	} else if (pos.y == 0 && pos.z == 0) {
 		const ItemType& it = Item::items.getItemType(spriteId);
 		if (it.getID() == 0) {
@@ -3360,7 +3362,7 @@ void Game::playerUseItemEx(const uint32_t playerId, const Position& fromPos, con
 		return;
 	}
 
-	if (not item->isUseable() or item->getID() != fromSpriteId)
+	if (item->getID() != fromSpriteId)
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
@@ -3455,7 +3457,7 @@ void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uin
 		return;
 	}
 
-	if (item->isUseable() or item->getID() != spriteId)
+	if (item->getID() != spriteId)
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
@@ -3523,7 +3525,7 @@ void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPo
 		return;
 	}
 
-	if (not item->isUseable() or item->getID() != spriteId)
+	if (item->getID() != spriteId)
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;

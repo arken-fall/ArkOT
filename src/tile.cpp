@@ -1700,7 +1700,7 @@ ItemPtr Tile::getUseItem(const int32_t)
 		}
 	}
 
-	return nullptr;
+	return getTopTopItem();
 }
 
 
