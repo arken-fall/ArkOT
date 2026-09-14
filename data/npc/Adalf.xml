@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Adalf" script="Adalf.lua" walkinterval="2000" floorchange="0">
+<health now="100" max="100" />
+<look type="634" head="88" body="94" legs="114" feet="83" addons="1" />
+<voices>
+<voice text="Oh Jesus, where are we again? *HICKS*" interval2="120" margin="1" yell="no" />
+<voice text="*HICKS*" interval2="100" margin="1" yell="no" />
+<voice text=" WOW, i think were lost!" interval2="90" margin="1" yell="no" />
+</voices>
+<parameters>
+		<parameter key="message_farewell" value="Bye." />
+		<parameter key="message_walkaway" value="Bye." />
+</parameters>
+</npc>

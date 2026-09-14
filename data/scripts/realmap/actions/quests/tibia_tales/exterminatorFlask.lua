@@ -1,0 +1,21 @@
+local function onUse(player, item, fromPosition, target, toPosition, isHotkey)
+	if target.actionid ~= 4207 then
+		return false
+	end
+
+	if player:getStorageValue(Storage.TibiaTales.TheExterminator) ~= 1 then
+		return false
+	end
+
+	player:setStorageValue(Storage.TibiaTales.TheExterminator, 2)
+	item:transform(2006, 0)
+	toPosition:sendMagicEffect(CONST_ME_GREEN_RINGS)
+	return true
+end
+
+-- registrations generated from the pack XML by harness/build_itemevents.py
+local realmapEvent1 = ItemEvent()
+realmapEvent1:type("use")
+realmapEvent1.onUse = onUse
+realmapEvent1:id(8205)
+realmapEvent1:register()

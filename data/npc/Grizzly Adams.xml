@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Grizzly Adams" script="Grizzly Adams.lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="144" head="116" body="78" legs="94" feet="78" addons="3" />
+	
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="
+			slingshot,5907,35000;			
+			demon backpack,10518,1000" />
+		<parameter key="shop_sellable" value="		
+		
+		antlers,11214,50;
+		bloody pincers,10550,100;
+		crab pincers,11189,35;
+		cyclops toe,10574,55;
+	
+			frosty ear of a troll,10565,30;
+			hydra head,11199,600;
+			lancer beetle shell,11372,80;
+			mutated bat ear,10579,420;
+			sabretooth,11228,400;
+			sandcrawler shell,11373,20;
+			scarab pincers,10548,280;
+			terramite legs,11371,60;
+			terramite shell,11369,170;
+			terrorbird beak,11190,95" />
+	</parameters>
+</npc>

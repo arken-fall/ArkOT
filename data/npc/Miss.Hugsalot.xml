@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Miss.Hugsalot" script="Miss.Hugsalot.lua" walkinterval="2000">
+	<health now="100" max="100" />
+	<look type="140" head="79" body="82" legs="88" feet="94" addons="1" />
+	<parameters>
+		<parameter key="message_greet" value="Hello, do you want to {pass} the gate?" />
+		<parameter key="message_farewell" value="Bye bye." />
+		<parameter key="message_walkaway" value="Well, bye then." />
+	</parameters>
+</npc>

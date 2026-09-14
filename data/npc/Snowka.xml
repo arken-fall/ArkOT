@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Snowka" script="Snowka.lua" walkinterval="2000" floorchange="0">
+<health now="75" max="100" />
+<look type="251" head="88" body="94" legs="114" feet="83" addons="1" />
+<voices>
+<voice text="Do you know where we go?" interval2="120" margin="1" yell="yes" />
+<voice text="Hello?" interval2="100" margin="1" yell="no" />
+<voice text="A little SECRET ISLAND is hidden somewhere..." interval2="90" margin="1" yell="yes" />
+</voices>
+<parameters>
+		<parameter key="message_greet" value="A little SECRET ISLAND is hidden somewhere..." />
+		<parameter key="message_farewell" value="Bye." />
+		<parameter key="message_walkaway" value="Bye." />
+</parameters>
+</npc>

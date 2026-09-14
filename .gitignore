@@ -42,3 +42,10 @@ blacktek.log
 
 # Tmp folder for user's private files
 /tmp
+
+# the real map ships packed; unpack with: 7z x data/world/realmap.7z -odata/world
+/data/world/realmap.otbm
+# engine output from the legacy spawn converter
+/data/world/converted/
+/Black-Tek-Server.debug
+/Black-Tek-Server.release

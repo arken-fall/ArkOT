@@ -1,0 +1,32 @@
+local targetDestination = {
+	Position(32659, 31853, 13),
+	Position(32646, 31903, 3)
+}
+
+local function onUse(player, item, fromPosition, target, toPosition, isHotkey)
+	if player:getStorageValue(Storage.WhatAFoolishQuest.Questline) ~= 11 then
+		return false
+	end
+
+	local playerPos = player:getPosition()
+	if not isInArray(targetDestination, playerPos) then
+		return false
+	end
+
+	local destination = playerPos == targetDestination[2] and targetDestination[1] or targetDestination[2]
+	if destination.z == 6 then
+		item:remove()
+	end
+
+	player:teleportTo(destination)
+	destination:sendMagicEffect(CONST_ME_TELEPORT)
+	player:say('You are travelling in time', TALKTYPE_MONSTER_SAY)
+	return true
+end
+
+-- registrations generated from the pack XML by harness/build_itemevents.py
+local realmapEvent1 = ItemEvent()
+realmapEvent1:type("use")
+realmapEvent1.onUse = onUse
+realmapEvent1:id(8187)
+realmapEvent1:register()

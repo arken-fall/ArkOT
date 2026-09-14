@@ -3021,6 +3021,14 @@ namespace BlackTek
 
 	void Combat::strike_target(const CreaturePtr& attacker, const CreaturePtr& defender, bool skip_validation, const std::optional<std::span<const CreaturePtr>> spectators) noexcept
 	{
+		// traps, fields and scripts striking with a caster id of zero have no
+		// attacker to dispatch on
+		if (not attacker)
+		{
+			strike_environment(defender, spectators);
+			return;
+		}
+
 		if (damage_type == DamageType::Healing)
 		{
 			heal_target(attacker, defender, skip_validation, spectators);
@@ -3044,6 +3052,46 @@ namespace BlackTek
 			default: [[unlikely]]
 				break;
 		}
+	}
+
+	// damage with no source: the defender takes the rolled amount after its
+	// conditions, and the notifications name nothing; blocking and defensive
+	// augments describe a blow from a creature, so they do not apply here
+	void Combat::strike_environment(const CreaturePtr& defender, const std::optional<std::span<const CreaturePtr>> spectators) noexcept
+	{
+		if (not defender)
+			return;
+
+		if (damage_type == DamageType::Unknown)
+		{
+			if (config.test(Config::HasCondition))
+			{
+				ApplyConditions(defender);
+				if (impactEffect != CONST_ME_NONE)
+				{
+					if (spectators)
+						g_game.addMagicEffect(defender->getPosition(), impactEffect, *spectators);
+					else
+						g_game.addMagicEffect(defender->getPosition(), impactEffect);
+				}
+			}
+			return;
+		}
+
+		if (damage_type == DamageType::Healing)
+		{
+			heal_target(nullptr, defender, true, spectators);
+			return;
+		}
+
+		uint32_t dealt = 0;
+		if (defender->is_player())
+			dealt = apply_damage(nullptr, PlayerCast(defender), damage, spectators);
+		else
+			dealt = apply_damage(nullptr, MonsterCast(defender), damage, spectators);
+
+		if (dealt != 0 and config.test(Config::HasCondition))
+			ApplyConditions(defender);
 	}
 
 	void Combat::apply_healing_modifiers(const PlayerPtr& caster, const auto& target)
@@ -4544,7 +4592,7 @@ namespace BlackTek
 		{
 			owned = g_game.map.fetchSpectators(target->getPosition(), true, true);
 
-			if (owned.empty() and not target->is_player() and not caster->is_player())
+			if (owned.empty() and not target->is_player() and (not caster or not caster->is_player()))
 				return;
 
 			spectators.emplace(owned.begin(), owned.end());
@@ -4565,7 +4613,7 @@ namespace BlackTek
 		const bool	is_defense_conversion	= (origin == Origin::Absorb or origin == Origin::Restore or origin == Origin::Replenish or origin == Origin::Revive);
 		const bool	is_drain_gain			= (origin == Origin::LifeSteal or origin == Origin::ManaSteal or origin == Origin::StaminaSteal or origin == Origin::SoulSteal);
 
-		const bool anyRecipients = target->is_player() or (not self_target and caster->is_player()) or has_observers;
+		const bool anyRecipients = target->is_player() or (not self_target and caster and caster->is_player()) or has_observers;
 
 		if (not anyRecipients)
 			return;
@@ -4623,7 +4671,7 @@ namespace BlackTek
 			static_cast<Player*>(caster.get())->sendImpactTracker(BlackTek::Network::ImpactTrackerCode::Heal, amount, COMBAT_HEALING, "");
 		}
 
-		if (not self_target and caster->is_player())
+		if (not self_target and caster and caster->is_player())
 		{
 			const std::string amount_str	= std::to_string(amount);
 			const std::string stat_str		= std::string(notice.stat_name);
@@ -4655,7 +4703,7 @@ namespace BlackTek
 			const std::string stat_str			= std::string(notice.stat_name);
 			const std::string origin_verb		= std::string(origin_notice.verb);
 			const auto& target_name				= target->getName();
-			const auto& caster_name				= caster->getNameDescription();
+			const std::string caster_name			= caster ? caster->getNameDescription() : std::string{};
 
 			const std::string observer_text =
 				is_defense_conversion
@@ -4694,7 +4742,7 @@ namespace BlackTek
 		{
 			owned = g_game.map.fetchSpectators(defender->getPosition(), true, true);
 
-			if (owned.empty() and not defender->is_player() and not attacker->is_player())
+			if (owned.empty() and not defender->is_player() and (not attacker or not attacker->is_player()))
 				return;
 
 			spectators.emplace(owned.begin(), owned.end());
@@ -4709,7 +4757,7 @@ namespace BlackTek
 		const auto	origin_notice			= collect_origin_notice(static_cast<Origin>(origin));
 		const bool	is_drain				= (origin == Origin::ManaSteal);
 
-		const bool anyRecipients = defender->is_player() or (not self_target and attacker->is_player()) or has_observers;
+		const bool anyRecipients = defender->is_player() or (not self_target and attacker and attacker->is_player()) or has_observers;
 
 		if (not anyRecipients)
 			return;
@@ -4736,10 +4784,12 @@ namespace BlackTek
 		{
 			const std::string amount_str	= std::to_string(amount);
 			const std::string origin_verb	= std::string(origin_notice.verb);
-			const auto& attacker_name		= attacker->getNameDescription();
+			const std::string attacker_name	= attacker ? attacker->getNameDescription() : std::string{};
 
 			const std::string defender_text =
-				is_drain
+				not attacker
+				? "You lose " + amount_str + " mana."
+				: is_drain
 				? attacker_name + " drained " + amount_str + " mana from you."
 				: self_target
 				? "You lose " + amount_str + " mana due to your own " + origin_verb + "."
@@ -4757,7 +4807,7 @@ namespace BlackTek
 			sendSharedEffects(player);
 		}
 
-		if (not self_target and attacker->is_player())
+		if (not self_target and attacker and attacker->is_player())
 		{
 			const std::string amount_str	= std::to_string(amount);
 			const std::string origin_verb	= std::string(origin_notice.verb);
@@ -4785,7 +4835,7 @@ namespace BlackTek
 			const std::string amount_str	= std::to_string(amount);
 			const std::string origin_verb	= std::string(origin_notice.verb);
 			const auto& defender_name		= defender->getName();
-			const auto& attacker_name		= attacker->getNameDescription();
+			const std::string attacker_name	= attacker ? attacker->getNameDescription() : std::string{};
 
 			const std::string observer_text =
 				is_drain
@@ -4822,7 +4872,7 @@ namespace BlackTek
 		if (not spectators)
 		{
 			owned = g_game.map.fetchSpectators(defender->getPosition(), true, true);
-			if (owned.empty() and not defender->is_player() and not attacker->is_player())
+			if (owned.empty() and not defender->is_player() and (not attacker or not attacker->is_player()))
 				return;
 
 			spectators.emplace(owned.begin(), owned.end());
@@ -4842,7 +4892,7 @@ namespace BlackTek
 		const bool	is_piercing			= (origin == Origin::Piercing);
 		const bool	is_drain			= (origin == Origin::LifeSteal or origin == Origin::ManaSteal or origin == Origin::StaminaSteal or origin == Origin::SoulSteal);
 
-		const bool anyRecipients = defender->is_player() or (not self_target and attacker->is_player()) or has_observers;
+		const bool anyRecipients = defender->is_player() or (not self_target and attacker and attacker->is_player()) or has_observers;
 
 		if (anyRecipients)
 		{
@@ -4875,10 +4925,11 @@ namespace BlackTek
 			{
 				const std::string amount_str	= std::to_string(amount);
 				const std::string origin_verb	= std::string(origin_notice.verb);
-				const auto& attacker_name		= attacker->getNameDescription();
+				const std::string attacker_name	= attacker ? attacker->getNameDescription() : std::string{};
 
 				const std::string defender_text =
-					is_reflect ? (self_target
+					not attacker ? "You lose " + amount_str + " health."
+					: is_reflect ? (self_target
 						? "You reflected " + amount_str + " damage from your own attack."
 						: "You are struck by " + amount_str + " reflected damage from " + attacker_name + "'s resistance.")
 					: is_deflect ? "You are hit by " + amount_str + " deflected damage from " + attacker_name + "'s resistance."
@@ -4902,7 +4953,7 @@ namespace BlackTek
 				player->sendImpactTracker(BlackTek::Network::ImpactTrackerCode::DamageReceived, amount, static_cast<CombatType_t>(GetDamageType()), attacker ? attacker->getName() : "");
 			}
 
-			if (not self_target and attacker->is_player())
+			if (not self_target and attacker and attacker->is_player())
 			{
 				const std::string amount_str	= std::to_string(amount);
 				const std::string origin_verb	= std::string(origin_notice.verb);
@@ -4934,10 +4985,11 @@ namespace BlackTek
 				const std::string amount_str	= std::to_string(amount);
 				const std::string origin_verb	= std::string(origin_notice.verb);
 				const auto& defender_name		= defender->getName();
-				const auto& attacker_name		= attacker->getNameDescription();
+				const std::string attacker_name	= attacker ? attacker->getNameDescription() : std::string{};
 
 				const std::string observer_text =
-					is_reflect ? attacker_name + "'s resistance reflected " + amount_str + " damage to " + defender_name + "."
+					not attacker ? defender_name + " loses " + amount_str + " health."
+					: is_reflect ? attacker_name + "'s resistance reflected " + amount_str + " damage to " + defender_name + "."
 					: is_deflect ? attacker_name + "'s resistance deflected " + amount_str + " damage to " + defender_name + "."
 					: is_ricochet ? "A ricocheting attack struck " + defender_name + " for " + amount_str + " damage."
 					: is_piercing ? attacker_name + "'s attack pierced through " + defender_name + "'s defenses for " + amount_str + " damage."

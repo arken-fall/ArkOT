@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Daram Guard" walkinterval="2500" floorchange="0">
+	<health now="100" max="100" />
+	<look type="899" head="88" body="94" legs="114" feet="83" addons="3" />
+</npc>

@@ -19,7 +19,7 @@ max_chunks = 1000
 block_size = 1024
 
 [pool.monster]
-max_chunks = 50000
+max_chunks = 120000
 block_size = 768
 
 [pool.npc]
@@ -28,7 +28,7 @@ block_size = 768
 
 [pool.creature_nodes]
 # Backs the internal nodes of the player/monster/npc lookup maps.
-max_chunks = 50000
+max_chunks = 120000
 block_size = 128
 
 [pool.item_nodes]

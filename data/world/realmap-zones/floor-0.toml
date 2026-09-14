@@ -1,0 +1,172 @@
+[ConvertedSpawn_z0_6321]
+range = { start = "33027:32763:0", end = "33031:32767:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 120, name = "Nomad" },
+]
+
+[ConvertedSpawn_z0_6446]
+range = { start = "32401:32742:0", end = "32407:32751:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Behemoth" },
+    { position = "4:7:0", interval = 60, name = "Behemoth" },
+]
+
+[ConvertedSpawn_z0_6910]
+range = { start = "32657:31911:0", end = "32661:31915:0" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "UzonE" },
+]
+
+[ConvertedSpawn_z0_7048]
+range = { start = "32088:31157:0", end = "32092:31161:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z0_7155]
+range = { start = "32104:31153:0", end = "32108:31157:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Crystal Spider" },
+]
+
+[ConvertedSpawn_z0_7176]
+range = { start = "32091:31143:0", end = "32098:31155:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Polar Bear" },
+    { position = "3:6:0", interval = 60, name = "Polar Bear" },
+    { position = "5:10:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z0_7234]
+range = { start = "32143:31121:0", end = "32155:31129:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "10:4:0", interval = 60, name = "Silver Rabbit" },
+    { position = "2:2:0", interval = 60, name = "Crystal Spider" },
+    { position = "5:6:0", interval = 60, name = "Wyvern" },
+]
+
+[ConvertedSpawn_z0_8062]
+range = { start = "32129:31156:0", end = "32133:31160:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z0_8273]
+range = { start = "32586:31940:0", end = "32590:31944:0" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Gewen" },
+]
+
+[ConvertedSpawn_z0_8424]
+range = { start = "32126:31124:0", end = "32141:31152:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "13:2:0", interval = 60, name = "Ice Golem" },
+    { position = "10:9:0", interval = 60, name = "Ice Golem" },
+    { position = "2:17:0", interval = 60, name = "Ice Golem" },
+    { position = "3:24:0", interval = 60, name = "Ice Golem" },
+    { position = "4:26:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z0_8432]
+range = { start = "32083:31184:0", end = "32087:31188:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Crystal Spider" },
+]
+
+[ConvertedSpawn_z0_9798]
+range = { start = "32104:31132:0", end = "32114:31147:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ice Golem" },
+    { position = "4:8:0", interval = 60, name = "Ice Golem" },
+    { position = "8:13:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z0_9806]
+range = { start = "32070:31156:0", end = "32078:31165:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Crystal Spider" },
+    { position = "6:7:0", interval = 60, name = "Crystal Spider" },
+]
+
+[ConvertedSpawn_z0_9809]
+range = { start = "32081:31168:0", end = "32090:31179:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Ice Golem" },
+    { position = "5:7:0", interval = 60, name = "Crystal Spider" },
+    { position = "2:9:0", interval = 60, name = "Crystal Spider" },
+]
+
+[ConvertedSpawn_z0_9815]
+range = { start = "32938:31573:0", end = "32942:31577:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z0_9820]
+range = { start = "32406:32760:0", end = "32416:32771:0" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Behemoth" },
+    { position = "2:5:0", interval = 60, name = "Behemoth" },
+    { position = "8:9:0", interval = 60, name = "Behemoth" },
+]
+

@@ -1,0 +1,4050 @@
+[ConvertedSpawn_z4_2934]
+range = { start = "32027:32844:4", end = "32035:32853:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "6:7:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_2938]
+range = { start = "31973:32845:4", end = "31977:32849:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_2940]
+range = { start = "32020:32833:4", end = "32027:32842:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "2:6:0", interval = 60, name = "Pirate Marauder" },
+    { position = "4:7:0", interval = 60, name = "Pirate Buccaneer" },
+]
+
+[ConvertedSpawn_z4_2951]
+range = { start = "32387:32747:4", end = "32417:32788:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Earth Elemental" },
+    { position = "4:10:0", interval = 60, name = "Earth Elemental" },
+    { position = "4:17:0", interval = 60, name = "Earth Elemental" },
+    { position = "2:24:0", interval = 60, name = "Nightstalker" },
+    { position = "13:28:0", interval = 60, name = "Earth Elemental" },
+    { position = "11:32:0", interval = 60, name = "Nightstalker" },
+    { position = "5:30:0", interval = 60, name = "Earth Elemental" },
+    { position = "19:31:0", interval = 60, name = "Earth Elemental" },
+    { position = "28:35:0", interval = 60, name = "Earth Elemental" },
+    { position = "11:39:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_2972]
+range = { start = "33092:32659:4", end = "33096:32663:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Massive Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_2980]
+range = { start = "32999:32630:4", end = "33012:32653:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Hydra" },
+    { position = "11:10:0", interval = 60, name = "Hydra" },
+    { position = "3:11:0", interval = 60, name = "Hydra" },
+    { position = "5:14:0", interval = 60, name = "Hydra" },
+    { position = "3:15:0", interval = 60, name = "Hydra" },
+    { position = "4:19:0", interval = 60, name = "Hydra" },
+    { position = "2:21:0", interval = 60, name = "Hydra" },
+]
+
+[ConvertedSpawn_z4_2991]
+range = { start = "33083:32586:4", end = "33092:32591:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:3:0", interval = 60, name = "Dragon Lord" },
+    { position = "7:2:0", interval = 60, name = "Dragon Lord" },
+]
+
+[ConvertedSpawn_z4_2994]
+range = { start = "33208:32534:4", end = "33222:32542:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "12:2:0", interval = 60, name = "Energy Elemental" },
+    { position = "2:6:0", interval = 60, name = "Energy Elemental" },
+    { position = "7:6:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_2999]
+range = { start = "33065:32445:4", end = "33081:32459:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Scorpion" },
+    { position = "8:5:0", interval = 60, name = "Scorpion" },
+    { position = "8:6:0", interval = 60, name = "Scorpion" },
+    { position = "12:2:0", interval = 60, name = "Scorpion" },
+    { position = "12:3:0", interval = 60, name = "Scorpion" },
+    { position = "13:4:0", interval = 60, name = "Scorpion" },
+    { position = "14:5:0", interval = 60, name = "Scorpion" },
+    { position = "2:12:0", interval = 60, name = "Scorpion" },
+]
+
+[ConvertedSpawn_z4_3004]
+range = { start = "33089:32137:4", end = "33093:32141:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Elf Scout" },
+]
+
+[ConvertedSpawn_z4_3007]
+range = { start = "33069:32466:4", end = "33076:32472:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Scorpion" },
+    { position = "3:3:0", interval = 60, name = "Scorpion" },
+    { position = "5:4:0", interval = 60, name = "Scorpion" },
+]
+
+[ConvertedSpawn_z4_3012]
+range = { start = "33542:31926:4", end = "33553:31939:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Devourer" },
+    { position = "9:4:0", interval = 60, name = "Devourer" },
+    { position = "9:5:0", interval = 60, name = "Rustheap Golem" },
+    { position = "2:11:0", interval = 60, name = "Glooth Golem" },
+]
+
+[ConvertedSpawn_z4_3018]
+range = { start = "32069:31895:4", end = "32073:31899:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Mr Morris" },
+]
+
+[ConvertedSpawn_z4_3023]
+range = { start = "32574:31838:4", end = "32583:31843:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Goblin" },
+    { position = "7:3:0", interval = 60, name = "Goblin Scavenger" },
+]
+
+[ConvertedSpawn_z4_3039]
+range = { start = "32934:31436:4", end = "32975:31486:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "19:2:0", interval = 60, name = "Hellspawn" },
+    { position = "25:5:0", interval = 60, name = "Spectre" },
+    { position = "14:9:0", interval = 60, name = "Vampire Bride" },
+    { position = "24:10:0", interval = 60, name = "Hellspawn" },
+    { position = "20:13:0", interval = 60, name = "Vampire Bride" },
+    { position = "32:14:0", interval = 60, name = "Werewolf" },
+    { position = "26:16:0", interval = 60, name = "Vampire Bride" },
+    { position = "19:20:0", interval = 60, name = "Werewolf" },
+    { position = "32:18:0", interval = 60, name = "Vampire Bride" },
+    { position = "35:23:0", interval = 60, name = "Vampire" },
+    { position = "27:24:0", interval = 60, name = "Vampire" },
+    { position = "39:24:0", interval = 60, name = "Vampire Bride" },
+    { position = "33:30:0", interval = 60, name = "Vampire Bride" },
+    { position = "16:26:0", interval = 60, name = "Vampire Bride" },
+    { position = "23:29:0", interval = 60, name = "Hellspawn" },
+    { position = "13:34:0", interval = 60, name = "Hellspawn" },
+    { position = "18:38:0", interval = 60, name = "Werewolf" },
+    { position = "25:35:0", interval = 60, name = "Werewolf" },
+    { position = "34:35:0", interval = 60, name = "Skeleton" },
+    { position = "8:37:0", interval = 60, name = "Mutated Rat" },
+    { position = "2:41:0", interval = 60, name = "Earth Elemental" },
+    { position = "12:42:0", interval = 60, name = "Haunted Treeling" },
+    { position = "10:46:0", interval = 60, name = "Mutated Rat" },
+    { position = "5:47:0", interval = 60, name = "Vampire" },
+    { position = "22:42:0", interval = 60, name = "Vampire Bride" },
+    { position = "30:39:0", interval = 60, name = "Demon Skeleton" },
+    { position = "38:40:0", interval = 60, name = "Demon Skeleton" },
+    { position = "28:43:0", interval = 60, name = "Skeleton" },
+    { position = "33:43:0", interval = 60, name = "Tarantula" },
+    { position = "38:45:0", interval = 60, name = "Giant Spider" },
+    { position = "35:47:0", interval = 60, name = "Demon Skeleton" },
+    { position = "33:48:0", interval = 60, name = "Tarantula" },
+    { position = "18:45:0", interval = 60, name = "Werewolf" },
+]
+
+[ConvertedSpawn_z4_3050]
+range = { start = "33025:31276:4", end = "33044:31295:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Orc Berserker" },
+    { position = "16:4:0", interval = 60, name = "Orc Warrior" },
+    { position = "12:5:0", interval = 60, name = "Orc Leader" },
+    { position = "4:8:0", interval = 60, name = "Orc Leader" },
+    { position = "14:9:0", interval = 60, name = "Orc Warrior" },
+    { position = "17:12:0", interval = 60, name = "Orc Warrior" },
+    { position = "5:13:0", interval = 60, name = "Orc Shaman" },
+    { position = "13:15:0", interval = 60, name = "Orc Berserker" },
+    { position = "17:17:0", interval = 60, name = "Orc Shaman" },
+]
+
+[ConvertedSpawn_z4_3056]
+range = { start = "32685:31291:4", end = "32689:31295:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Nomad" },
+]
+
+[ConvertedSpawn_z4_3063]
+range = { start = "33063:31264:4", end = "33067:31268:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_3065]
+range = { start = "32358:31246:4", end = "32364:31254:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Frost Giantess" },
+    { position = "2:6:0", interval = 60, name = "Frost Giantess" },
+]
+
+[ConvertedSpawn_z4_3087]
+range = { start = "33516:31185:4", end = "33520:31189:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Spitter" },
+]
+
+[ConvertedSpawn_z4_3091]
+range = { start = "32693:31165:4", end = "32700:31172:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Acid Blob" },
+    { position = "5:5:0", interval = 60, name = "Acid Blob" },
+]
+
+[ConvertedSpawn_z4_3095]
+range = { start = "32146:31165:4", end = "32150:31169:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Polar Bear" },
+]
+
+[ConvertedSpawn_z4_3098]
+range = { start = "33116:31164:4", end = "33120:31168:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_3106]
+range = { start = "32146:31156:4", end = "32150:31160:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_3112]
+range = { start = "33030:31132:4", end = "33035:31147:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "3:6:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "3:13:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_3117]
+range = { start = "33351:31124:4", end = "33355:31128:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_3120]
+range = { start = "32068:31138:4", end = "32077:31148:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:3:0", interval = 60, name = "Frost Troll" },
+    { position = "6:5:0", interval = 60, name = "Frost Troll" },
+    { position = "2:8:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_3129]
+range = { start = "32810:31113:4", end = "32814:31120:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Blue Djinn" },
+    { position = "2:5:0", interval = 60, name = "Blue Djinn" },
+]
+
+[ConvertedSpawn_z4_3135]
+range = { start = "32090:31150:4", end = "32102:31161:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Ice Golem" },
+    { position = "8:2:0", interval = 60, name = "Ice Golem" },
+    { position = "2:8:0", interval = 60, name = "Ice Golem" },
+    { position = "10:9:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z4_3139]
+range = { start = "32055:31176:4", end = "32063:31185:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:4:0", interval = 60, name = "Frost Troll" },
+    { position = "5:5:0", interval = 60, name = "Winter wolf" },
+    { position = "6:7:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_3143]
+range = { start = "32929:31106:4", end = "32940:31115:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Dark Magician" },
+    { position = "9:4:0", interval = 60, name = "Dark Magician" },
+    { position = "2:7:0", interval = 60, name = "Dark Magician" },
+]
+
+[ConvertedSpawn_z4_3147]
+range = { start = "32870:31112:4", end = "32881:31123:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Green Djinn" },
+    { position = "2:4:0", interval = 60, name = "Efreet" },
+    { position = "5:5:0", interval = 60, name = "Efreet" },
+    { position = "9:6:0", interval = 60, name = "Green Djinn" },
+    { position = "3:9:0", interval = 60, name = "Green Djinn" },
+]
+
+[ConvertedSpawn_z4_3155]
+range = { start = "33044:31098:4", end = "33048:31102:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_3160]
+range = { start = "33151:31048:4", end = "33172:31078:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "12:2:0", interval = 60, name = "Souleater" },
+    { position = "19:6:0", interval = 60, name = "Souleater" },
+    { position = "11:10:0", interval = 60, name = "Mutated Bat" },
+    { position = "18:15:0", interval = 60, name = "Souleater" },
+    { position = "8:17:0", interval = 60, name = "Souleater" },
+    { position = "2:23:0", interval = 60, name = "Souleater" },
+    { position = "9:28:0", interval = 60, name = "Souleater" },
+]
+
+[ConvertedSpawn_z4_3186]
+range = { start = "33103:31034:4", end = "33107:31038:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_3207]
+range = { start = "32884:31066:4", end = "32893:31072:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Necromancer" },
+    { position = "7:4:0", interval = 60, name = "Necromancer" },
+]
+
+[ConvertedSpawn_z4_4982]
+range = { start = "33034:32770:4", end = "33040:32777:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hyaena" },
+    { position = "4:5:0", interval = 60, name = "Hyaena" },
+]
+
+[ConvertedSpawn_z4_5017]
+range = { start = "32018:32854:4", end = "32022:32858:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5099]
+range = { start = "33577:31208:4", end = "33599:31221:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Waspoid" },
+    { position = "18:5:0", interval = 60, name = "Crawler" },
+    { position = "7:6:0", interval = 60, name = "Spitter" },
+    { position = "20:7:0", interval = 60, name = "Crawler" },
+    { position = "9:8:0", interval = 60, name = "Waspoid" },
+    { position = "14:8:0", interval = 60, name = "Spitter" },
+    { position = "4:11:0", interval = 60, name = "Waspoid" },
+    { position = "18:11:0", interval = 60, name = "Crawler" },
+]
+
+[ConvertedSpawn_z4_5129]
+range = { start = "32851:31140:4", end = "32861:31148:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dark Magician" },
+    { position = "8:2:0", interval = 60, name = "Dark Apprentice" },
+    { position = "6:6:0", interval = 60, name = "Dark Apprentice" },
+]
+
+[ConvertedSpawn_z4_5136]
+range = { start = "32178:31135:4", end = "32190:31142:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "9:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:3:0", interval = 60, name = "Frost Troll" },
+    { position = "5:5:0", interval = 60, name = "Frost Troll" },
+    { position = "10:5:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_5149]
+range = { start = "32702:31147:4", end = "32707:31154:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Mutated Rat" },
+    { position = "3:5:0", interval = 60, name = "Mutated Rat" },
+]
+
+[ConvertedSpawn_z4_5168]
+range = { start = "32764:31094:4", end = "32772:31102:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Tarantula" },
+    { position = "6:6:0", interval = 60, name = "Tarantula" },
+]
+
+[ConvertedSpawn_z4_5793]
+range = { start = "32012:32891:4", end = "32018:32899:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "4:6:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_5874]
+range = { start = "32004:32868:4", end = "32011:32877:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "5:6:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "2:7:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_5880]
+range = { start = "32026:32863:4", end = "32038:32869:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:4:0", interval = 60, name = "Pirate Marauder" },
+    { position = "10:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "7:3:0", interval = 60, name = "Pirate Buccaneer" },
+]
+
+[ConvertedSpawn_z4_5888]
+range = { start = "32856:32825:4", end = "32875:32839:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Medusa" },
+    { position = "7:3:0", interval = 60, name = "Behemoth" },
+    { position = "10:2:0", interval = 60, name = "Serpent Spawn" },
+    { position = "17:4:0", interval = 60, name = "Behemoth" },
+    { position = "5:6:0", interval = 60, name = "Serpent Spawn" },
+    { position = "7:6:0", interval = 60, name = "omnivora" },
+    { position = "2:7:0", interval = 60, name = "Behemoth" },
+    { position = "7:8:0", interval = 60, name = "Serpent Spawn" },
+    { position = "6:9:0", interval = 60, name = "Medusa" },
+    { position = "13:9:0", interval = 60, name = "Behemoth" },
+    { position = "14:9:0", interval = 60, name = "Serpent Spawn" },
+    { position = "14:10:0", interval = 60, name = "Serpent Spawn" },
+    { position = "11:12:0", interval = 60, name = "Serpent Spawn" },
+]
+
+[ConvertedSpawn_z4_5897]
+range = { start = "32410:32828:4", end = "32414:32832:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Isolde" },
+]
+
+[ConvertedSpawn_z4_5908]
+range = { start = "33071:32682:4", end = "33075:32686:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_5923]
+range = { start = "32864:32994:4", end = "32868:32998:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Daralemo" },
+]
+
+[ConvertedSpawn_z4_5928]
+range = { start = "32807:32982:4", end = "32819:32991:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "10:2:0", interval = 20, name = "Warlock" },
+    { position = "6:3:0", interval = 20, name = "Warlock" },
+    { position = "2:4:0", interval = 20, name = "Warlock" },
+    { position = "7:7:0", interval = 20, name = "Warlock" },
+]
+
+[ConvertedSpawn_z4_5930]
+range = { start = "31931:32941:4", end = "31940:32946:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "2:3:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5934]
+range = { start = "31934:32932:4", end = "31941:32937:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:3:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5938]
+range = { start = "32420:32784:4", end = "32429:32790:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+    { position = "7:4:0", interval = 60, name = "Nightstalker" },
+]
+
+[ConvertedSpawn_z4_5939]
+range = { start = "31945:32923:4", end = "31951:32929:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:4:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5945]
+range = { start = "32024:32885:4", end = "32037:32893:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "7:3:0", interval = 60, name = "Pirate Marauder" },
+    { position = "11:6:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5953]
+range = { start = "32003:32882:4", end = "32011:32888:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "2:4:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_5957]
+range = { start = "32026:32873:4", end = "32033:32882:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "5:5:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:7:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5962]
+range = { start = "31947:32855:4", end = "31954:32862:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "2:5:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5964]
+range = { start = "32988:32417:4", end = "32992:32421:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ghoul" },
+]
+
+[ConvertedSpawn_z4_5966]
+range = { start = "32026:32855:4", end = "32040:32862:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:4:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "12:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "12:5:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5973]
+range = { start = "33147:32840:4", end = "33151:32844:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Arkhothep" },
+]
+
+[ConvertedSpawn_z4_5974]
+range = { start = "31984:32837:4", end = "32004:32865:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "15:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:9:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "5:12:0", interval = 60, name = "Pirate Marauder" },
+    { position = "10:10:0", interval = 60, name = "Pirate Marauder" },
+    { position = "17:13:0", interval = 60, name = "Pirate Marauder" },
+    { position = "14:18:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "15:23:0", interval = 60, name = "Pirate Marauder" },
+    { position = "18:26:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5979]
+range = { start = "33334:31581:4", end = "33338:31585:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_5986]
+range = { start = "32051:32825:4", end = "32060:32840:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "6:4:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:12:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "7:13:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5991]
+range = { start = "33011:32755:4", end = "33015:32759:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Sentinel" },
+]
+
+[ConvertedSpawn_z4_5992]
+range = { start = "32042:32824:4", end = "32049:32839:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "4:6:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "5:10:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:13:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_5994]
+range = { start = "33040:32740:4", end = "33044:32744:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_5995]
+range = { start = "31990:32824:4", end = "31997:32831:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "5:5:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_6004]
+range = { start = "31969:32815:4", end = "31974:32822:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "2:5:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_6007]
+range = { start = "31970:32808:4", end = "31975:32813:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:3:0", interval = 60, name = "Smuggler" },
+]
+
+[ConvertedSpawn_z4_6015]
+range = { start = "31958:32804:4", end = "31966:32813:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "6:4:0", interval = 60, name = "Smuggler" },
+    { position = "2:6:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "6:7:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_6020]
+range = { start = "33031:32781:4", end = "33038:32787:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hyaena" },
+    { position = "5:4:0", interval = 60, name = "Hyaena" },
+]
+
+[ConvertedSpawn_z4_6025]
+range = { start = "32989:32406:4", end = "33003:32411:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:3:0", interval = 60, name = "Zombie" },
+    { position = "12:2:0", interval = 60, name = "Ghoul" },
+]
+
+[ConvertedSpawn_z4_6032]
+range = { start = "33002:32761:4", end = "33013:32770:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Templar" },
+    { position = "9:7:0", interval = 60, name = "Lizard Templar" },
+]
+
+[ConvertedSpawn_z4_6040]
+range = { start = "32401:32752:4", end = "32418:32772:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+    { position = "7:7:0", interval = 60, name = "Nightstalker" },
+    { position = "6:10:0", interval = 60, name = "Earth Elemental" },
+    { position = "11:14:0", interval = 60, name = "Nightstalker" },
+    { position = "15:18:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_6042]
+range = { start = "33059:32435:4", end = "33063:32439:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Wyvern" },
+]
+
+[ConvertedSpawn_z4_6045]
+range = { start = "32100:32127:4", end = "32104:32131:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Blind Orc" },
+]
+
+[ConvertedSpawn_z4_6047]
+range = { start = "32408:32738:4", end = "32412:32742:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_6049]
+range = { start = "32395:32730:4", end = "32399:32734:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_6050]
+range = { start = "32405:32729:4", end = "32409:32733:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_6055]
+range = { start = "33048:32727:4", end = "33052:32732:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Massive Energy Elemental" },
+    { position = "2:3:0", interval = 60, name = "Massive Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_6056]
+range = { start = "33028:32708:4", end = "33040:32715:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "10:2:0", interval = 60, name = "Dragon" },
+    { position = "2:4:0", interval = 60, name = "Dragon" },
+    { position = "3:5:0", interval = 60, name = "Dragon" },
+]
+
+[ConvertedSpawn_z4_6060]
+range = { start = "33080:32686:4", end = "33084:32690:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_6064]
+range = { start = "33042:32685:4", end = "33052:32693:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Dragon Lord" },
+    { position = "2:6:0", interval = 60, name = "Dragon Lord" },
+]
+
+[ConvertedSpawn_z4_6067]
+range = { start = "33623:31892:4", end = "33627:31896:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Edmund" },
+]
+
+[ConvertedSpawn_z4_6068]
+range = { start = "32985:32666:4", end = "32989:32670:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hydra" },
+]
+
+[ConvertedSpawn_z4_6073]
+range = { start = "32057:31880:4", end = "32061:31884:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Garamond" },
+]
+
+[ConvertedSpawn_z4_6079]
+range = { start = "33093:32526:4", end = "33104:32536:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Scarab" },
+    { position = "2:3:0", interval = 60, name = "Blue Djinn" },
+    { position = "3:5:0", interval = 60, name = "Scarab" },
+    { position = "6:5:0", interval = 60, name = "Blue Djinn" },
+    { position = "9:6:0", interval = 60, name = "Fire Elemental" },
+    { position = "5:8:0", interval = 60, name = "Fire Elemental" },
+    { position = "6:8:0", interval = 60, name = "Blue Djinn" },
+]
+
+[ConvertedSpawn_z4_6084]
+range = { start = "33102:32138:4", end = "33106:32142:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Firestarter" },
+]
+
+[ConvertedSpawn_z4_6091]
+range = { start = "31997:32135:4", end = "32003:32142:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Wasp" },
+    { position = "3:4:0", interval = 60, name = "Wasp" },
+    { position = "2:5:0", interval = 60, name = "Wasp" },
+    { position = "4:5:0", interval = 60, name = "Wasp" },
+]
+
+[ConvertedSpawn_z4_6097]
+range = { start = "32558:32116:4", end = "32566:32123:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Stalker" },
+    { position = "6:2:0", interval = 60, name = "Stalker" },
+    { position = "2:3:0", interval = 60, name = "Demon Skeleton" },
+    { position = "6:4:0", interval = 60, name = "Ghoul" },
+    { position = "2:5:0", interval = 60, name = "Ghoul" },
+    { position = "5:5:0", interval = 60, name = "Demon Skeleton" },
+]
+
+[ConvertedSpawn_z4_6100]
+range = { start = "31348:32104:4", end = "31360:32113:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "10:2:0", interval = 20, name = "Warlock" },
+    { position = "6:3:0", interval = 20, name = "Warlock" },
+    { position = "2:4:0", interval = 20, name = "Warlock" },
+    { position = "7:7:0", interval = 20, name = "Warlock" },
+]
+
+[ConvertedSpawn_z4_6101]
+range = { start = "33310:31280:4", end = "33314:31284:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dragon Lord" },
+]
+
+[ConvertedSpawn_z4_6112]
+range = { start = "32479:32055:4", end = "32491:32065:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Bat" },
+    { position = "2:5:0", interval = 60, name = "Bat" },
+    { position = "10:8:0", interval = 60, name = "Bat" },
+]
+
+[ConvertedSpawn_z4_6118]
+range = { start = "33137:31526:4", end = "33147:31532:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Death Blob" },
+    { position = "3:3:0", interval = 60, name = "Death Blob" },
+    { position = "8:3:0", interval = 60, name = "Death Blob" },
+    { position = "8:4:0", interval = 60, name = "Death Blob" },
+]
+
+[ConvertedSpawn_z4_6122]
+range = { start = "32952:31536:4", end = "32956:31540:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_6124]
+range = { start = "32570:31965:4", end = "32575:31972:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Wyvern" },
+    { position = "2:5:0", interval = 60, name = "Wyvern" },
+]
+
+[ConvertedSpawn_z4_6125]
+range = { start = "32456:31947:4", end = "32470:31969:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Minotaur Archer" },
+    { position = "4:6:0", interval = 60, name = "Minotaur Archer" },
+    { position = "10:6:0", interval = 60, name = "Minotaur Guard" },
+    { position = "7:8:0", interval = 60, name = "Minotaur Archer" },
+    { position = "11:8:0", interval = 60, name = "Minotaur Guard" },
+    { position = "2:9:0", interval = 60, name = "Minotaur Archer" },
+    { position = "7:15:0", interval = 60, name = "Minotaur Archer" },
+    { position = "10:15:0", interval = 60, name = "Minotaur Mage" },
+    { position = "8:19:0", interval = 60, name = "Minotaur Mage" },
+    { position = "12:20:0", interval = 60, name = "Minotaur Archer" },
+]
+
+[ConvertedSpawn_z4_6127]
+range = { start = "32053:31898:4", end = "32057:31902:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Plunderpurse" },
+]
+
+[ConvertedSpawn_z4_6132]
+range = { start = "32561:31899:4", end = "32571:31908:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dwarf" },
+    { position = "4:2:0", interval = 60, name = "Dwarf" },
+    { position = "8:2:0", interval = 60, name = "Dwarf" },
+    { position = "4:5:0", interval = 60, name = "Dwarf" },
+    { position = "8:7:0", interval = 60, name = "Dwarf" },
+]
+
+[ConvertedSpawn_z4_6135]
+range = { start = "32987:31457:4", end = "33000:31467:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "9:2:0", interval = 60, name = "Bat" },
+    { position = "11:6:0", interval = 60, name = "Skeleton" },
+    { position = "2:8:0", interval = 60, name = "Skeleton" },
+]
+
+[ConvertedSpawn_z4_6144]
+range = { start = "33616:31882:4", end = "33620:31886:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Alaistar" },
+]
+
+[ConvertedSpawn_z4_6149]
+range = { start = "33630:31879:4", end = "33634:31883:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Barnabas Dee" },
+]
+
+[ConvertedSpawn_z4_6154]
+range = { start = "32069:31880:4", end = "32073:31884:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Ser Tybald" },
+]
+
+[ConvertedSpawn_z4_6160]
+range = { start = "31211:31867:4", end = "31217:31873:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frazzlemaw" },
+    { position = "4:4:0", interval = 60, name = "Frazzlemaw" },
+]
+
+[ConvertedSpawn_z4_6163]
+range = { start = "31127:31851:4", end = "31133:31862:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Guzzlemaw" },
+    { position = "2:9:0", interval = 60, name = "Frazzlemaw" },
+]
+
+[ConvertedSpawn_z4_6172]
+range = { start = "33280:31843:4", end = "33284:31847:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Lailene" },
+]
+
+[ConvertedSpawn_z4_6177]
+range = { start = "31168:31836:4", end = "31172:31840:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Guzzlemaw" },
+]
+
+[ConvertedSpawn_z4_6183]
+range = { start = "33254:31836:4", end = "33258:31840:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Thomas" },
+]
+
+[ConvertedSpawn_z4_6190]
+range = { start = "32602:31780:4", end = "32607:31791:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Poison Spider" },
+    { position = "2:9:0", interval = 60, name = "Spider" },
+]
+
+[ConvertedSpawn_z4_6200]
+range = { start = "33158:31323:4", end = "33172:31332:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "12:2:0", interval = 60, name = "Frost Dragon" },
+    { position = "2:4:0", interval = 60, name = "Frost Dragon" },
+    { position = "9:7:0", interval = 60, name = "Frost Dragon Hatchling" },
+]
+
+[ConvertedSpawn_z4_6202]
+range = { start = "32961:31712:4", end = "32981:31727:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "18:2:0", interval = 60, name = "Orc Leader" },
+    { position = "17:6:0", interval = 60, name = "Orc Shaman" },
+    { position = "2:9:0", interval = 60, name = "Orc Rider" },
+    { position = "6:9:0", interval = 60, name = "Orc Rider" },
+    { position = "2:11:0", interval = 60, name = "Orc Rider" },
+    { position = "4:13:0", interval = 60, name = "Orc Leader" },
+    { position = "16:10:0", interval = 60, name = "Orc Warlord" },
+    { position = "18:12:0", interval = 60, name = "Orc Shaman" },
+    { position = "16:13:0", interval = 60, name = "Orc Berserker" },
+    { position = "11:9:0", interval = 60, name = "Orc Berserker" },
+    { position = "9:13:0", interval = 60, name = "Orc Rider" },
+    { position = "11:13:0", interval = 60, name = "Orc Leader" },
+]
+
+[ConvertedSpawn_z4_6203]
+range = { start = "32419:31712:4", end = "32426:31721:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Forest Fury" },
+    { position = "2:7:0", interval = 60, name = "Forest Fury" },
+]
+
+[ConvertedSpawn_z4_6212]
+range = { start = "33192:31677:4", end = "33202:31684:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ghoul" },
+    { position = "8:4:0", interval = 60, name = "Ghoul" },
+    { position = "6:5:0", interval = 60, name = "Demon Skeleton" },
+]
+
+[ConvertedSpawn_z4_6213]
+range = { start = "32352:31640:4", end = "32358:31647:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Amazon" },
+    { position = "2:4:0", interval = 60, name = "Amazon" },
+    { position = "2:5:0", interval = 60, name = "Valkyrie" },
+    { position = "3:5:0", interval = 60, name = "Amazon" },
+]
+
+[ConvertedSpawn_z4_6221]
+range = { start = "32579:31637:4", end = "32583:31641:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Orc Berserker" },
+]
+
+[ConvertedSpawn_z4_6222]
+range = { start = "33339:31603:4", end = "33355:31616:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "12:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "2:3:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "8:6:0", interval = 60, name = "Draken Warmaster" },
+    { position = "14:8:0", interval = 60, name = "Draken Warmaster" },
+    { position = "3:11:0", interval = 60, name = "Draken Warmaster" },
+    { position = "11:11:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_6228]
+range = { start = "32795:31577:4", end = "32813:31591:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Mummy" },
+    { position = "3:4:0", interval = 60, name = "Demon Skeleton" },
+    { position = "10:6:0", interval = 60, name = "Mummy" },
+    { position = "5:12:0", interval = 60, name = "Mummy" },
+    { position = "7:8:0", interval = 60, name = "Demon Skeleton" },
+    { position = "9:8:0", interval = 60, name = "Mummy" },
+    { position = "11:8:0", interval = 60, name = "Mummy" },
+    { position = "7:9:0", interval = 60, name = "Demon Skeleton" },
+    { position = "16:9:0", interval = 60, name = "Mummy" },
+]
+
+[ConvertedSpawn_z4_6239]
+range = { start = "33215:31271:4", end = "33231:31284:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+    { position = "14:4:0", interval = 60, name = "Frost Dragon" },
+    { position = "9:7:0", interval = 60, name = "Frost Dragon Hatchling" },
+    { position = "12:11:0", interval = 60, name = "Frost Dragon" },
+]
+
+[ConvertedSpawn_z4_6241]
+range = { start = "32934:31551:4", end = "32947:31570:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Demon Skeleton" },
+    { position = "5:6:0", interval = 60, name = "Vampire" },
+    { position = "6:11:0", interval = 60, name = "Vampire" },
+    { position = "2:12:0", interval = 60, name = "Demon Skeleton" },
+    { position = "11:14:0", interval = 60, name = "Demon Skeleton" },
+    { position = "10:17:0", interval = 60, name = "Vampire" },
+]
+
+[ConvertedSpawn_z4_6247]
+range = { start = "33074:31266:4", end = "33087:31283:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "8:9:0", interval = 60, name = "Draken Warmaster" },
+    { position = "4:11:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "11:11:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "6:14:0", interval = 60, name = "Draken Warmaster" },
+    { position = "10:15:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_6266]
+range = { start = "33286:31518:4", end = "33290:31522:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_6281]
+range = { start = "32549:31476:4", end = "32553:31480:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6289]
+range = { start = "33037:31200:4", end = "33045:31212:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "6:10:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_6291]
+range = { start = "32560:31463:4", end = "32564:31467:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6311]
+range = { start = "32599:31455:4", end = "32603:31459:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6337]
+range = { start = "32384:31262:4", end = "32391:31271:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Frost Giantess" },
+    { position = "2:7:0", interval = 60, name = "Frost Giant" },
+]
+
+[ConvertedSpawn_z4_6338]
+range = { start = "32535:31440:4", end = "32553:31464:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "16:2:0", interval = 60, name = "Cyclops" },
+    { position = "11:10:0", interval = 60, name = "Cyclops" },
+    { position = "2:15:0", interval = 60, name = "Cyclops" },
+    { position = "8:22:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6344]
+range = { start = "32605:31435:4", end = "32614:31444:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+    { position = "7:7:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6352]
+range = { start = "32365:31236:4", end = "32374:31246:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Frost Giant" },
+    { position = "4:6:0", interval = 60, name = "Frost Giant" },
+    { position = "2:8:0", interval = 60, name = "Frost Giant" },
+]
+
+[ConvertedSpawn_z4_6355]
+range = { start = "32618:31428:4", end = "32627:31435:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Cyclops" },
+    { position = "2:5:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6358]
+range = { start = "32974:31424:4", end = "32985:31429:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ghoul" },
+    { position = "9:3:0", interval = 60, name = "Ghoul" },
+]
+
+[ConvertedSpawn_z4_6362]
+range = { start = "32584:31424:4", end = "32588:31428:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6372]
+range = { start = "32597:31418:4", end = "32607:31423:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+    { position = "8:3:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6393]
+range = { start = "32617:32553:4", end = "32621:32557:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Giantess" },
+]
+
+[ConvertedSpawn_z4_6394]
+range = { start = "32273:31363:4", end = "32277:31367:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+]
+
+[ConvertedSpawn_z4_6409]
+range = { start = "33203:32378:4", end = "33217:32392:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "9:2:0", interval = 60, name = "Wasp" },
+    { position = "12:4:0", interval = 60, name = "Wasp" },
+    { position = "2:2:0", interval = 60, name = "Wasp" },
+    { position = "2:4:0", interval = 60, name = "Wasp" },
+    { position = "11:8:0", interval = 60, name = "Wasp" },
+    { position = "11:10:0", interval = 60, name = "Wasp" },
+    { position = "2:10:0", interval = 60, name = "Wasp" },
+    { position = "3:10:0", interval = 60, name = "Wasp" },
+    { position = "5:12:0", interval = 60, name = "Wasp" },
+]
+
+[ConvertedSpawn_z4_6415]
+range = { start = "33064:32158:4", end = "33068:32162:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Firestarter" },
+]
+
+[ConvertedSpawn_z4_6475]
+range = { start = "32839:31824:4", end = "32846:31830:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Wasp" },
+    { position = "5:2:0", interval = 60, name = "Wasp" },
+    { position = "5:3:0", interval = 60, name = "Wasp" },
+    { position = "2:4:0", interval = 60, name = "Wasp" },
+]
+
+[ConvertedSpawn_z4_6484]
+range = { start = "31134:31816:4", end = "31144:31821:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Guzzlemaw" },
+    { position = "2:3:0", interval = 60, name = "Frazzlemaw" },
+    { position = "8:3:0", interval = 60, name = "Guzzlemaw" },
+]
+
+[ConvertedSpawn_z4_6501]
+range = { start = "32557:31805:4", end = "32565:31812:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Spider" },
+    { position = "6:5:0", interval = 60, name = "Sheep" },
+]
+
+[ConvertedSpawn_z4_6546]
+range = { start = "32941:31447:4", end = "32945:31451:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Vampire Bride" },
+]
+
+[ConvertedSpawn_z4_6583]
+range = { start = "33192:31270:4", end = "33201:31288:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+    { position = "4:10:0", interval = 60, name = "Frost Dragon" },
+    { position = "7:16:0", interval = 60, name = "Frost Dragon Hatchling" },
+]
+
+[ConvertedSpawn_z4_6669]
+range = { start = "32698:31227:4", end = "32703:31236:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Undead Gladiator" },
+    { position = "2:7:0", interval = 60, name = "Undead Gladiator" },
+]
+
+[ConvertedSpawn_z4_6681]
+range = { start = "33116:31219:4", end = "33120:31223:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_6688]
+range = { start = "32534:31834:4", end = "32538:31838:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Uzon" },
+]
+
+[ConvertedSpawn_z4_6711]
+range = { start = "32017:31204:4", end = "32031:31215:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "12:2:0", interval = 60, name = "Polar Bear" },
+    { position = "2:9:0", interval = 60, name = "Polar Bear" },
+]
+
+[ConvertedSpawn_z4_6721]
+range = { start = "33116:31175:4", end = "33121:31200:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:8:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:12:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "3:17:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:23:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_6767]
+range = { start = "32133:31130:4", end = "32158:31146:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Polar Bear" },
+    { position = "23:8:0", interval = 60, name = "Frost Troll" },
+    { position = "7:8:0", interval = 60, name = "Frost Troll" },
+    { position = "14:14:0", interval = 60, name = "Polar Bear" },
+    { position = "22:14:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_6773]
+range = { start = "32607:31406:4", end = "32611:31410:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6802]
+range = { start = "32763:31074:4", end = "32767:31078:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Tarantula" },
+]
+
+[ConvertedSpawn_z4_6810]
+range = { start = "32931:32668:4", end = "32967:32689:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "14:3:0", interval = 60, name = "Massive Fire Elemental" },
+    { position = "15:3:0", interval = 60, name = "Midnight Asura" },
+    { position = "14:5:0", interval = 60, name = "Destroyer" },
+    { position = "30:2:0", interval = 60, name = "Massive Fire Elemental" },
+    { position = "31:3:0", interval = 60, name = "Midnight Asura" },
+    { position = "28:6:0", interval = 60, name = "Destroyer" },
+    { position = "29:7:0", interval = 60, name = "Destroyer" },
+    { position = "32:2:0", interval = 60, name = "Destroyer" },
+    { position = "34:5:0", interval = 60, name = "Destroyer" },
+    { position = "8:7:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "7:8:0", interval = 60, name = "Midnight Asura" },
+    { position = "3:9:0", interval = 60, name = "Massive Fire Elemental" },
+    { position = "13:9:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "21:8:0", interval = 60, name = "Destroyer" },
+    { position = "20:9:0", interval = 60, name = "Midnight Asura" },
+    { position = "3:12:0", interval = 60, name = "Midnight Asura" },
+    { position = "6:15:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "11:15:0", interval = 60, name = "Midnight Asura" },
+    { position = "29:15:0", interval = 60, name = "Midnight Asura" },
+    { position = "15:16:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "25:16:0", interval = 60, name = "Massive Fire Elemental" },
+    { position = "26:16:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "2:17:0", interval = 60, name = "Destroyer" },
+    { position = "12:19:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "22:19:0", interval = 60, name = "Dawnfire Asura" },
+    { position = "33:19:0", interval = 60, name = "Massive Fire Elemental" },
+]
+
+[ConvertedSpawn_z4_6811]
+range = { start = "32564:31475:4", end = "32568:31479:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6820]
+range = { start = "33167:31073:4", end = "33176:31081:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Souleater" },
+    { position = "2:6:0", interval = 60, name = "Souleater" },
+]
+
+[ConvertedSpawn_z4_6832]
+range = { start = "33181:31069:4", end = "33190:31079:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Souleater" },
+    { position = "2:8:0", interval = 60, name = "Souleater" },
+]
+
+[ConvertedSpawn_z4_6842]
+range = { start = "33077:31077:4", end = "33096:31086:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "6:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "11:3:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "17:3:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "5:6:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "2:7:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_6848]
+range = { start = "33137:32573:4", end = "33141:32577:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Giant Spider" },
+]
+
+[ConvertedSpawn_z4_6892]
+range = { start = "32590:31408:4", end = "32594:31412:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_6894]
+range = { start = "32774:31085:4", end = "32778:31089:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Giant Spider" },
+]
+
+[ConvertedSpawn_z4_6919]
+range = { start = "33149:31267:4", end = "33163:31273:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+    { position = "12:2:0", interval = 60, name = "Frost Dragon" },
+    { position = "5:4:0", interval = 60, name = "Frost Dragon Hatchling" },
+]
+
+[ConvertedSpawn_z4_6923]
+range = { start = "33099:32518:4", end = "33105:32526:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Blue Djinn" },
+    { position = "2:3:0", interval = 60, name = "Blue Djinn" },
+    { position = "4:3:0", interval = 60, name = "Fire Elemental" },
+    { position = "3:6:0", interval = 60, name = "Marid" },
+]
+
+[ConvertedSpawn_z4_6924]
+range = { start = "33107:32523:4", end = "33111:32527:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Haroun" },
+]
+
+[ConvertedSpawn_z4_7002]
+range = { start = "32780:31095:4", end = "32788:31103:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Tarantula" },
+    { position = "2:6:0", interval = 60, name = "Tarantula" },
+]
+
+[ConvertedSpawn_z4_7019]
+range = { start = "33097:31271:4", end = "33114:31280:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "10:2:0", interval = 60, name = "Draken Warmaster" },
+    { position = "15:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "13:3:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "10:5:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "2:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "10:7:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_7023]
+range = { start = "32074:31132:4", end = "32078:31136:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_7028]
+range = { start = "33140:31263:4", end = "33144:31267:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+]
+
+[ConvertedSpawn_z4_7057]
+range = { start = "32904:31100:4", end = "32910:31105:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Mad Scientist" },
+    { position = "4:3:0", interval = 60, name = "Mad Scientist" },
+]
+
+[ConvertedSpawn_z4_7059]
+range = { start = "33025:32419:4", end = "33029:32423:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Wasp" },
+]
+
+[ConvertedSpawn_z4_7060]
+range = { start = "33025:32415:4", end = "33029:32419:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Samir" },
+]
+
+[ConvertedSpawn_z4_7069]
+range = { start = "33318:31077:4", end = "33331:31098:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Lizard High Guard" },
+    { position = "5:7:0", interval = 60, name = "Lizard High Guard" },
+    { position = "2:12:0", interval = 60, name = "Lizard Legionnaire" },
+    { position = "11:13:0", interval = 60, name = "Lizard High Guard" },
+    { position = "4:14:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "6:19:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_7072]
+range = { start = "33108:31260:4", end = "33112:31264:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_7086]
+range = { start = "32894:31095:4", end = "32898:31099:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Infernalist" },
+]
+
+[ConvertedSpawn_z4_7113]
+range = { start = "33506:31168:4", end = "33516:31176:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Spidris" },
+    { position = "4:3:0", interval = 60, name = "Spidris" },
+    { position = "2:4:0", interval = 60, name = "Spidris" },
+    { position = "5:3:0", interval = 60, name = "Spitter" },
+    { position = "4:5:0", interval = 60, name = "Spidris" },
+    { position = "8:6:0", interval = 60, name = "Spidris" },
+]
+
+[ConvertedSpawn_z4_7125]
+range = { start = "33543:31308:4", end = "33558:31325:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Lesser Swarmer" },
+    { position = "2:3:0", interval = 60, name = "Hive Pore" },
+    { position = "12:2:0", interval = 60, name = "Crawler" },
+    { position = "4:3:0", interval = 60, name = "Lesser Swarmer" },
+    { position = "3:4:0", interval = 60, name = "Lesser Swarmer" },
+    { position = "6:6:0", interval = 60, name = "Crawler" },
+    { position = "12:6:0", interval = 60, name = "Waspoid" },
+    { position = "10:7:0", interval = 60, name = "Insectoid Worker" },
+    { position = "13:9:0", interval = 60, name = "Crawler" },
+    { position = "2:14:0", interval = 60, name = "Insectoid Worker" },
+    { position = "7:15:0", interval = 60, name = "Insectoid Worker" },
+]
+
+[ConvertedSpawn_z4_7161]
+range = { start = "33046:31245:4", end = "33055:31257:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "3:9:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "7:10:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_7166]
+range = { start = "32925:31079:4", end = "32929:31083:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Necromancer" },
+]
+
+[ConvertedSpawn_z4_7188]
+range = { start = "33553:31216:4", end = "33609:31252:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Waspoid" },
+    { position = "5:3:0", interval = 60, name = "Crawler" },
+    { position = "14:5:0", interval = 60, name = "Crawler" },
+    { position = "6:6:0", interval = 60, name = "Waspoid" },
+    { position = "14:7:0", interval = 60, name = "Crawler" },
+    { position = "53:9:0", interval = 60, name = "Kollos" },
+    { position = "14:10:0", interval = 60, name = "Kollos" },
+    { position = "14:11:0", interval = 60, name = "Waspoid" },
+    { position = "9:12:0", interval = 60, name = "Spitter" },
+    { position = "53:12:0", interval = 60, name = "Waspoid" },
+    { position = "14:13:0", interval = 60, name = "Spitter" },
+    { position = "29:13:0", interval = 60, name = "Waspoid" },
+    { position = "54:13:0", interval = 60, name = "Waspoid" },
+    { position = "11:15:0", interval = 60, name = "Spitter" },
+    { position = "24:16:0", interval = 60, name = "Waspoid" },
+    { position = "35:16:0", interval = 60, name = "Waspoid" },
+    { position = "44:16:0", interval = 60, name = "Spitter" },
+    { position = "43:17:0", interval = 60, name = "Spitter" },
+    { position = "44:17:0", interval = 60, name = "Spitter" },
+    { position = "40:17:0", interval = 60, name = "Waspoid" },
+    { position = "45:17:0", interval = 60, name = "Waspoid" },
+    { position = "47:17:0", interval = 60, name = "Crawler" },
+    { position = "46:18:0", interval = 60, name = "Crawler" },
+    { position = "17:18:0", interval = 60, name = "Spitter" },
+    { position = "30:18:0", interval = 60, name = "Waspoid" },
+    { position = "36:18:0", interval = 60, name = "Spitter" },
+    { position = "21:21:0", interval = 60, name = "Spitter" },
+    { position = "48:21:0", interval = 60, name = "Waspoid" },
+    { position = "43:24:0", interval = 60, name = "Waspoid" },
+    { position = "50:24:0", interval = 60, name = "Spitter" },
+    { position = "36:29:0", interval = 60, name = "Crawler" },
+    { position = "41:32:0", interval = 60, name = "Crawler" },
+    { position = "47:34:0", interval = 60, name = "Waspoid" },
+]
+
+[ConvertedSpawn_z4_7193]
+range = { start = "33074:32706:4", end = "33078:32710:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_7206]
+range = { start = "32656:32348:4", end = "32663:32357:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Skeleton" },
+    { position = "5:3:0", interval = 60, name = "Skeleton" },
+    { position = "5:6:0", interval = 60, name = "Skeleton" },
+    { position = "2:7:0", interval = 60, name = "Skeleton" },
+]
+
+[ConvertedSpawn_z4_7221]
+range = { start = "33580:31279:4", end = "33584:31283:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Waspoid" },
+]
+
+[ConvertedSpawn_z4_7231]
+range = { start = "33072:32169:4", end = "33079:32174:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Dragon" },
+    { position = "2:3:0", interval = 60, name = "Dragon" },
+]
+
+[ConvertedSpawn_z4_7243]
+range = { start = "32875:31772:4", end = "32880:31778:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Orc Spearman" },
+    { position = "3:2:0", interval = 60, name = "Orc Spearman" },
+    { position = "3:4:0", interval = 60, name = "Orc Spearman" },
+]
+
+[ConvertedSpawn_z4_7305]
+range = { start = "32571:31425:4", end = "32575:31429:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_7343]
+range = { start = "33062:31141:4", end = "33069:31150:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:7:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_7348]
+range = { start = "32817:31126:4", end = "32823:31132:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Blue Djinn" },
+    { position = "4:4:0", interval = 60, name = "Blue Djinn" },
+]
+
+[ConvertedSpawn_z4_7376]
+range = { start = "33056:31095:4", end = "33094:31126:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Lizard Chosen" },
+    { position = "24:2:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "16:4:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "33:4:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "18:6:0", interval = 60, name = "Draken Warmaster" },
+    { position = "36:6:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "3:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "26:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "10:9:0", interval = 60, name = "Draken Warmaster" },
+    { position = "24:9:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:10:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "17:10:0", interval = 60, name = "Draken Warmaster" },
+    { position = "36:10:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:13:0", interval = 60, name = "Draken Warmaster" },
+    { position = "17:13:0", interval = 60, name = "Draken Warmaster" },
+    { position = "23:14:0", interval = 60, name = "Draken Warmaster" },
+    { position = "26:14:0", interval = 60, name = "Draken Warmaster" },
+    { position = "31:14:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "7:16:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "14:16:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "36:16:0", interval = 60, name = "Lizard Chosen" },
+    { position = "2:18:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "7:19:0", interval = 60, name = "Draken Warmaster" },
+    { position = "18:19:0", interval = 60, name = "Lizard Chosen" },
+    { position = "31:19:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "36:20:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "30:22:0", interval = 60, name = "Draken Warmaster" },
+    { position = "11:23:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:24:0", interval = 60, name = "Draken Warmaster" },
+    { position = "36:24:0", interval = 60, name = "Draken Warmaster" },
+    { position = "20:26:0", interval = 60, name = "Draken Warmaster" },
+    { position = "3:27:0", interval = 60, name = "Draken Warmaster" },
+    { position = "17:27:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "30:27:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "12:28:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "28:29:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_7400]
+range = { start = "32071:32103:4", end = "32081:32117:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Troll" },
+    { position = "5:3:0", interval = 60, name = "Sheep" },
+    { position = "3:4:0", interval = 60, name = "Sheep" },
+    { position = "2:5:0", interval = 60, name = "Troll" },
+    { position = "5:5:0", interval = 60, name = "Sheep" },
+    { position = "5:8:0", interval = 60, name = "Orc" },
+    { position = "7:9:0", interval = 60, name = "Troll" },
+    { position = "8:12:0", interval = 60, name = "Sheep" },
+]
+
+[ConvertedSpawn_z4_7447]
+range = { start = "33065:31081:4", end = "33069:31085:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_7458]
+range = { start = "32768:31063:4", end = "32784:31074:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Tarantula" },
+    { position = "14:4:0", interval = 60, name = "Tarantula" },
+    { position = "2:7:0", interval = 60, name = "Tarantula" },
+    { position = "9:9:0", interval = 60, name = "Tarantula" },
+]
+
+[ConvertedSpawn_z4_7465]
+range = { start = "33106:31099:4", end = "33110:31103:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_7525]
+range = { start = "33027:31105:4", end = "33046:31117:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "8:2:0", interval = 60, name = "Draken Warmaster" },
+    { position = "11:5:0", interval = 60, name = "Draken Warmaster" },
+    { position = "17:5:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "2:7:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "6:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "6:10:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_7530]
+range = { start = "33056:31165:4", end = "33064:31169:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+    { position = "6:2:0", interval = 60, name = "Lizard Dragon Priest" },
+]
+
+[ConvertedSpawn_z4_7545]
+range = { start = "33070:32691:4", end = "33080:32700:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Energy Elemental" },
+    { position = "8:7:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_7561]
+range = { start = "32376:31235:4", end = "32387:31246:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "9:2:0", interval = 60, name = "Frost Giantess" },
+    { position = "2:9:0", interval = 60, name = "Frost Giant" },
+]
+
+[ConvertedSpawn_z4_7594]
+range = { start = "32828:31115:4", end = "32832:31119:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Marid" },
+]
+
+[ConvertedSpawn_z4_7614]
+range = { start = "33130:31298:4", end = "33138:31313:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Frost Dragon" },
+    { position = "2:5:0", interval = 60, name = "Frost Dragon Hatchling" },
+    { position = "3:13:0", interval = 60, name = "Frost Dragon" },
+]
+
+[ConvertedSpawn_z4_7632]
+range = { start = "32369:31274:4", end = "32377:31282:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Giant" },
+    { position = "6:6:0", interval = 60, name = "Frost Giant" },
+]
+
+[ConvertedSpawn_z4_7641]
+range = { start = "33105:31128:4", end = "33109:31132:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_7650]
+range = { start = "32265:31358:4", end = "32269:31362:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+]
+
+[ConvertedSpawn_z4_7676]
+range = { start = "33203:31324:4", end = "33216:31336:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Frost Dragon Hatchling" },
+    { position = "11:5:0", interval = 60, name = "Frost Dragon" },
+    { position = "2:6:0", interval = 60, name = "Frost Dragon" },
+    { position = "6:10:0", interval = 60, name = "Frost Dragon Hatchling" },
+]
+
+[ConvertedSpawn_z4_7688]
+range = { start = "33256:31823:4", end = "33262:31827:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Rat" },
+    { position = "4:2:0", interval = 60, name = "Snake" },
+]
+
+[ConvertedSpawn_z4_7689]
+range = { start = "33031:31227:4", end = "33053:31240:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Warmaster" },
+    { position = "17:5:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "9:7:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "15:8:0", interval = 60, name = "Draken Warmaster" },
+    { position = "18:9:0", interval = 60, name = "Draken Warmaster" },
+    { position = "16:11:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "20:11:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_7701]
+range = { start = "32021:31440:4", end = "32026:31447:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ice Witch" },
+    { position = "3:5:0", interval = 60, name = "Ice Witch" },
+]
+
+[ConvertedSpawn_z4_7714]
+range = { start = "32317:32631:4", end = "32321:32635:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Tiger" },
+]
+
+[ConvertedSpawn_z4_7715]
+range = { start = "32562:31441:4", end = "32575:31455:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "9:2:0", interval = 60, name = "Cyclops Drone" },
+    { position = "3:6:0", interval = 60, name = "Cyclops Smith" },
+    { position = "9:9:0", interval = 60, name = "Cyclops" },
+    { position = "2:11:0", interval = 60, name = "Cyclops Drone" },
+    { position = "11:12:0", interval = 60, name = "Cyclops Smith" },
+]
+
+[ConvertedSpawn_z4_7723]
+range = { start = "32996:32665:4", end = "33002:32669:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hydra" },
+    { position = "4:2:0", interval = 60, name = "Hydra" },
+]
+
+[ConvertedSpawn_z4_7739]
+range = { start = "32123:31180:4", end = "32127:31184:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Crystal Spider" },
+]
+
+[ConvertedSpawn_z4_7751]
+range = { start = "33080:32659:4", end = "33087:32675:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Massive Energy Elemental" },
+    { position = "2:5:0", interval = 60, name = "Energy Elemental" },
+    { position = "3:7:0", interval = 60, name = "Massive Energy Elemental" },
+    { position = "4:14:0", interval = 60, name = "Energy Elemental" },
+]
+
+[ConvertedSpawn_z4_7752]
+range = { start = "32932:31453:4", end = "32947:31467:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Vampire Bride" },
+    { position = "13:5:0", interval = 60, name = "Nightmare Scion" },
+    { position = "2:7:0", interval = 60, name = "Nightmare Scion" },
+    { position = "9:9:0", interval = 60, name = "Werewolf" },
+    { position = "5:12:0", interval = 60, name = "Werewolf" },
+]
+
+[ConvertedSpawn_z4_7779]
+range = { start = "32378:32725:4", end = "32388:32738:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+    { position = "8:11:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_7798]
+range = { start = "32419:32747:4", end = "32433:32764:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Earth Elemental" },
+    { position = "7:8:0", interval = 60, name = "Earth Elemental" },
+    { position = "12:15:0", interval = 60, name = "Nightstalker" },
+]
+
+[ConvertedSpawn_z4_7834]
+range = { start = "33180:31195:4", end = "33186:31203:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "4:3:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "3:6:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_7835]
+range = { start = "31960:32814:4", end = "31967:32823:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Buccaneer" },
+    { position = "5:4:0", interval = 60, name = "Smuggler" },
+    { position = "5:7:0", interval = 60, name = "Pirate Buccaneer" },
+]
+
+[ConvertedSpawn_z4_7838]
+range = { start = "33695:31955:4", end = "33715:31980:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Minotaur Hunter" },
+    { position = "2:3:0", interval = 60, name = "Minotaur Hunter" },
+    { position = "2:8:0", interval = 60, name = "Moohtant" },
+    { position = "4:10:0", interval = 60, name = "Mooh'Tah Warrior" },
+    { position = "18:12:0", interval = 60, name = "Minotaur Hunter" },
+    { position = "13:15:0", interval = 60, name = "Moohtant" },
+    { position = "15:17:0", interval = 60, name = "Mooh'Tah Warrior" },
+    { position = "3:20:0", interval = 60, name = "Minotaur Hunter" },
+    { position = "5:21:0", interval = 60, name = "Mooh'Tah Warrior" },
+    { position = "8:23:0", interval = 60, name = "Moohtant" },
+]
+
+[ConvertedSpawn_z4_7848]
+range = { start = "32143:31190:4", end = "32153:31200:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Winter wolf" },
+    { position = "5:3:0", interval = 60, name = "Winter wolf" },
+    { position = "8:3:0", interval = 60, name = "Frost Troll" },
+    { position = "6:5:0", interval = 60, name = "Winter wolf" },
+    { position = "5:8:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_7855]
+range = { start = "32021:32893:4", end = "32030:32900:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "7:5:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_7866]
+range = { start = "32678:31159:4", end = "32684:31166:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Death Blob" },
+    { position = "4:5:0", interval = 60, name = "Death Blob" },
+]
+
+[ConvertedSpawn_z4_7873]
+range = { start = "31946:32908:4", end = "31955:32915:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "7:5:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_7888]
+range = { start = "31935:32923:4", end = "31939:32930:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:5:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_7889]
+range = { start = "32812:32547:4", end = "32816:32551:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Sibang" },
+]
+
+[ConvertedSpawn_z4_7894]
+range = { start = "31945:32932:4", end = "31953:32939:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Pirate Corsair" },
+    { position = "2:5:0", interval = 60, name = "Pirate Marauder" },
+    { position = "6:5:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_7901]
+range = { start = "33030:31210:4", end = "33034:31214:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_7925]
+range = { start = "32983:32632:4", end = "32987:32636:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hydra" },
+]
+
+[ConvertedSpawn_z4_7945]
+range = { start = "33062:31216:4", end = "33066:31224:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "2:6:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_7961]
+range = { start = "33474:31178:4", end = "33547:31225:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "22:2:0", interval = 60, name = "Waspoid" },
+    { position = "19:3:0", interval = 60, name = "Spitter" },
+    { position = "19:4:0", interval = 60, name = "Kollos" },
+    { position = "27:8:0", interval = 60, name = "Kollos" },
+    { position = "19:12:0", interval = 60, name = "Waspoid" },
+    { position = "23:13:0", interval = 60, name = "Spitter" },
+    { position = "19:14:0", interval = 60, name = "Waspoid" },
+    { position = "31:16:0", interval = 60, name = "Kollos" },
+    { position = "59:16:0", interval = 60, name = "Waspoid" },
+    { position = "58:18:0", interval = 60, name = "Spitter" },
+    { position = "60:18:0", interval = 60, name = "Waspoid" },
+    { position = "13:19:0", interval = 60, name = "Spidris Elite" },
+    { position = "5:20:0", interval = 60, name = "Spitter" },
+    { position = "20:20:0", interval = 60, name = "Waspoid" },
+    { position = "22:20:0", interval = 60, name = "Waspoid" },
+    { position = "23:21:0", interval = 60, name = "Kollos" },
+    { position = "54:21:0", interval = 60, name = "Spidris" },
+    { position = "2:22:0", interval = 60, name = "Spidris" },
+    { position = "16:22:0", interval = 60, name = "Spitter" },
+    { position = "68:22:0", interval = 60, name = "Kollos" },
+    { position = "40:23:0", interval = 60, name = "Waspoid" },
+    { position = "11:24:0", interval = 60, name = "Spidris" },
+    { position = "12:24:0", interval = 60, name = "Spitter" },
+    { position = "66:24:0", interval = 60, name = "Spitter" },
+    { position = "30:25:0", interval = 60, name = "Spitter" },
+    { position = "32:25:0", interval = 60, name = "Kollos" },
+    { position = "62:25:0", interval = 60, name = "Spidris" },
+    { position = "45:26:0", interval = 60, name = "Spidris" },
+    { position = "68:26:0", interval = 60, name = "Spitter" },
+    { position = "68:27:0", interval = 60, name = "Spidris" },
+    { position = "59:27:0", interval = 60, name = "Spidris" },
+    { position = "63:27:0", interval = 60, name = "Kollos" },
+    { position = "70:27:0", interval = 60, name = "Waspoid" },
+    { position = "28:28:0", interval = 60, name = "Spitter" },
+    { position = "43:29:0", interval = 60, name = "Waspoid" },
+    { position = "42:30:0", interval = 60, name = "Waspoid" },
+    { position = "36:30:0", interval = 60, name = "Spitter" },
+    { position = "24:33:0", interval = 60, name = "Kollos" },
+    { position = "25:33:0", interval = 60, name = "Kollos" },
+    { position = "71:33:0", interval = 60, name = "Waspoid" },
+    { position = "40:34:0", interval = 60, name = "Waspoid" },
+    { position = "31:35:0", interval = 60, name = "Spitter" },
+    { position = "29:36:0", interval = 60, name = "Spitter" },
+    { position = "33:35:0", interval = 60, name = "Spitter" },
+    { position = "34:35:0", interval = 60, name = "Waspoid" },
+    { position = "66:36:0", interval = 60, name = "Waspoid" },
+    { position = "32:37:0", interval = 60, name = "Spidris" },
+    { position = "62:37:0", interval = 60, name = "Spitter" },
+    { position = "61:38:0", interval = 60, name = "Waspoid" },
+    { position = "63:38:0", interval = 60, name = "Spitter" },
+    { position = "65:39:0", interval = 60, name = "Spidris" },
+    { position = "64:40:0", interval = 60, name = "Spidris" },
+    { position = "59:40:0", interval = 60, name = "Spidris" },
+    { position = "45:41:0", interval = 60, name = "Spitter" },
+    { position = "44:42:0", interval = 60, name = "Spitter" },
+    { position = "41:42:0", interval = 60, name = "Spidris" },
+    { position = "39:43:0", interval = 60, name = "Waspoid" },
+    { position = "50:44:0", interval = 60, name = "Spitter" },
+    { position = "53:45:0", interval = 60, name = "Waspoid" },
+]
+
+[ConvertedSpawn_z4_7983]
+range = { start = "32649:31225:4", end = "32654:31235:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Undead Gladiator" },
+    { position = "3:8:0", interval = 60, name = "Undead Gladiator" },
+]
+
+[ConvertedSpawn_z4_8021]
+range = { start = "31551:32078:4", end = "31555:32082:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Daralemo" },
+]
+
+[ConvertedSpawn_z4_8036]
+range = { start = "32430:32769:4", end = "32435:32777:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Earth Elemental" },
+    { position = "2:6:0", interval = 60, name = "Earth Elemental" },
+]
+
+[ConvertedSpawn_z4_8091]
+range = { start = "32393:31278:4", end = "32397:31282:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Giantess" },
+]
+
+[ConvertedSpawn_z4_8120]
+range = { start = "32577:31396:4", end = "32585:31404:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Cyclops" },
+    { position = "2:6:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_8130]
+range = { start = "32574:31410:4", end = "32578:31414:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_8181]
+range = { start = "33080:31034:4", end = "33084:31038:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_8192]
+range = { start = "33093:31036:4", end = "33097:31040:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Legionnaire" },
+]
+
+[ConvertedSpawn_z4_8205]
+range = { start = "32901:31073:4", end = "32905:31077:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dark Magician" },
+]
+
+[ConvertedSpawn_z4_8218]
+range = { start = "33105:31075:4", end = "33113:31094:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:3:0", interval = 60, name = "Draken Warmaster" },
+    { position = "6:4:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "3:7:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "6:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "4:10:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "4:17:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_8223]
+range = { start = "32130:31093:4", end = "32149:31112:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "17:2:0", interval = 60, name = "Winter wolf" },
+    { position = "14:6:0", interval = 60, name = "Frost Troll" },
+    { position = "14:9:0", interval = 60, name = "Winter wolf" },
+    { position = "10:13:0", interval = 60, name = "Frost Troll" },
+    { position = "2:16:0", interval = 60, name = "Winter wolf" },
+    { position = "5:17:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_8225]
+range = { start = "33105:31110:4", end = "33114:31122:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "2:6:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "5:6:0", interval = 60, name = "Draken Warmaster" },
+    { position = "7:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "4:10:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "6:10:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_8236]
+range = { start = "32676:31111:4", end = "32681:31121:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Mutated Bat" },
+    { position = "2:8:0", interval = 60, name = "Mutated Rat" },
+]
+
+[ConvertedSpawn_z4_8242]
+range = { start = "33031:31123:4", end = "33035:31127:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_8251]
+range = { start = "32180:31124:4", end = "32184:31132:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:6:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_8257]
+range = { start = "32888:31130:4", end = "32893:31140:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Efreet" },
+    { position = "3:8:0", interval = 60, name = "Efreet" },
+]
+
+[ConvertedSpawn_z4_8264]
+range = { start = "32164:31132:4", end = "32176:31139:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Polar Bear" },
+    { position = "7:5:0", interval = 60, name = "Winter wolf" },
+    { position = "10:5:0", interval = 60, name = "Winter wolf" },
+]
+
+[ConvertedSpawn_z4_8265]
+range = { start = "33042:31135:4", end = "33047:31150:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:7:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:13:0", interval = 60, name = "Dragon Hatchling" },
+]
+
+[ConvertedSpawn_z4_8275]
+range = { start = "33106:31140:4", end = "33124:31158:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "12:8:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "10:9:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "2:10:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "15:10:0", interval = 60, name = "Draken Warmaster" },
+    { position = "12:12:0", interval = 60, name = "Draken Warmaster" },
+    { position = "16:13:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "13:16:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_8286]
+range = { start = "32863:31144:4", end = "32873:31158:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Dark Apprentice" },
+    { position = "8:5:0", interval = 60, name = "Dark Apprentice" },
+    { position = "4:6:0", interval = 60, name = "Dark Magician" },
+    { position = "2:10:0", interval = 60, name = "Dark Apprentice" },
+    { position = "7:12:0", interval = 60, name = "Dark Magician" },
+]
+
+[ConvertedSpawn_z4_8289]
+range = { start = "32066:31149:4", end = "32073:31156:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:5:0", interval = 60, name = "Polar Bear" },
+]
+
+[ConvertedSpawn_z4_8306]
+range = { start = "33077:31151:4", end = "33082:31161:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:8:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8310]
+range = { start = "33028:31152:4", end = "33044:31172:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "5:9:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:11:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "5:13:0", interval = 60, name = "Draken Warmaster" },
+    { position = "14:13:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "8:14:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "3:15:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "14:18:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_8327]
+range = { start = "32061:31158:4", end = "32068:31166:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:6:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_8338]
+range = { start = "33094:31161:4", end = "33098:31165:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8344]
+range = { start = "33073:31175:4", end = "33086:31211:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Lizard Magistratus" },
+    { position = "8:4:0", interval = 60, name = "Lizard Magistratus" },
+    { position = "5:7:0", interval = 60, name = "Lizard High Guard" },
+    { position = "6:7:0", interval = 60, name = "Lizard Noble" },
+    { position = "10:7:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "7:11:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:14:0", interval = 60, name = "Lizard High Guard" },
+    { position = "9:17:0", interval = 60, name = "Lizard Magistratus" },
+    { position = "3:21:0", interval = 60, name = "Lizard High Guard" },
+    { position = "10:23:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "11:25:0", interval = 60, name = "Lizard Magistratus" },
+    { position = "6:27:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:27:0", interval = 60, name = "Lizard Noble" },
+    { position = "2:28:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "10:28:0", interval = 60, name = "Lizard High Guard" },
+    { position = "8:32:0", interval = 60, name = "Lizard Noble" },
+    { position = "7:34:0", interval = 60, name = "Lizard Noble" },
+]
+
+[ConvertedSpawn_z4_8350]
+range = { start = "32076:31178:4", end = "32080:31182:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Mammoth" },
+]
+
+[ConvertedSpawn_z4_8351]
+range = { start = "33525:31177:4", end = "33533:31183:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Kollos" },
+    { position = "6:2:0", interval = 60, name = "Spitter" },
+    { position = "2:4:0", interval = 60, name = "Kollos" },
+    { position = "3:4:0", interval = 60, name = "Spitter" },
+    { position = "6:4:0", interval = 60, name = "Spitter" },
+]
+
+[ConvertedSpawn_z4_8356]
+range = { start = "32135:31180:4", end = "32139:31184:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Winter wolf" },
+]
+
+[ConvertedSpawn_z4_8359]
+range = { start = "32088:31183:4", end = "32099:31194:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Mammoth" },
+    { position = "2:7:0", interval = 60, name = "Polar Bear" },
+    { position = "9:9:0", interval = 60, name = "Mammoth" },
+]
+
+[ConvertedSpawn_z4_8360]
+range = { start = "32787:31074:4", end = "32791:31078:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Tarantula" },
+]
+
+[ConvertedSpawn_z4_8365]
+range = { start = "32068:31186:4", end = "32079:31210:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Winter wolf" },
+    { position = "6:4:0", interval = 60, name = "Polar Bear" },
+    { position = "6:10:0", interval = 60, name = "Mammoth" },
+    { position = "9:12:0", interval = 60, name = "Winter wolf" },
+    { position = "5:16:0", interval = 60, name = "Frost Troll" },
+    { position = "7:16:0", interval = 60, name = "Winter wolf" },
+    { position = "8:16:0", interval = 60, name = "Frost Troll" },
+    { position = "4:19:0", interval = 60, name = "Winter wolf" },
+    { position = "7:19:0", interval = 60, name = "Mammoth" },
+    { position = "8:19:0", interval = 60, name = "Winter wolf" },
+    { position = "2:20:0", interval = 60, name = "Winter wolf" },
+    { position = "3:21:0", interval = 60, name = "Frost Troll" },
+    { position = "5:22:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_8367]
+range = { start = "32249:31095:4", end = "32253:31099:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Iyad" },
+]
+
+[ConvertedSpawn_z4_8371]
+range = { start = "32052:31189:4", end = "32061:31196:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Troll" },
+    { position = "7:3:0", interval = 60, name = "Polar Bear" },
+    { position = "3:5:0", interval = 60, name = "Polar Bear" },
+]
+
+[ConvertedSpawn_z4_8373]
+range = { start = "33172:31192:4", end = "33176:31203:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+    { position = "2:4:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "2:9:0", interval = 60, name = "Lizard Legionnaire" },
+]
+
+[ConvertedSpawn_z4_8374]
+range = { start = "33043:31079:4", end = "33059:31091:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "5:2:0", interval = 60, name = "Lizard Zaogun" },
+    { position = "2:5:0", interval = 60, name = "Draken Warmaster" },
+    { position = "7:5:0", interval = 60, name = "Draken Warmaster" },
+    { position = "14:5:0", interval = 60, name = "Draken Warmaster" },
+    { position = "5:8:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "2:10:0", interval = 60, name = "Draken Spellweaver" },
+]
+
+[ConvertedSpawn_z4_8386]
+range = { start = "32035:31195:4", end = "32045:31202:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Winter wolf" },
+    { position = "8:2:0", interval = 60, name = "Polar Bear" },
+    { position = "2:4:0", interval = 60, name = "Winter wolf" },
+    { position = "3:5:0", interval = 60, name = "Polar Bear" },
+]
+
+[ConvertedSpawn_z4_8388]
+range = { start = "33117:31207:4", end = "33121:31211:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8389]
+range = { start = "32068:31215:4", end = "32081:31222:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "11:2:0", interval = 60, name = "Frost Troll" },
+    { position = "2:5:0", interval = 60, name = "Mammoth" },
+]
+
+[ConvertedSpawn_z4_8390]
+range = { start = "32150:31110:4", end = "32154:31114:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Troll" },
+]
+
+[ConvertedSpawn_z4_8392]
+range = { start = "32006:31221:4", end = "32010:31225:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Winter wolf" },
+]
+
+[ConvertedSpawn_z4_8400]
+range = { start = "33116:31231:4", end = "33120:31235:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8401]
+range = { start = "33091:31233:4", end = "33095:31237:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8402]
+range = { start = "32845:31127:4", end = "32849:31135:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dark Magician" },
+    { position = "2:6:0", interval = 60, name = "Dark Magician" },
+]
+
+[ConvertedSpawn_z4_8418]
+range = { start = "33062:31238:4", end = "33067:31248:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:8:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8419]
+range = { start = "33107:31241:4", end = "33123:31253:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "8:2:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "13:3:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "12:5:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "13:7:0", interval = 60, name = "Draken Warmaster" },
+    { position = "14:8:0", interval = 60, name = "Draken Spellweaver" },
+    { position = "9:9:0", interval = 60, name = "Draken Warmaster" },
+    { position = "2:10:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_8427]
+range = { start = "33096:31244:4", end = "33101:31254:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Lizard Dragon Priest" },
+    { position = "2:8:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_8436]
+range = { start = "33306:31288:4", end = "33310:31292:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dragon Lord" },
+]
+
+[ConvertedSpawn_z4_8451]
+range = { start = "33132:31321:4", end = "33136:31325:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Dragon" },
+]
+
+[ConvertedSpawn_z4_8456]
+range = { start = "32619:31393:4", end = "32623:31397:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_8458]
+range = { start = "32561:31418:4", end = "32565:31422:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_12828]
+range = { start = "32097:31129:4", end = "32106:31139:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Polar Bear" },
+    { position = "2:6:0", interval = 60, name = "Polar Bear" },
+    { position = "4:8:0", interval = 60, name = "Polar Bear" },
+]
+
+[ConvertedSpawn_z4_12831]
+range = { start = "32662:31134:4", end = "32668:31142:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Mutated Rat" },
+    { position = "4:6:0", interval = 60, name = "Mutated Rat" },
+]
+
+[ConvertedSpawn_z4_12837]
+range = { start = "32116:31156:4", end = "32127:31163:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ice Golem" },
+    { position = "9:5:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z4_12840]
+range = { start = "32101:31161:4", end = "32111:31167:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Ice Golem" },
+    { position = "8:4:0", interval = 60, name = "Ice Golem" },
+]
+
+[ConvertedSpawn_z4_12842]
+range = { start = "33096:31176:4", end = "33101:31186:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "3:8:0", interval = 60, name = "Lizard Zaogun" },
+]
+
+[ConvertedSpawn_z4_12850]
+range = { start = "32368:31260:4", end = "32377:31270:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Giant" },
+    { position = "7:2:0", interval = 60, name = "Frost Giant" },
+    { position = "3:8:0", interval = 60, name = "Frost Giant" },
+]
+
+[ConvertedSpawn_z4_12853]
+range = { start = "33063:31254:4", end = "33067:31258:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Draken Warmaster" },
+]
+
+[ConvertedSpawn_z4_12855]
+range = { start = "32406:31229:4", end = "32415:31240:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Frost Giantess" },
+    { position = "5:3:0", interval = 60, name = "Frost Giantess" },
+    { position = "7:7:0", interval = 60, name = "Frost Giantess" },
+    { position = "3:9:0", interval = 60, name = "Frost Giant" },
+]
+
+[ConvertedSpawn_z4_12860]
+range = { start = "32583:31435:4", end = "32587:31439:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_12866]
+range = { start = "33152:31298:4", end = "33156:31302:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_12868]
+range = { start = "33298:31297:4", end = "33302:31301:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Dragon Lord" },
+]
+
+[ConvertedSpawn_z4_12871]
+range = { start = "32535:31476:4", end = "32544:31488:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "7:2:0", interval = 60, name = "Cyclops" },
+    { position = "2:10:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_12875]
+range = { start = "32585:31458:4", end = "32589:31462:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_12877]
+range = { start = "32622:31443:4", end = "32626:31447:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_12880]
+range = { start = "32800:31781:4", end = "32806:31787:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Scorpion" },
+    { position = "4:4:0", interval = 60, name = "Orc Shaman" },
+]
+
+[ConvertedSpawn_z4_12883]
+range = { start = "32528:31469:4", end = "32535:31476:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Cyclops" },
+    { position = "5:5:0", interval = 60, name = "Cyclops" },
+]
+
+[ConvertedSpawn_z4_12885]
+range = { start = "32743:31448:4", end = "32763:31468:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Minotaur Mage" },
+    { position = "2:5:0", interval = 60, name = "Fire Devil" },
+    { position = "4:5:0", interval = 60, name = "Gozzler" },
+    { position = "6:5:0", interval = 60, name = "Demon Parrot" },
+    { position = "10:2:0", interval = 60, name = "Fire Devil" },
+    { position = "12:2:0", interval = 60, name = "Dark Magician" },
+    { position = "13:4:0", interval = 60, name = "Demon Parrot" },
+    { position = "10:6:0", interval = 60, name = "Gozzler" },
+    { position = "16:4:0", interval = 60, name = "Minotaur Mage" },
+    { position = "18:5:0", interval = 60, name = "Dark Magician" },
+    { position = "17:6:0", interval = 60, name = "Doom Deer" },
+    { position = "18:9:0", interval = 60, name = "Gozzler" },
+    { position = "17:10:0", interval = 60, name = "Mephiles" },
+    { position = "3:9:0", interval = 60, name = "Gozzler" },
+    { position = "6:10:0", interval = 60, name = "Gozzler" },
+    { position = "2:11:0", interval = 60, name = "Doom Deer" },
+    { position = "10:9:0", interval = 60, name = "Doom Deer" },
+    { position = "13:10:0", interval = 60, name = "Gozzler" },
+    { position = "10:12:0", interval = 60, name = "Dark Magician" },
+    { position = "13:13:0", interval = 60, name = "Fire Devil" },
+    { position = "16:14:0", interval = 60, name = "Demon Parrot" },
+    { position = "15:16:0", interval = 60, name = "Gozzler" },
+    { position = "17:16:0", interval = 60, name = "Fire Devil" },
+    { position = "6:16:0", interval = 60, name = "Gozzler" },
+    { position = "7:17:0", interval = 60, name = "Fire Devil" },
+    { position = "8:18:0", interval = 60, name = "Minotaur Mage" },
+    { position = "11:16:0", interval = 60, name = "Fire Devil" },
+]
+
+[ConvertedSpawn_z4_12888]
+range = { start = "33329:31512:4", end = "33333:31516:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Lizard High Guard" },
+]
+
+[ConvertedSpawn_z4_12891]
+range = { start = "32588:31637:4", end = "32601:31654:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "11:2:0", interval = 60, name = "Hunter" },
+    { position = "4:6:0", interval = 60, name = "Minotaur Mage" },
+    { position = "2:10:0", interval = 60, name = "Orc Shaman" },
+    { position = "9:15:0", interval = 60, name = "Minotaur Archer" },
+]
+
+[ConvertedSpawn_z4_12893]
+range = { start = "32455:31700:4", end = "32460:31705:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "3:2:0", interval = 60, name = "Forest Fury" },
+    { position = "2:3:0", interval = 60, name = "Forest Fury" },
+]
+
+[ConvertedSpawn_z4_12899]
+range = { start = "32438:31726:4", end = "32448:31731:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Forest Fury" },
+    { position = "2:3:0", interval = 60, name = "Wilting Leaf Golem" },
+    { position = "8:3:0", interval = 60, name = "Forest Fury" },
+]
+
+[ConvertedSpawn_z4_12901]
+range = { start = "33230:31748:4", end = "33234:31752:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Heoni" },
+]
+
+[ConvertedSpawn_z4_12903]
+range = { start = "32874:31764:4", end = "32881:31770:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Orc Spearman" },
+    { position = "5:2:0", interval = 60, name = "Orc Spearman" },
+    { position = "4:3:0", interval = 60, name = "Orc Warrior" },
+    { position = "3:4:0", interval = 60, name = "Orc Spearman" },
+]
+
+[ConvertedSpawn_z4_12905]
+range = { start = "32584:31772:4", end = "32594:31778:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:4:0", interval = 60, name = "Sheep" },
+    { position = "8:2:0", interval = 60, name = "Sheep" },
+]
+
+[ConvertedSpawn_z4_12909]
+range = { start = "33638:31896:4", end = "33642:31900:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Fayla" },
+]
+
+[ConvertedSpawn_z4_12912]
+range = { start = "32572:31794:4", end = "32605:31815:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "13:2:0", interval = 60, name = "Cyclops" },
+    { position = "17:3:0", interval = 60, name = "Cyclops" },
+    { position = "31:3:0", interval = 60, name = "Hunter" },
+    { position = "25:10:0", interval = 60, name = "Spider" },
+    { position = "19:13:0", interval = 60, name = "Sheep" },
+    { position = "8:15:0", interval = 60, name = "Sheep" },
+    { position = "2:19:0", interval = 60, name = "Sheep" },
+    { position = "16:19:0", interval = 60, name = "Black Sheep" },
+]
+
+[ConvertedSpawn_z4_12914]
+range = { start = "31212:31851:4", end = "31216:31855:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Guzzlemaw" },
+]
+
+[ConvertedSpawn_z4_12916]
+range = { start = "33650:31882:4", end = "33654:31886:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Jondrin" },
+]
+
+[ConvertedSpawn_z4_12918]
+range = { start = "33264:31845:4", end = "33268:31849:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Zoltan" },
+]
+
+[ConvertedSpawn_z4_12922]
+range = { start = "32950:32037:4", end = "32954:32041:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Uncle" },
+]
+
+[ConvertedSpawn_z4_12927]
+range = { start = "33607:31971:4", end = "33611:31975:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Zeronex" },
+]
+
+[ConvertedSpawn_z4_12930]
+range = { start = "32498:32037:4", end = "32506:32043:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "6:2:0", interval = 60, name = "Dark Apprentice" },
+    { position = "2:4:0", interval = 60, name = "Fire Devil" },
+    { position = "4:4:0", interval = 60, name = "Fire Devil" },
+]
+
+[ConvertedSpawn_z4_12933]
+range = { start = "33012:32656:4", end = "33016:32660:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hydra" },
+]
+
+[ConvertedSpawn_z4_12936]
+range = { start = "32820:32141:4", end = "32829:32149:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Dragon Lord Hatchling" },
+    { position = "7:4:0", interval = 60, name = "Dragon Lord" },
+    { position = "2:6:0", interval = 60, name = "Dragon Lord" },
+]
+
+[ConvertedSpawn_z4_12938]
+range = { start = "32135:32169:4", end = "32139:32173:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Hyacinth" },
+]
+
+[ConvertedSpawn_z4_12940]
+range = { start = "32309:32620:4", end = "32313:32624:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Ocelus" },
+]
+
+[ConvertedSpawn_z4_12943]
+range = { start = "32838:32524:4", end = "32845:32530:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "5:2:0", interval = 60, name = "Merlkin" },
+    { position = "2:4:0", interval = 60, name = "Kongra" },
+]
+
+[ConvertedSpawn_z4_12950]
+range = { start = "32055:32596:4", end = "32081:32617:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "12:2:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "12:3:0", interval = 60, name = "Dragon" },
+    { position = "2:5:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "11:5:0", interval = 60, name = "Dragon" },
+    { position = "12:6:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "4:7:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "3:8:0", interval = 60, name = "Dragon" },
+    { position = "4:8:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "17:9:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "21:7:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "22:8:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "24:8:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "22:10:0", interval = 60, name = "Dragon" },
+    { position = "23:10:0", interval = 60, name = "Dragon" },
+    { position = "4:14:0", interval = 60, name = "Diabolic Imp" },
+    { position = "18:15:0", interval = 60, name = "Dragon" },
+    { position = "19:15:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "3:17:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "6:18:0", interval = 60, name = "Diabolic Imp" },
+    { position = "12:17:0", interval = 60, name = "Dragon" },
+    { position = "12:18:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "13:19:0", interval = 60, name = "Dragon Hatchling" },
+    { position = "15:18:0", interval = 60, name = "Diabolic Imp" },
+    { position = "16:18:0", interval = 60, name = "Diabolic Imp" },
+]
+
+[ConvertedSpawn_z4_12953]
+range = { start = "33034:32626:4", end = "33043:32633:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Green Djinn" },
+    { position = "3:2:0", interval = 60, name = "Gargoyle" },
+    { position = "4:2:0", interval = 60, name = "Stalker" },
+    { position = "6:2:0", interval = 60, name = "Gargoyle" },
+    { position = "2:4:0", interval = 60, name = "Gargoyle" },
+    { position = "4:4:0", interval = 60, name = "Green Djinn" },
+    { position = "4:5:0", interval = 60, name = "Stalker" },
+    { position = "7:5:0", interval = 60, name = "Efreet" },
+]
+
+[ConvertedSpawn_z4_12954]
+range = { start = "33042:32621:4", end = "33046:32625:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Baa'leal" },
+]
+
+[ConvertedSpawn_z4_12957]
+range = { start = "32983:32646:4", end = "32987:32650:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Hydra" },
+]
+
+[ConvertedSpawn_z4_12959]
+range = { start = "32113:32681:4", end = "32130:32693:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Demon" },
+    { position = "12:2:0", interval = 60, name = "Demon" },
+    { position = "2:4:0", interval = 60, name = "Magic Pillar" },
+    { position = "15:4:0", interval = 60, name = "Magic Pillar" },
+    { position = "8:6:0", interval = 60, name = "Demon" },
+    { position = "4:10:0", interval = 60, name = "Demon" },
+    { position = "12:10:0", interval = 60, name = "Demon" },
+]
+
+[ConvertedSpawn_z4_12967]
+range = { start = "32019:32846:4", end = "32023:32850:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_12971]
+range = { start = "31161:32780:4", end = "31210:32806:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Training Monk" },
+    { position = "17:2:0", interval = 60, name = "Training Monk" },
+    { position = "19:2:0", interval = 60, name = "Training Monk" },
+    { position = "21:2:0", interval = 60, name = "Training Monk" },
+    { position = "23:2:0", interval = 60, name = "Training Monk" },
+    { position = "25:2:0", interval = 60, name = "Training Monk" },
+    { position = "27:2:0", interval = 60, name = "Training Monk" },
+    { position = "29:2:0", interval = 60, name = "Training Monk" },
+    { position = "31:2:0", interval = 60, name = "Training Monk" },
+    { position = "33:2:0", interval = 60, name = "Training Monk" },
+    { position = "35:2:0", interval = 60, name = "Training Monk" },
+    { position = "37:2:0", interval = 60, name = "Training Monk" },
+    { position = "39:2:0", interval = 60, name = "Training Monk" },
+    { position = "41:2:0", interval = 60, name = "Training Monk" },
+    { position = "43:2:0", interval = 60, name = "Training Monk" },
+    { position = "45:2:0", interval = 60, name = "Training Monk" },
+    { position = "47:2:0", interval = 60, name = "Training Monk" },
+    { position = "2:4:0", interval = 60, name = "Training Monk" },
+    { position = "2:6:0", interval = 60, name = "Training Monk" },
+    { position = "2:8:0", interval = 60, name = "Training Monk" },
+    { position = "2:10:0", interval = 60, name = "Training Monk" },
+    { position = "21:10:0", interval = 60, name = "Training Monk" },
+    { position = "23:10:0", interval = 60, name = "Training Monk" },
+    { position = "25:10:0", interval = 60, name = "Training Monk" },
+    { position = "27:10:0", interval = 60, name = "Training Monk" },
+    { position = "33:10:0", interval = 60, name = "Training Monk" },
+    { position = "35:10:0", interval = 60, name = "Training Monk" },
+    { position = "37:10:0", interval = 60, name = "Training Monk" },
+    { position = "39:10:0", interval = 60, name = "Training Monk" },
+    { position = "41:10:0", interval = 60, name = "Training Monk" },
+    { position = "43:10:0", interval = 60, name = "Training Monk" },
+    { position = "45:10:0", interval = 60, name = "Training Monk" },
+    { position = "47:10:0", interval = 60, name = "Training Monk" },
+    { position = "2:12:0", interval = 60, name = "Training Monk" },
+    { position = "2:14:0", interval = 60, name = "Training Monk" },
+    { position = "41:14:0", interval = 60, name = "Training Monk" },
+    { position = "43:14:0", interval = 60, name = "Training Monk" },
+    { position = "20:15:0", interval = 60, name = "Training Monk" },
+    { position = "2:16:0", interval = 60, name = "Training Monk" },
+    { position = "41:16:0", interval = 60, name = "Training Monk" },
+    { position = "43:16:0", interval = 60, name = "Training Monk" },
+    { position = "20:17:0", interval = 60, name = "Training Monk" },
+    { position = "2:18:0", interval = 60, name = "Training Monk" },
+    { position = "10:18:0", interval = 60, name = "Training Monk" },
+    { position = "41:18:0", interval = 60, name = "Training Monk" },
+    { position = "43:18:0", interval = 60, name = "Training Monk" },
+    { position = "2:20:0", interval = 60, name = "Training Monk" },
+    { position = "10:20:0", interval = 60, name = "Training Monk" },
+    { position = "41:20:0", interval = 60, name = "Training Monk" },
+    { position = "43:20:0", interval = 60, name = "Training Monk" },
+    { position = "2:22:0", interval = 60, name = "Training Monk" },
+    { position = "10:22:0", interval = 60, name = "Training Monk" },
+    { position = "16:23:0", interval = 60, name = "Training Monk" },
+    { position = "18:23:0", interval = 60, name = "Training Monk" },
+    { position = "20:23:0", interval = 60, name = "Training Monk" },
+    { position = "22:23:0", interval = 60, name = "Training Monk" },
+    { position = "24:23:0", interval = 60, name = "Training Monk" },
+    { position = "26:23:0", interval = 60, name = "Training Monk" },
+    { position = "28:23:0", interval = 60, name = "Training Monk" },
+    { position = "30:23:0", interval = 60, name = "Training Monk" },
+    { position = "32:23:0", interval = 60, name = "Training Monk" },
+    { position = "34:23:0", interval = 60, name = "Training Monk" },
+    { position = "36:23:0", interval = 60, name = "Training Monk" },
+    { position = "38:23:0", interval = 60, name = "Training Monk" },
+    { position = "2:24:0", interval = 60, name = "Training Monk" },
+    { position = "10:24:0", interval = 60, name = "Training Monk" },
+]
+
+[ConvertedSpawn_z4_12972]
+range = { start = "31168:32793:4", end = "31193:32798:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "23:2:0", name = "Frodo" },
+    { position = "2:3:0", name = "Frodo" },
+]
+
+[ConvertedSpawn_z4_12974]
+range = { start = "33155:32808:4", end = "33159:32812:4" }
+spawn_type = "npc"
+policy = "fixed"
+npcs = [
+    { position = "2:2:0", name = "Dario" },
+]
+
+[ConvertedSpawn_z4_12976]
+range = { start = "31930:32851:4", end = "31943:32862:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "4:2:0", interval = 60, name = "Pirate Corsair" },
+    { position = "8:5:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "11:8:0", interval = 60, name = "Pirate Marauder" },
+    { position = "2:7:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "4:9:0", interval = 60, name = "Pirate Marauder" },
+]
+
+[ConvertedSpawn_z4_12978]
+range = { start = "31964:32847:4", end = "31968:32851:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+]
+
+[ConvertedSpawn_z4_12982]
+range = { start = "31940:32868:4", end = "31946:32882:4" }
+spawn_type = "monster"
+policy = "fixed"
+passive = true
+forced = true
+monsters = [
+    { position = "2:2:0", interval = 60, name = "Pirate Cutthroat" },
+    { position = "2:10:0", interval = 60, name = "Pirate Marauder" },
+    { position = "4:12:0", interval = 60, name = "Pirate Cutthroat" },
+]
+

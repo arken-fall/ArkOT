@@ -583,3 +583,62 @@ the in-place transform re-sends the container instead. What does close a
 ground container is stepping out of reach (`Player::onWalk` range 1, as in
 Tibia) and, rarely, a decay stage whose stacking order differs from the
 previous one (the remove/re-add branch of `Game::transformItem`).
+
+## 2026-09-14 — The real map: datapack conversion and the null-attacker fix
+
+**What went in.** The SeeingBlue 10.98 real-map datapack, converted into
+BlackTek 2.0's layout rather than loaded as-is:
+
+- `data/world/realmap.7z` (the 140 MB OTBM packed to 22 MB; the OTBM names
+  its companions `map1-spawn.xml` / `map1-house.xml`, so those names stay),
+  `data/world/realmap-zones/` (14,162 zones the engine's own
+  `smart_convert_legacy_spawns` converter produced from the 41,287 spawn
+  blocks; copied out of `data/world/converted/`, which is now ignored).
+- 900 NPC definitions and 879 scripts, plus the NPC-system pieces they
+  call that BlackTek's copy lacked: `FocusModule` greet/farewell message and
+  callback setters, `custommodules.lua` (greet, farewell and spell keywords,
+  travel discounts, the rookgaard hints), the pack's `keywordhandler.lua`
+  (keyword conditions, actions and numeric captures; a superset of ours),
+  and `string.titleCase`. All 876 NPC scripts now load without error.
+- `harness/build_itemevents.py`: actions.xml / movements.xml → 377
+  `ItemEvent` revscripts under `data/scripts/realmap/`. Entries whose script
+  BlackTek already ships are skipped; the remaining id overlaps (mostly the
+  same script under two names: construction kits, spellbook, hive gates,
+  the afflicted outfit) resolve to BlackTek's version because
+  `ItemEvents::SelectEvent` takes the first registration, which is also how
+  TFS resolved duplicates in actions.xml.
+- `harness/build_monsters.py`: TFS monster XML → `Game.createMonsterType`
+  Lua for the 133 creatures BlackTek had no file for (`Sacred Snake.xml`
+  needed its nested-comment loot block removed, `flame of omrafir` had a
+  mistyped folder in monsters.xml); four monster spells ported to
+  `Combat()`/`Spell(SPELL_INSTANT)`.
+- `data/lib/realmap/`: the pack's storages, functions, teleport table,
+  achievements, the demon oak / killing-in-the-name-of / arena libs,
+  modal windows and lionrock. The pack's Lua reward-chest system was NOT
+  taken: it overrode `Player.getRewardChest` with a depot lookup that
+  returned nothing on login (`login.lua:31`); the engine has native reward
+  chests, and the two lever scripts that flag a boss keep a harmless
+  `Monster.setReward` shim.
+
+**Engine fix (`src/combat.cpp`).** Spawning the map fired
+`data/scripts/itemevents/step/trap.lua`, which calls
+`doTargetCombat(0, creature, ...)`; the generic `Combat::strike_target`
+dereferenced the null attacker and the server segfaulted during zone
+spawning. `strike_target` now hands a caster-less strike to a new
+`strike_environment`: conditions and the impact effect for
+`DamageType::Unknown`, `heal_target` for healing, otherwise the rolled
+damage applied straight through `apply_damage` (blocking and defensive
+augments describe a blow from a creature, so they do not apply). The
+damage, mana and heal notifications tolerate a missing attacker and say
+"You lose X health." / "<name> loses X health." instead of naming one.
+
+**Verified.** Boot with monsters/npcs counted on the status port; headless
+15.25 client login at the Thais temple (32369,32241,7), Quentin answers
+greet, heal and farewell — after the greeting an NPC only listens on the NPC
+channel (`TALKTYPE_PRIVATE_PN`), which is stock behaviour, so the harness
+talks through `MessageModes.NpcTo`; the capture decodes with zero errors.
+
+**Open.** ~990 duplicate-registration warnings at boot are informational
+(see above); trimming the fully shadowed pack scripts would silence them.
+The pack's quests directory only had the example quest, so `data/quests`
+is unchanged. The VM needs 16 GB for this map.

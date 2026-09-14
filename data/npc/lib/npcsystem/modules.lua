@@ -218,6 +218,44 @@ if Modules == nil then
 		return true
 	end
 
+	-- Custom greeting messages, kept for scripts that register them
+	function FocusModule:addGreetMessage(message)
+		if not self.greetWords then
+			self.greetWords = {}
+		end
+
+		if type(message) == 'string' then
+			table.insert(self.greetWords, message)
+		else
+			for i = 1, #message do
+				table.insert(self.greetWords, message[i])
+			end
+		end
+	end
+
+	-- Custom farewell messages, kept for scripts that register them
+	function FocusModule:addFarewellMessage(message)
+		if not self.farewellWords then
+			self.farewellWords = {}
+		end
+
+		if type(message) == 'string' then
+			table.insert(self.farewellWords, message)
+		else
+			for i = 1, #message do
+				table.insert(self.farewellWords, message[i])
+			end
+		end
+	end
+
+	function FocusModule:setGreetCallback(callback)
+		self.greetCallback = callback
+	end
+
+	function FocusModule:setFarewellCallback(callback)
+		self.farewellCallback = callback
+	end
+
 	-- Greeting callback function.
 	function FocusModule.onGreet(cid, message, keywords, parameters)
 		return parameters.module.npcHandler:onGreet(cid)

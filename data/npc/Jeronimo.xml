@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Jeronimo" script="jeronimo.lua" walkinterval="2000" floorchange="0">
+          <health now="150" max="150" />
+          <look type="132" head="57" body="59" legs="3" feet="1" addons="3" />
+          <parameters>
+                    <parameter key="message_greet" value="Hello |PLAYERNAME|. Do not want to make an exchange? I have {Crystal Coins}, {Crystal Crossbow}, {Obsidian Truncheon}, {Stonecutter Axe}, {Magic Sword}, {Wand of Everblazing}, {Muck Rod}, {Cluster of Solace}, {Remover Skull}, {Refill Stamina}, {Frozen Starlight}, {sneaky stabber of eliteness}, {Squeezing Gear of Girlpower}, {Whacking Driller of Fate}, {Blood Herb}, {Zaoan chess box}, {medusa skull}, {dark wizards crown}, {pigeon trophy}, {little adventurer doll} and {midnight panther doll}." />
+                    <parameter key="message_farewell" value="Bye bye!" />
+          </parameters>
+</npc>

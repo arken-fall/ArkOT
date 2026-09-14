@@ -9,3 +9,9 @@ dofile('data/lib/debugging/dump.lua')
 
 -- Area constants and spell helpers must be available before scripts/lib/combats/ loads
 dofile('data/scripts/lib/spell_lib.lua')
+
+-- Real map (SeeingBlue/TimerTim 10.98 pack) libraries: quest storages, helpers,
+-- achievements, reward bosses, Lion's Rock and the modal window wrapper
+dofile('data/lib/realmap/miscellaneous.lua')
+dofile('data/lib/realmap/modalwindow.lua')
+dofile('data/lib/realmap/lionrock.lua')
