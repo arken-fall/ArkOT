@@ -279,3 +279,31 @@ ids. **What:**
 beside the GM via the admin Lua channel, used (0x82 with client id 12903),
 market enter/browse/own offers/own history/leave all parsed; heal message
 parsed after the fix. Unit tests 10/10.
+
+## 2026-09-14 — Phase D tranche 1: cyclopedia character info, blessings, opcode log
+
+**Why:** the character window is the first side system a 15.25 player opens,
+and the blessings dialog is the second; both were answered with silence.
+**What:**
+
+- `networkopcodes.h`: `ServerCode::CyclopediaCharacterInfo` (0xDA),
+  `BlessDialog` (0x9B), `BlessStatus` (0x9C); `CyclopediaInfoCode` and
+  `CyclopediaErrorCode` groups. `ProtocolFeature::TaskBoard` (15.20+ store
+  summary flag) on the 15.25 profile.
+- `Player::Blessings` (count + the datapack's names) nested in `Player`, and
+  the blessing bitset sized from it.
+- `Game::playerCyclopediaCharacterInfo` (own character only; recent deaths
+  paged from `player_deaths`) and `Game::playerRequestBlessingsDialog`;
+  `Player` wrappers in the existing one-liner style.
+- `ProtocolGame`: `parseCyclopediaCharacterInfo`, `sendBlessStatus` (sent
+  after the enter-world sequence), `sendBlessDialog`, and one writer per
+  cyclopedia page. Pages the server has no system for still answer with a
+  parseable empty page (or the header only where the client reads nothing
+  more), so no request hangs.
+- `parsePacket`'s default branch logs unhandled opcodes through
+  `Console::Net::Debug`.
+
+**Verified:** headless real client requesting every info type 0-15 and the
+blessings dialog: general stats (level, 7 skills), combat, offence, defence,
+misc, deaths, kills, item summary, outfits/mounts (55/100), store summary,
+badges, titles, blessings — zero protocol exceptions. Unit tests 10/10.

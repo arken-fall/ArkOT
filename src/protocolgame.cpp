@@ -804,6 +804,8 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::TurnSouth: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerTurn(player_id, DIRECTION_SOUTH); }); break;
 		case ClientCode::TurnWest: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerTurn(player_id, DIRECTION_WEST); }); break;
 		case ClientCode::Teleport: parseTeleport(msg); break;
+		case ClientCode::RequestBlessingsDialog: addGameTask([player_id]() { g_game.playerRequestBlessingsDialog(player_id); }); break;
+		case ClientCode::CyclopediaCharacterInfo: parseCyclopediaCharacterInfo(msg); break;
 		case ClientCode::EquipObject: parseEquipObject(msg); break;
 		case ClientCode::Throw: parseThrow(msg); break;
 		case ClientCode::LookInShop: parseLookInShop(msg); break;
@@ -876,7 +878,7 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::StoreRequestHistory: parseStoreRequestHistory(msg); break;
 
 		default:
-			 //std::cout << "Player: " << player->getName() << " sent an unknown packet header: 0x" << std::hex << static_cast<uint16_t>(recvbyte) << std::dec << "!" << std::endl;
+			BlackTek::Console::Net::Debug("ProtocolGame::parsePacket: {:s} sent an unhandled opcode 0x{:02X}", player->getName(), static_cast<uint16_t>(recvbyte));
 			break;
 	}
 
@@ -1374,6 +1376,20 @@ void ProtocolGame::parseLookInShop(NetworkMessage& msg)
 	uint16_t id = getItemId(msg);
 	uint8_t count = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerLookInShop(playerID, id, count); });
+}
+
+void ProtocolGame::parseCyclopediaCharacterInfo(NetworkMessage& msg)
+{
+	uint32_t characterId = msg.get<uint32_t>();
+	uint8_t infoType = msg.getByte();
+	uint16_t entriesPerPage = 0;
+	uint16_t page = 0;
+	if (infoType == static_cast<uint8_t>(CyclopediaInfoCode::RecentDeaths) or infoType == static_cast<uint8_t>(CyclopediaInfoCode::RecentPvpKills))
+	{
+		entriesPerPage = std::min<uint16_t>(30, std::max<uint16_t>(5, msg.get<uint16_t>()));
+		page = std::max<uint16_t>(1, msg.get<uint16_t>());
+	}
+	addGameTask([=, playerID = player->getID()]() { g_game.playerCyclopediaCharacterInfo(playerID, characterId, infoType, entriesPerPage, page); });
 }
 
 void ProtocolGame::parseTeleport(NetworkMessage& msg)
@@ -2202,6 +2218,586 @@ void ProtocolGame::sendResourceBalance(ResourceType type, uint64_t value)
 	msg.add(ServerCode::ResourceBalance);
 	msg.add(type);
 	msg.add<uint64_t>(value);
+	writeToOutputBuffer(msg);
+}
+
+// the glow on the character's blessing indicator: a bit per blessing held
+void ProtocolGame::sendBlessStatus()
+{
+	uint16_t blessings = 0;
+	for (uint8_t blessing = 0; blessing < Player::Blessings::Count; ++blessing)
+	{
+		if (player->hasBlessing(blessing))
+		{
+			blessings |= static_cast<uint16_t>(1 << blessing);
+		}
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::BlessStatus);
+	msg.add<uint16_t>(blessings);
+	msg.addByte(blessings != 0 ? 2 : 1); // 1 disabled, 2 normal, 3 green (12.00+)
+	writeToOutputBuffer(msg);
+}
+
+// the 12.x blessings window: one row per blessing, then the loss overview
+void ProtocolGame::sendBlessDialog()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::BlessDialog);
+
+	msg.addByte(Player::Blessings::Count);
+	for (uint8_t blessing = 0; blessing < Player::Blessings::Count; ++blessing)
+	{
+		msg.add<uint16_t>(static_cast<uint16_t>(1 << blessing)); // blessing bit
+		msg.addByte(player->hasBlessing(blessing) ? 1 : 0); // times held
+		msg.add(CommonCode::Zero); // bought in the store
+	}
+
+	const uint8_t lossPercent = static_cast<uint8_t>(std::lround(player->getLostPercent() * 100.0));
+	msg.add(player->isPremium() ? CommonCode::True : CommonCode::False);
+	msg.add(player->isPromoted() ? CommonCode::True : CommonCode::False);
+	msg.addByte(lossPercent); // pvp minimum experience loss
+	msg.addByte(lossPercent); // pvp maximum experience loss
+	msg.addByte(lossPercent); // pve experience loss
+	msg.addByte(lossPercent); // pvp equipment loss
+	msg.addByte(lossPercent); // pve equipment loss
+	msg.add(player->getSkull() != SKULL_NONE ? CommonCode::True : CommonCode::False);
+	msg.add(CommonCode::False); // amulet of loss
+	msg.add(CommonCode::Zero); // history entries
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterInfo(uint8_t infoType)
+{
+	switch (static_cast<CyclopediaInfoCode>(infoType))
+	{
+		case CyclopediaInfoCode::BaseInformation: sendCyclopediaCharacterBaseInformation(); break;
+		case CyclopediaInfoCode::GeneralStats: sendCyclopediaCharacterGeneralStats(); break;
+		case CyclopediaInfoCode::CombatStats: sendCyclopediaCharacterCombatStats(); break;
+		case CyclopediaInfoCode::RecentPvpKills: sendCyclopediaCharacterRecentPvpKills(); break;
+		case CyclopediaInfoCode::ItemSummary: sendCyclopediaCharacterItemSummary(); break;
+		case CyclopediaInfoCode::OutfitsMounts: sendCyclopediaCharacterOutfitsMounts(); break;
+		case CyclopediaInfoCode::StoreSummary: sendCyclopediaCharacterStoreSummary(); break;
+		case CyclopediaInfoCode::Badges: sendCyclopediaCharacterBadges(); break;
+		case CyclopediaInfoCode::Titles: sendCyclopediaCharacterTitles(); break;
+		// the client reads nothing past the header for these two
+		case CyclopediaInfoCode::Achievements: sendCyclopediaCharacterHeaderOnly(CyclopediaInfoCode::Achievements); break;
+		case CyclopediaInfoCode::Wheel: sendCyclopediaCharacterHeaderOnly(CyclopediaInfoCode::Wheel); break;
+		case CyclopediaInfoCode::OffenceStats: sendCyclopediaCharacterOffenceStats(); break;
+		case CyclopediaInfoCode::DefenceStats: sendCyclopediaCharacterDefenceStats(); break;
+		case CyclopediaInfoCode::MiscStats: sendCyclopediaCharacterMiscStats(); break;
+		// inspection waits for its system
+		default: sendCyclopediaCharacterNoData(infoType); break;
+	}
+}
+
+void ProtocolGame::sendCyclopediaCharacterNoData(uint8_t infoType)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.addByte(infoType);
+	msg.add(CyclopediaErrorCode::NoData);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterHeaderOnly(CyclopediaInfoCode infoType)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(infoType);
+	msg.add(CyclopediaErrorCode::None);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterBaseInformation()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::BaseInformation);
+	msg.add(CyclopediaErrorCode::None);
+	msg.addString(player->getName());
+	msg.addString(player->getVocation()->getVocName());
+	msg.add<uint16_t>(player->getLevel());
+	AddOutfit(msg, player->getDefaultOutfit());
+	msg.add(CommonCode::False); // hide stamina
+	msg.add(CommonCode::True); // store summary and titles enabled
+	msg.add<SpecialCode>(SpecialCode::Zero); // current title
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterGeneralStats()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::GeneralStats);
+	msg.add(CyclopediaErrorCode::None);
+
+	msg.add<uint64_t>(player->getExperience());
+	msg.add<uint16_t>(player->getLevel());
+	if (hasFeature(ProtocolFeature::PlayerLevelPercentU16))
+	{
+		msg.add<uint16_t>(std::min<uint16_t>(static_cast<uint16_t>(player->getLevelPercent()) * 100, 10000));
+	}
+	else
+	{
+		msg.addByte(player->getLevelPercent());
+	}
+	msg.add<uint16_t>(100); // base xp gain rate
+	msg.add<uint16_t>(0); // low level bonus
+	msg.add<uint16_t>(0); // store xp boost
+	msg.add<uint16_t>(100); // stamina multiplier (100 = x1.0)
+	msg.add<uint16_t>(0); // xp boost remaining time
+	msg.add(CommonCode::True); // can buy xp boost
+
+	msg.add<uint32_t>(std::max<int32_t>(player->getHealth(), 0));
+	msg.add<uint32_t>(std::max<int32_t>(player->getMaxHealth(), 0));
+	msg.add<uint32_t>(std::max<int32_t>(player->getMana(), 0));
+	msg.add<uint32_t>(std::max<int32_t>(player->getMaxMana(), 0));
+	msg.addByte(player->getSoul());
+	msg.add<uint16_t>(player->getStaminaMinutes());
+
+	Condition* regenCondition = player->getCondition(CONDITION_REGENERATION, CONDITIONID_DEFAULT);
+	msg.add<uint16_t>(regenCondition ? regenCondition->getTicks() / 1000 : 0);
+	msg.add<uint16_t>(player->getOfflineTrainingTime() / 60 / 1000);
+
+	msg.add<uint16_t>(player->getSpeed() / 2); // same half-scale as 0xA0
+	msg.add<uint16_t>(player->getBaseSpeed() / 2);
+	msg.add<uint32_t>(player->getCapacity());
+	msg.add<uint32_t>(player->getCapacity()); // base capacity
+	msg.add<uint32_t>(player->getFreeCapacity());
+	msg.addByte(8); // skills shown
+	msg.addByte(1); // magic level first
+
+	msg.add<uint16_t>(std::min<uint32_t>(player->getMagicLevel(), std::numeric_limits<uint16_t>::max()));
+	msg.add<uint16_t>(std::min<uint32_t>(player->getBaseMagicLevel(), std::numeric_limits<uint16_t>::max()));
+	msg.add<uint16_t>(std::min<uint32_t>(player->getBaseMagicLevel(), std::numeric_limits<uint16_t>::max())); // base + loyalty
+	msg.add<uint16_t>(static_cast<uint16_t>(player->getMagicLevelPercent()) * 100);
+
+	// the cyclopedia names skills by CipSoft's own ids, not by our slot order
+	static constexpr uint8_t cyclopediaSkillIds[] = { 11, 9, 8, 10, 7, 6, 13 };
+	for (uint8_t skill = SKILL_FIRST; skill <= SKILL_LAST; ++skill)
+	{
+		msg.addByte(cyclopediaSkillIds[skill]);
+		msg.add<uint16_t>(std::min<int32_t>(player->getSkillLevel(skill), std::numeric_limits<uint16_t>::max()));
+		msg.add<uint16_t>(player->getBaseSkill(skill));
+		msg.add<uint16_t>(player->getBaseSkill(skill)); // base + loyalty
+		msg.add<uint16_t>(static_cast<uint16_t>(player->getSkillPercent(skill)) * 100);
+	}
+
+	msg.add(CommonCode::Zero); // specialized magic levels; none on this server
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterCombatStats()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::CombatStats);
+	msg.add(CyclopediaErrorCode::None);
+
+	// 12.81 to 14.05 list the forge skills here; 14.10+ moved them into the
+	// character skill stats block of 0xA1 and dropped them from this page
+	if (not hasFeature(ProtocolFeature::CharacterSkillStats))
+	{
+		for (uint8_t forgeSkill = 0; forgeSkill < 4; ++forgeSkill)
+		{
+			msg.add<uint16_t>(0); // fatal, dodge, momentum, transcendence: level
+			msg.add<uint16_t>(0); // base
+		}
+	}
+
+	msg.add<uint16_t>(0); // cleave percent
+	msg.add<uint16_t>(0); // magic shield capacity flat
+	msg.add<uint16_t>(0); // magic shield capacity percent
+	for (uint8_t range = 1; range <= 5; ++range)
+	{
+		msg.add<uint16_t>(0); // perfect shot damage at this range
+	}
+	msg.add<uint16_t>(0); // damage reflection
+
+	uint8_t blessingsHeld = 0;
+	for (uint8_t blessing = 0; blessing < Player::Blessings::Count; ++blessing)
+	{
+		if (player->hasBlessing(blessing))
+		{
+			++blessingsHeld;
+		}
+	}
+	msg.addByte(blessingsHeld);
+	msg.addByte(Player::Blessings::Count);
+
+	const auto& weapon = player->getWeapon();
+	msg.add<uint16_t>(weapon ? std::max<int32_t>(weapon->getAttack(), 0) : 0); // weapon max hit
+	msg.add(CommonCode::Zero); // weapon element
+	msg.add(CommonCode::Zero); // weapon element damage
+	msg.add(CommonCode::Zero); // weapon element type
+	msg.add<uint16_t>(std::max<int32_t>(player->getArmor(), 0));
+	msg.add<uint16_t>(std::max<int32_t>(player->getDefense(), 0));
+	msg.addDouble(0.0, 2); // mitigation
+	msg.add(CommonCode::Zero); // combat element modifiers
+	msg.add(CommonCode::Zero); // active concoctions
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterRecentDeaths(uint16_t page, uint16_t pages, const std::vector<std::pair<uint32_t, std::string>>& entries)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::RecentDeaths);
+	msg.add(CyclopediaErrorCode::None);
+	msg.add<uint16_t>(page);
+	msg.add<uint16_t>(pages);
+	msg.add<uint16_t>(entries.size());
+	for (const auto& [timestamp, cause] : entries)
+	{
+		msg.add<uint32_t>(timestamp);
+		msg.addString(cause);
+	}
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterRecentPvpKills()
+{
+	// kills are not recorded per player yet, so the page is empty
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::RecentPvpKills);
+	msg.add(CyclopediaErrorCode::None);
+	msg.add<uint16_t>(1); // page
+	msg.add<uint16_t>(0); // pages
+	msg.add<uint16_t>(0); // entries
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::addCyclopediaItemSummary(NetworkMessage& msg, const std::map<uint16_t, uint32_t>& items) const
+{
+	msg.add<uint16_t>(items.size());
+	for (const auto& [itemId, count] : items)
+	{
+		addMarketItemId(msg, itemId);
+		msg.add<uint32_t>(count);
+	}
+}
+
+void ProtocolGame::sendCyclopediaCharacterItemSummary()
+{
+	// everything the character carries, then what sits in the depots; the
+	// store, stash and inbox columns stay empty until those systems exist
+	std::map<uint16_t, uint32_t> inventory;
+	gtl::btree_map<uint32_t, uint32_t> carried;
+	player->getAllItemTypeCount(carried);
+	for (const auto& [itemId, count] : carried)
+	{
+		if (itemId <= std::numeric_limits<uint16_t>::max())
+		{
+			inventory[static_cast<uint16_t>(itemId)] = count;
+		}
+	}
+
+	std::map<uint16_t, uint32_t> depot;
+	if (player->depotChests)
+	{
+		for (const auto& [depotId, chest] : *player->depotChests)
+		{
+			std::forward_list<ContainerPtr> containerList{ chest };
+			do
+			{
+				ContainerPtr container = containerList.front();
+				containerList.pop_front();
+				if (not container)
+				{
+					continue;
+				}
+
+				for (const auto& item : container->getItemList())
+				{
+					if (const auto& inner = item->getContainer())
+					{
+						containerList.push_front(inner);
+					}
+					depot[item->getID()] += Item::countByType(item, -1);
+				}
+			} while (not containerList.empty());
+		}
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::ItemSummary);
+	msg.add(CyclopediaErrorCode::None);
+	addCyclopediaItemSummary(msg, inventory);
+	msg.add<SpecialCode>(SpecialCode::Zero); // store inbox
+	msg.add<SpecialCode>(SpecialCode::Zero); // stash
+	addCyclopediaItemSummary(msg, depot);
+	msg.add<SpecialCode>(SpecialCode::Zero); // inbox
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterOutfitsMounts()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::OutfitsMounts);
+	msg.add(CyclopediaErrorCode::None);
+
+	const Outfit_t& currentOutfit = player->getDefaultOutfit();
+	std::vector<ProtocolOutfit> protocolOutfits;
+	for (const Outfit& outfit : Outfits::getInstance().getOutfits(player->getSex()))
+	{
+		uint8_t addons;
+		if (player->getOutfitAddons(outfit, addons))
+		{
+			protocolOutfits.emplace_back(outfit.name, outfit.lookType, addons);
+		}
+	}
+
+	msg.add<uint16_t>(protocolOutfits.size());
+	for (const ProtocolOutfit& outfit : protocolOutfits)
+	{
+		msg.add<uint16_t>(outfit.lookType);
+		msg.addString(outfit.name);
+		msg.addByte(outfit.addons);
+		msg.add(CommonCode::Zero); // source: none (0x01 quest, 0x02 store)
+		msg.add<uint32_t>(outfit.lookType == currentOutfit.lookType ? 1000 : 0); // worn
+	}
+	if (not protocolOutfits.empty())
+	{
+		msg.addByte(currentOutfit.lookHead);
+		msg.addByte(currentOutfit.lookBody);
+		msg.addByte(currentOutfit.lookLegs);
+		msg.addByte(currentOutfit.lookFeet);
+	}
+
+	std::vector<const Mount*> mounts;
+	for (const Mount& mount : g_game.mounts.getMounts())
+	{
+		if (player->hasMount(&mount))
+		{
+			mounts.push_back(&mount);
+		}
+	}
+
+	msg.add<uint16_t>(mounts.size());
+	for (const Mount* mount : mounts)
+	{
+		msg.add<uint16_t>(mount->clientId);
+		msg.addString(mount->name);
+		msg.add(CommonCode::Zero); // source
+		msg.add<uint32_t>(mount->clientId == currentOutfit.lookMount ? 1000 : 0); // in use
+	}
+	if (not mounts.empty())
+	{
+		msg.add(CommonCode::Zero); // mount head
+		msg.add(CommonCode::Zero); // mount body
+		msg.add(CommonCode::Zero); // mount legs
+		msg.add(CommonCode::Zero); // mount feet
+	}
+
+	msg.add<SpecialCode>(SpecialCode::Zero); // familiars
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterStoreSummary()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::StoreSummary);
+	msg.add(CyclopediaErrorCode::None);
+	msg.add<uint32_t>(0); // store xp boost remaining
+	msg.add<uint32_t>(0); // daily reward xp boost remaining
+
+	msg.addByte(Player::Blessings::Count);
+	for (uint8_t blessing = 0; blessing < Player::Blessings::Count; ++blessing)
+	{
+		msg.addString(Player::Blessings::Names[blessing]);
+		msg.addByte(player->hasBlessing(blessing) ? 1 : 0);
+	}
+
+	msg.add(CommonCode::Zero); // prey slots unlocked
+	msg.add(CommonCode::Zero); // prey wildcards
+	if (hasFeature(ProtocolFeature::TaskBoard))
+	{
+		msg.add(CommonCode::False); // permanent weekly task expansion
+	}
+	msg.add(CommonCode::Zero); // instant reward access
+	msg.add(CommonCode::False); // charm expansion
+	msg.add(CommonCode::Zero); // hirelings
+	msg.add(CommonCode::Zero); // hireling skills
+	msg.add(CommonCode::Zero); // hireling outfits
+	msg.add<SpecialCode>(SpecialCode::Zero); // house items
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterBadges()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::Badges);
+	msg.add(CyclopediaErrorCode::None);
+	msg.add(CommonCode::True); // show account information
+	msg.add(CommonCode::True); // online
+	msg.add(player->isPremium() ? CommonCode::True : CommonCode::False);
+	msg.add<SpecialCode>(SpecialCode::Zero); // loyalty title
+	msg.add(CommonCode::Zero); // badges
+	writeToOutputBuffer(msg);
+}
+
+// the 15.x stat pages break every bonus down by source (equipment, wheel,
+// imbuement, ...); this server has none of those systems, so the totals are
+// the character's plain numbers and every bonus column reads zero
+void ProtocolGame::sendCyclopediaCharacterOffenceStats()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::OffenceStats);
+	msg.add(CyclopediaErrorCode::None);
+
+	for (uint8_t column = 0; column < 6; ++column)
+	{
+		msg.addDouble(0.0, 2); // critical chance: total, equipment, flat, imbuement, wheel, concoction
+	}
+	for (uint8_t column = 0; column < 6; ++column)
+	{
+		msg.addDouble(0.0, 2); // critical damage: same columns
+	}
+	for (uint8_t column = 0; column < 5; ++column)
+	{
+		msg.addDouble(0.0, 2); // life leech: total, equipment, imbuement, wheel, event
+	}
+	for (uint8_t column = 0; column < 5; ++column)
+	{
+		msg.addDouble(0.0, 2); // mana leech: same columns
+	}
+	for (uint8_t column = 0; column < 4; ++column)
+	{
+		msg.addDouble(0.0, 2); // onslaught: total, base, bonus, event
+	}
+	msg.addDouble(0.0, 2); // cleave percent
+	for (uint8_t range = 0; range < 7; ++range)
+	{
+		msg.add<uint16_t>(0); // perfect shot damage per range
+	}
+	msg.add<uint16_t>(0); // flat damage
+	msg.add<uint16_t>(0); // flat damage base
+	msg.add<uint16_t>(0); // flat damage wheel
+
+	const auto& weapon = player->getWeapon();
+	msg.add<uint16_t>(weapon ? std::max<int32_t>(weapon->getAttack(), 0) : 0); // weapon attack
+	msg.add<uint16_t>(0); // weapon flat modifier
+	msg.add<uint16_t>(0); // weapon damage
+	msg.add(CommonCode::Zero); // weapon skill type
+	msg.add<uint16_t>(0); // weapon skill level
+	msg.add<uint16_t>(0); // weapon skill modifier
+	msg.add(CommonCode::Zero); // weapon element
+	msg.addDouble(0.0, 2); // weapon element damage
+	msg.add(CommonCode::Zero); // weapon element type
+	msg.add(CommonCode::Zero); // distance accuracy entries
+
+	msg.addDouble(0.0, 2); // damage against powerful foes
+	msg.add<SpecialCode>(SpecialCode::Zero); // damage against specific targets
+	msg.add(CommonCode::Zero); // critical chance by element
+	msg.addDouble(0.0, 2); // offensive rune damage
+	msg.addDouble(0.0, 2); // auto attack damage
+	msg.add(CommonCode::Zero); // critical damage by element
+	msg.addDouble(0.0, 2); // critical damage on offensive runes
+	msg.addDouble(0.0, 2); // critical damage on auto attacks
+	msg.add<uint16_t>(0); // life gain on hit
+	msg.add<uint16_t>(0); // mana gain on hit
+	msg.add<uint16_t>(0); // life gain on kill
+	msg.add<uint16_t>(0); // mana gain on kill
+	msg.add(CommonCode::Zero); // auto attack extra damage entries
+	msg.add(CommonCode::Zero); // spell extra damage entries
+	msg.add(CommonCode::Zero); // spell extra healing entries
+
+	msg.addDouble(0.0, 2); // damage to targets above 95% health (15.21+)
+	msg.addDouble(0.0, 2); // damage to targets below 30% health
+	msg.addDouble(0.0, 2); // armor penetration
+	msg.add(CommonCode::Zero); // elemental pierce entries
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterDefenceStats()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::DefenceStats);
+	msg.add(CyclopediaErrorCode::None);
+
+	for (uint8_t column = 0; column < 5; ++column)
+	{
+		msg.addDouble(0.0, 2); // dodge: total, base, bonus, unused, wheel
+	}
+	msg.add<uint32_t>(0); // magic shield capacity
+	msg.add<uint16_t>(0); // magic shield capacity flat
+	msg.addDouble(0.0, 2); // magic shield capacity percent
+	msg.add<uint16_t>(0); // physical reflection
+	msg.add<uint16_t>(std::max<int32_t>(player->getArmor(), 0));
+	if (hasFeature(ProtocolFeature::MonkMantra))
+	{
+		msg.add<uint16_t>(0); // mantra
+	}
+	msg.add<uint16_t>(std::max<int32_t>(player->getDefense(), 0));
+	msg.add<uint16_t>(std::max<int32_t>(player->getDefense(), 0)); // defense from equipment
+	msg.add(CommonCode::Zero); // defense skill type
+	msg.add<uint16_t>(player->getSkillLevel(SKILL_SHIELD));
+	msg.add<uint16_t>(0); // defense from the wheel
+	msg.add<uint16_t>(0); // unused
+	for (uint8_t column = 0; column < 6; ++column)
+	{
+		msg.addDouble(0.0, 2); // mitigation: total, base, equipment, shield, wheel, combat tactics
+	}
+	msg.add(CommonCode::Zero); // elemental resistance entries
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterMiscStats()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::MiscStats);
+	msg.add(CyclopediaErrorCode::None);
+
+	for (uint8_t column = 0; column < 5; ++column)
+	{
+		msg.addDouble(0.0, 2); // momentum: total, base, bonus, wheel, unused
+	}
+	for (uint8_t column = 0; column < 4; ++column)
+	{
+		msg.addDouble(0.0, 2); // dodge: total, base, bonus, wheel
+	}
+	for (uint8_t column = 0; column < 3; ++column)
+	{
+		msg.addDouble(0.0, 2); // damage reflection: total, base, bonus
+	}
+
+	uint8_t blessingsHeld = 0;
+	for (uint8_t blessing = 0; blessing < Player::Blessings::Count; ++blessing)
+	{
+		if (player->hasBlessing(blessing))
+		{
+			++blessingsHeld;
+		}
+	}
+	msg.addByte(blessingsHeld);
+	msg.addByte(Player::Blessings::Count);
+
+	msg.add(CommonCode::Zero); // active concoctions
+	msg.add(CommonCode::Zero); // active foods
+	msg.add(CommonCode::Zero); // weapon proficiency augments
+	msg.add(CommonCode::Zero); // wheel augments
+	msg.add(CommonCode::Zero); // equipped augments
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterTitles()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::Titles);
+	msg.add(CyclopediaErrorCode::None);
+	msg.add(CommonCode::Zero); // current title
+	msg.add(CommonCode::Zero); // titles
 	writeToOutputBuffer(msg);
 }
 
@@ -3648,6 +4244,11 @@ void ProtocolGame::sendAddCreature(const CreatureConstPtr& creature, const Posit
 
 	sendBasicData();
 	player->sendIcons();
+
+	if (hasFeature(ProtocolFeature::BlessingsDialog))
+	{
+		sendBlessStatus();
+	}
 }
 
 void ProtocolGame::sendMoveCreature(const CreatureConstPtr& creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)

@@ -147,6 +147,7 @@ class ProtocolGame : public Protocol
 		void parseFollow(NetworkMessage& msg);
 		void parseEquipObject(NetworkMessage& msg);
 		void parseTeleport(NetworkMessage& msg);
+		void parseCyclopediaCharacterInfo(NetworkMessage& msg);
 
 		void parseBugReport(NetworkMessage& msg);
 		void parseDebugAssert(NetworkMessage& msg);
@@ -261,6 +262,30 @@ class ProtocolGame : public Protocol
 		void sendCloseShop();
 		void sendSaleItemList(const std::list<ShopInfo>& shop);
 		void sendResourceBalance(BlackTek::Network::ResourceType type, uint64_t value);
+
+		// 12.x+ blessings
+		void sendBlessStatus();
+		void sendBlessDialog();
+
+		// 12.x+ cyclopedia; every request type gets an answer the client can
+		// parse, real data where the server has it and an empty page elsewhere
+		void sendCyclopediaCharacterInfo(uint8_t infoType);
+		void sendCyclopediaCharacterNoData(uint8_t infoType);
+		void sendCyclopediaCharacterBaseInformation();
+		void sendCyclopediaCharacterGeneralStats();
+		void sendCyclopediaCharacterCombatStats();
+		void sendCyclopediaCharacterRecentDeaths(uint16_t page, uint16_t pages, const std::vector<std::pair<uint32_t, std::string>>& entries);
+		void sendCyclopediaCharacterRecentPvpKills();
+		void sendCyclopediaCharacterItemSummary();
+		void sendCyclopediaCharacterOutfitsMounts();
+		void sendCyclopediaCharacterStoreSummary();
+		void sendCyclopediaCharacterBadges();
+		void sendCyclopediaCharacterTitles();
+		void sendCyclopediaCharacterOffenceStats();
+		void sendCyclopediaCharacterDefenceStats();
+		void sendCyclopediaCharacterMiscStats();
+		void sendCyclopediaCharacterHeaderOnly(BlackTek::Network::CyclopediaInfoCode infoType);
+		void addCyclopediaItemSummary(NetworkMessage& msg, const std::map<uint16_t, uint32_t>& items) const;
 		void sendMarketEnter();
 		void sendMarketLeave();
 		void sendMarketBrowseItem(uint16_t itemId, const MarketOfferList& buyOffers, const MarketOfferList& sellOffers);

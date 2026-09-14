@@ -87,6 +87,7 @@ namespace BlackTek {
 			MonkMantra            = 1ULL << 27, // 15.00+: mantra u16 inside the 0xA1 defense info
 			PlayerStateU64        = 1ULL << 28, // 14.05+: 0xA2 states widen u32 -> u64
 			PlayerStateCounter    = 1ULL << 29, // 13.20+: 0xA2 gains a trailing icon-counter u8
+			TaskBoard             = 1ULL << 30, // 15.20+: the cyclopedia store summary carries a weekly-task-expansion flag
 		};
 
 		[[nodiscard]] constexpr ProtocolFeature operator|(ProtocolFeature left, ProtocolFeature right)
@@ -229,7 +230,8 @@ namespace BlackTek {
 						| ProtocolFeature::CharacterSkillStats
 						| ProtocolFeature::MonkMantra
 						| ProtocolFeature::PlayerStateU64
-						| ProtocolFeature::PlayerLevelPercentU16),
+						| ProtocolFeature::PlayerLevelPercentU16
+						| ProtocolFeature::TaskBoard),
 				.name = "15.25",
 			},
 		} };

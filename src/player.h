@@ -19,6 +19,7 @@
 #include "augments.h"
 #include "accountmanager.h"
 
+#include <array>
 #include <bitset>
 #include <optional>
 #include <gtl/phmap.hpp>
@@ -150,6 +151,21 @@ namespace BlackTek
 class Player final : public Creature
 {
 	public:
+		// the blessings the bitset below tracks, in bit order; the names are
+		// the ones the datapack's blessing scripts already use
+		struct Blessings
+		{
+			static constexpr uint8_t Count = 6;
+			static constexpr std::array<std::string_view, Count> Names {
+				"Spiritual Shielding",
+				"Embrace of the World",
+				"Fire of the Suns",
+				"Spark of the Phoenix",
+				"Wisdom of Solitude",
+				"Twist of Fate",
+			};
+		};
+
 		explicit Player(ProtocolGame_ptr protocol);
 		~Player() override;
 
@@ -833,6 +849,11 @@ class Player final : public Creature
 		void sendSaleItemList() const																{ if (client) client->sendSaleItemList(client->shopItemList); }
 		void sendCloseShop() const																	{ if (client) client->sendCloseShop(); }
 		void sendMarketEnter() const																{ if (client) client->sendMarketEnter(); }
+		void sendCyclopediaCharacterInfo(uint8_t infoType) const									{ if (client) client->sendCyclopediaCharacterInfo(infoType); }
+		void sendCyclopediaCharacterNoData(uint8_t infoType) const									{ if (client) client->sendCyclopediaCharacterNoData(infoType); }
+		void sendCyclopediaCharacterRecentDeaths(uint16_t page, uint16_t pages, const std::vector<std::pair<uint32_t, std::string>>& entries) const { if (client) client->sendCyclopediaCharacterRecentDeaths(page, pages, entries); }
+		void sendBlessStatus() const																{ if (client) client->sendBlessStatus(); }
+		void sendBlessDialog() const																{ if (client) client->sendBlessDialog(); }
 		void sendToChannel(const CreatureConstPtr& creature, SpeakClasses type, const std::string& text, uint16_t channelId) const { if (client) client->sendToChannel(creature, type, text, channelId); }
 
 		void sendMarketLeave()
@@ -1037,7 +1058,7 @@ class Player final : public Creature
 		int32_t varSkills[SKILL_LAST + 1] = {};
 		int32_t varSpecialSkills[SPECIALSKILL_LAST + 1] = {};
 		int32_t varStats[STAT_LAST + 1] = {};
-		std::bitset<6> blessings;
+		std::bitset<Blessings::Count> blessings;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
 		uint16_t combatHookMasks[CONST_SLOT_LAST + 1] = {};
 		uint16_t combatHookMask = 0;

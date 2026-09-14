@@ -19,11 +19,12 @@ What we changed to get from 10.98 to 15.25:
 - **Protobuf appearances** — the server loads a 15.25 `appearances.dat` and maps its unified item ids to modern appearance ids (~42k entries), pruning stale rows at load. The 20,805 appearances with no 10.98 item are registered as server items with gameplay attributes joined from community data.
 - **Ported game-packet writers** — login, stats, skills, creatures, items, effects and map descriptions rewritten for the 15.25 wire format where it diverges, gated on the protocol profile.
 - **Windows a player opens first (Phase E)** — NPC shop and sale lists (currency block, client ids, u16 amounts, resource balances), the outfit window (12.81+ list layout), death and text windows, quest log and quest lines with mission ids, the market (request bytes, item tiers, u64 prices, the full 15.25 description set), u16 spell cooldowns, u64 experience messages, and the gamemaster map-click teleport.
+- **Cyclopedia and blessings (Phase D, first tranche)** — every cyclopedia character-info request type is answered (general, combat, offence, defence and misc stats, recent deaths from the database, item summary, outfits and mounts, store summary, badges, titles), plus the blessings status and dialog.
 - **Legacy retired** — this fork is 15.25-only: the 10.98 game/login listeners ship disabled (`game_port = 0`, `login_port = 0`; `0` disables a listener).
 
 Behaviour for the modern packets is taken from the client's own parsers, with [Canary](https://github.com/opentibiabr/canary) as a cross-check; the code itself follows BlackTek's conventions (see `CONTRIBUTING.md`) rather than theirs.
 
-Still to come: player-to-player trade polish, cyclopedia, and the modern side systems (prey, bestiary, forge, wheel, store), which are stubbed off so the client is in-world without them; and a real-map datapack in BlackTek's Lua/TOML layout.
+Still to come: character inspection, and the modern side systems (prey, bestiary, forge, wheel, store), which are stubbed off so the client is in-world without them; and a real-map datapack in BlackTek's Lua/TOML layout.
 
 **Verifying a change.** `harness/` holds the packet-diff and scripted-client tools (`harness/README.md`). A full check is: build, `./blacktek_tests`, the scripted 15.25 login (`harness/modern_client.py`), and a headless run of the real client (`xvfb-run -a ./otclient` with an `otclientrc.lua` that logs in and exercises the feature) while `harness/capture_proxy.py` records the session for `packet_diff.py --decode`.
 

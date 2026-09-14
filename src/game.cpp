@@ -4627,6 +4627,69 @@ void Game::playerTurn(const uint32_t playerId, const Direction dir)
 	internalCreatureTurn(player, dir);
 }
 
+void Game::playerCyclopediaCharacterInfo(const uint32_t playerId, const uint32_t characterId, const uint8_t infoType, const uint16_t entriesPerPage, const uint16_t page)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	// only the player's own character for now; inspecting others is a later phase
+	if (characterId != 0 and characterId != player->getID())
+	{
+		player->sendCyclopediaCharacterNoData(infoType);
+		return;
+	}
+
+	// recent deaths are the one page that lives in the database
+	if (infoType == 3)
+	{
+		std::vector<std::pair<uint32_t, std::string>> deaths;
+		DBResult_ptr result = Database::getInstance().storeQuery(fmt::format("SELECT `time`, `level`, `killed_by`, `is_player`, `mostdamage_by`, `mostdamage_is_player` FROM `player_deaths` WHERE `player_id` = {:d} ORDER BY `time` DESC", player->getGUID()));
+		if (result)
+		{
+			do
+			{
+				const std::string_view killedBy = result->getString("killed_by");
+				const std::string_view mostDamage = result->getString("mostdamage_by");
+				std::string cause = fmt::format("Died at Level {:d} by {:s}", result->getNumber<uint32_t>("level"), killedBy);
+				if (not mostDamage.empty() and mostDamage != killedBy)
+				{
+					cause += fmt::format(" and by {:s}", mostDamage);
+				}
+				deaths.emplace_back(result->getNumber<uint32_t>("time"), cause + ".");
+			} while (result->next());
+		}
+
+		const uint16_t perPage = std::max<uint16_t>(entriesPerPage, 1);
+		const uint16_t pages = static_cast<uint16_t>((deaths.size() + perPage - 1) / perPage);
+		const uint16_t currentPage = std::clamp<uint16_t>(page, 1, std::max<uint16_t>(pages, 1));
+		const size_t first = static_cast<size_t>(currentPage - 1) * perPage;
+		std::vector<std::pair<uint32_t, std::string>> pageEntries;
+		for (size_t i = first; i < deaths.size() and i < first + perPage; ++i)
+		{
+			pageEntries.push_back(deaths[i]);
+		}
+
+		player->sendCyclopediaCharacterRecentDeaths(currentPage, pages, pageEntries);
+		return;
+	}
+
+	player->sendCyclopediaCharacterInfo(infoType);
+}
+
+void Game::playerRequestBlessingsDialog(const uint32_t playerId)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	player->sendBlessDialog();
+}
+
 void Game::playerTeleport(const uint32_t playerId, const Position& newPosition)
 {
 	const auto& player = getPlayerByID(playerId);

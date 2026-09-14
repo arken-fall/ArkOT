@@ -364,6 +364,41 @@ namespace BlackTek {
 
             // Modern (12.x+) resource balances, see ResourceType
             ResourceBalance = 0xEE,
+
+            // Modern (12.x+) blessings and cyclopedia
+            BlessDialog = 0x9B,
+            BlessStatus = 0x9C,
+            CyclopediaCharacterInfo = 0xDA,
+        };
+
+        // The character info request types a 12.x+ cyclopedia asks for; the
+        // reply echoes the type and follows it with a CyclopediaErrorCode
+        enum class CyclopediaInfoCode : uint8_t
+        {
+            BaseInformation = 0x00,
+            GeneralStats = 0x01,
+            CombatStats = 0x02,
+            RecentDeaths = 0x03,
+            RecentPvpKills = 0x04,
+            Achievements = 0x05,
+            ItemSummary = 0x06,
+            OutfitsMounts = 0x07,
+            StoreSummary = 0x08,
+            Inspection = 0x09,
+            Badges = 0x0A,
+            Titles = 0x0B,
+            Wheel = 0x0C,
+            OffenceStats = 0x0D,
+            DefenceStats = 0x0E,
+            MiscStats = 0x0F,
+        };
+
+        enum class CyclopediaErrorCode : uint8_t
+        {
+            None = 0x00,
+            NoData = 0x01,
+            NotAllowed = 0x02,
+            NoInspection = 0x03,
         };
 
         // Modern (12.51+) market traffic leads with one of these instead of
