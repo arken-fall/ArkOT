@@ -280,7 +280,7 @@ namespace BlackTek::Forge
 		}
 		if (bonus != Bonus::GoldKept)
 		{
-			g_game.removeMoney({ .player = player }, goldCost);
+			player->payGold(goldCost);
 		}
 
 		HistoryEntry entry;
@@ -372,7 +372,7 @@ namespace BlackTek::Forge
 
 		player->removeForgeDust(dustCost);
 		removeCores(player, price->cores);
-		g_game.removeMoney({ .player = player }, goldCost);
+		player->payGold(goldCost);
 		g_game.internalRemoveItem(donor, 1);
 		receiver->setForgeTier(toTier);
 

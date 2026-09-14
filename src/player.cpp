@@ -5212,6 +5212,24 @@ void Player::checkSkullTicks(const int64_t ticks)
 	}
 }
 
+bool Player::payGold(uint64_t amount)
+{
+	const uint64_t carried = getMoney();
+	if (carried + bankBalance < amount)
+	{
+		return false;
+	}
+
+	const uint64_t fromInventory = std::min(carried, amount);
+	if (fromInventory != 0 and not g_game.removeMoney({ .player = getPlayer() }, fromInventory))
+	{
+		return false;
+	}
+
+	bankBalance -= amount - fromInventory;
+	return true;
+}
+
 bool Player::isPromoted() const
 {
 	uint16_t promotedVocation = g_vocations.getPromotedVocation(vocation->getId());

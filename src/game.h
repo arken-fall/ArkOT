@@ -561,6 +561,9 @@ class Game
 		void playerPreyAction(uint32_t playerId, uint8_t slotId, uint8_t action, uint8_t index, uint16_t raceId, uint8_t option);
 		void playerForgeAction(uint32_t playerId, uint8_t action, bool convergence, uint16_t firstItemId, uint8_t firstTier, uint16_t secondItemId, bool improveChance, bool reduceTierLoss);
 		void playerForgeHistory(uint32_t playerId, uint16_t page);
+		void playerOpenWheel(uint32_t playerId, uint32_t ownerId);
+		void playerSaveWheel(uint32_t playerId, const std::array<uint16_t, BlackTek::Wheel::SlotCount + 1>& points, const std::array<uint16_t, BlackTek::Wheel::QuadrantCount>& vessels);
+		void playerWheelGemAction(uint32_t playerId, uint8_t action, uint16_t param, uint8_t position);
 		void playerInspectObject(uint32_t playerId, const Position& pos);
 		void playerInspectItemType(uint32_t playerId, uint16_t itemId, uint8_t inspectionType);
 		void playerInspectCharacter(uint32_t playerId, uint32_t creatureId, bool cyclopedia);

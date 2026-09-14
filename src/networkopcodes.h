@@ -102,7 +102,7 @@ namespace BlackTek {
 
             // Reports & Debug
             BugReport = 0xE6,
-            ThankYou = 0xE7, // unhandled
+            WheelGemAction = 0xE7, // 13.x+: the gem atelier; older clients sent a "thank you" report here
             DebugAssert = 0xE8,
             // missing = 0xEE,
 
@@ -393,6 +393,10 @@ namespace BlackTek {
             ForgeHistory = 0x88,
             ForgeClose = 0x89,
             ForgeResult = 0x8A,
+
+            // wheel of destiny
+            WheelWindow = 0x5F,
+            WheelGemRevealed = 0xC5,
         };
 
         // Prey slot states as the 12.x+ client reads them in PreyData
@@ -479,6 +483,12 @@ namespace BlackTek {
             ForgeDust = 0x46,
             ForgeSlivers = 0x47,
             ForgeCores = 0x48,
+            // the gem atelier's shelves
+            LesserGems = 0x51,
+            RegularGems = 0x52,
+            GreaterGems = 0x53,
+            LesserFragments = 0x54,
+            GreaterFragments = 0x55,
             // 14.10+ charm balances; these four are u32 on the wire
             CharmPoints = 0x1E,
             MinorCharmEchoes = 0x1F,

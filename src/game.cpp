@@ -6,6 +6,7 @@
 #include "bestiary.h"
 #include "prey.h"
 #include "forge.h"
+#include "wheel.h"
 
 #include "pugicast.h"
 
@@ -4836,6 +4837,61 @@ void Game::playerForgeHistory(const uint32_t playerId, const uint16_t page)
 	}
 
 	player->sendForgeHistory(page);
+}
+
+void Game::playerOpenWheel(const uint32_t playerId, const uint32_t ownerId)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	BlackTek::Wheel::System::getInstance().sendResourceBalances(player);
+	player->sendWheelWindow(ownerId);
+}
+
+void Game::playerSaveWheel(const uint32_t playerId, const std::array<uint16_t, BlackTek::Wheel::SlotCount + 1>& points, const std::array<uint16_t, BlackTek::Wheel::QuadrantCount>& vessels)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	BlackTek::Wheel::System::getInstance().save(player, points, vessels);
+}
+
+void Game::playerWheelGemAction(const uint32_t playerId, const uint8_t action, const uint16_t param, const uint8_t position)
+{
+	using GemAction = BlackTek::Wheel::System::GemAction;
+	using FragmentType = BlackTek::Wheel::System::FragmentType;
+	using Quality = BlackTek::Wheel::Gem::Quality;
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	const auto& wheel = BlackTek::Wheel::System::getInstance();
+	switch (static_cast<GemAction>(action))
+	{
+		case GemAction::Destroy:
+			wheel.destroyGem(player, param);
+			break;
+		case GemAction::Reveal:
+			wheel.revealGem(player, static_cast<Quality>(std::min<uint16_t>(param, 2)));
+			break;
+		case GemAction::SwitchDomain:
+			wheel.switchGemDomain(player, param);
+			break;
+		case GemAction::ToggleLock:
+			wheel.toggleGemLock(player, param);
+			break;
+		case GemAction::ImproveGrade:
+			wheel.improveGemGrade(player, param != 0 ? FragmentType::Lesser : FragmentType::Greater, position);
+			break;
+	}
 }
 
 void Game::playerRequestBlessingsDialog(const uint32_t playerId)

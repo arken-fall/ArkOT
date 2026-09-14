@@ -20,6 +20,7 @@
 #include "bestiary.h"
 #include "prey.h"
 #include "forge.h"
+#include "wheel.h"
 #include "accountmanager.h"
 
 #include <array>
@@ -261,6 +262,8 @@ class Player final : public Creature
 		BlockType_t			getLastAttackBlockType() const	{ return lastAttackBlockType; }
 
 		uint64_t getMoney() const;
+		// spends gold carried first, then from the bank; false when the two together fall short
+		bool payGold(uint64_t amount);
 		uint64_t getGainedExperience(const CreaturePtr& attacker) const override;
 		uint64_t getBankBalance() const						{ return bankBalance; }
 		uint64_t getSpentMana() const						{ return manaSpent; }
@@ -317,7 +320,7 @@ class Player final : public Creature
 			else if (hasFlag(PlayerFlag_HasInfiniteCapacity))
 				return std::numeric_limits<uint32_t>::max();
 
-			return capacity;
+			return capacity + wheel_capacity;
 		}
 
 		// move to cpp
@@ -909,6 +912,13 @@ class Player final : public Creature
 		void sendForgeError(const std::string& message) const											{ if (client) client->sendForgeError(message); }
 		void sendForgeResult(BlackTek::Forge::System::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::System::Bonus bonus, uint8_t coreCount) const { if (client) client->sendForgeResult(action, convergence, success, leftItemId, leftTier, rightItemId, rightTier, bonus, coreCount); }
 		void sendForgeBalances() const																	{ if (client) client->sendForgeBalances(); }
+
+		// wheel of destiny: the character's points, gems and grades
+		[[nodiscard]] BlackTek::Wheel::State& getWheelState() noexcept									{ return wheel_state; }
+		[[nodiscard]] const BlackTek::Wheel::State& getWheelState() const noexcept						{ return wheel_state; }
+		void sendWheelWindow(uint32_t ownerId) const													{ if (client) client->sendWheelWindow(ownerId); }
+		void sendWheelGemRevealed(uint16_t index) const												{ if (client) client->sendWheelGemRevealed(index); }
+		void sendResourceBalance(BlackTek::Network::ResourceType type, uint64_t value) const			{ if (client) client->sendResourceBalance(type, value); }
 		void sendImpactTracker(BlackTek::Network::ImpactTrackerCode type, uint32_t amount, CombatType_t combatType, const std::string& target) const { if (client) client->sendImpactTracker(type, amount, combatType, target); }
 		void sendSupplyTracker(uint16_t itemId) const													{ if (client) client->sendSupplyTracker(itemId); }
 		void sendLootTracker(const ItemConstPtr& item) const											{ if (client) client->sendLootTracker(item); }
@@ -1033,6 +1043,10 @@ class Player final : public Creature
 		// exaltation forge dust and the most dust the character may hold
 		uint32_t forge_dust = 0;
 		uint16_t forge_dust_level = 100;
+
+		// wheel of destiny: what the character chose, and the capacity it grants
+		BlackTek::Wheel::State wheel_state;
+		uint32_t wheel_capacity = 0;
 		uint64_t lastQuestlogUpdate = 0;
 
 		uint64_t getLostExperience() const override { return skillLoss ? static_cast<uint64_t>(experience * getLostPercent()) : 0; }
@@ -1234,6 +1248,7 @@ class Player final : public Creature
 		friend class ProtocolGame;
 		friend class ItemContainer;
 		friend class BlackTek::Forge::System;
+		friend class BlackTek::Wheel::System;
 };
 
 #endif

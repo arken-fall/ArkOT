@@ -1,0 +1,21 @@
+# The wheel of destiny: a level-51 promoted character with premium time
+# spends one point per level above 50 on the wheel's 36 slots.
+
+enabled = true
+require_premium = true
+require_promotion = true
+points_per_level = 1
+
+# how far from a temple, inside its protection zone, points may be taken back
+temple_range = 10
+
+# the gem atelier, in gold; by gem quality (lesser, regular, greater)
+reveal_cost = [125000, 1000000, 6000000]
+rotate_cost = [125000, 250000, 500000]
+
+# raising a modifier's grade: gold and fragments for the first, second and third grade
+lesser_grade_cost = [{ gold = 2000000, fragments = 5 }, { gold = 5000000, fragments = 15 }, { gold = 30000000, fragments = 30 }]
+greater_grade_cost = [{ gold = 5000000, fragments = 5 }, { gold = 12000000, fragments = 15 }, { gold = 75000000, fragments = 30 }]
+
+# the points each promotion scroll grants: abridged, basic, revised, extended, advanced
+scroll_points = [3, 5, 9, 13, 20]

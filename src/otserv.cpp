@@ -6,6 +6,7 @@
 #include "bestiary.h"
 #include "prey.h"
 #include "forge.h"
+#include "wheel.h"
 
 #include "server.h"
 
@@ -525,6 +526,7 @@ void mainLoader(int, char*[], ServiceManager* services)
 	BlackTek::Bestiary::Registry::getInstance().loadCharms();
 	BlackTek::Prey::System::getInstance().loadConfig();
 	BlackTek::Forge::System::getInstance().loadConfig();
+	BlackTek::Wheel::System::getInstance().loadConfig();
 	Console::printProgress("Augments", true, std::to_string(BlackTek::Augments::count()));
 
 

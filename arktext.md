@@ -642,3 +642,58 @@ talks through `MessageModes.NpcTo`; the capture decodes with zero errors.
 (see above); trimming the fully shadowed pack scripts would silence them.
 The pack's quests directory only had the example quest, so `data/quests`
 is unchanged. The VM needs 16 GB for this map.
+
+## 2026-09-14 — Wheel of destiny: a real system
+
+**Shape.** `BlackTek::Wheel::System` (`src/wheel.h/.cpp`, ~1,450 lines in the
+house style: nested enums, tab-aligned tables, views instead of `continue`,
+PascalCase helpers in the anonymous namespace). The data the client expects
+is all constexpr tables: `Places` (quadrant, size, points required, the slots
+a full one may grow from), `SlotBonuses` (per-point stat, the reward once
+full, spells and instants by vocation), `SpellGrades` (what the first and
+second slot naming a spell add), `BasicPositions` (the 46 modifiers the
+client lists grades for, in its order), `SupremeEffects` (94 modifiers:
+who may roll them and what they do), the facet pools the atelier rolls from,
+and the stage thresholds 250/500/1000 with +4/+9/+20 percent damage and
+healing. The per-character state (`Wheel::State`) lives on the Player:
+points by slot, the id-sorted gem list (the client addresses gems by index
+in that list), basic and supreme grades, the scrolls read, and the bonuses
+last applied so they can be taken back.
+
+**Wire.** Client 0x61 open (u32 owner), 0x62 save (36 × u16 points, then
+four vessels as u8 has-gem + u16 index), 0xE7 gem action (u8 action; u16
+index for destroy/rotate/lock, u8 quality for reveal, u8 fragment type + u8
+position for a grade). Server 0x5F window: owner, can-use, options
+(0 locked / 1 free in a temple / 2 add-only), vocation (knight 1, paladin 2,
+sorcerer 3, druid 4), points, extra points, 36 slot points, scrolls
+(u16 count of u16 item + u8 points), the 15.x monk-quest flag and u16 bonus
+(zero), placed gems (u8 count of u16 index), revealed gems (u16 count; index,
+locked, domain, quality, first facet, second facet for regular+, supreme
+facet for greater), then 46 and 23 (position, grade) pairs. 0xC5 names the
+gem just revealed. Resource balances 0x51–0x55 carry the atelier's shelves.
+Verified against the real 15.25 client with a promoted level-400 knight.
+
+**Rules.** `getPoints` = (level − 50) per level, scrolls on top, plus one
+point per fully graded modifier. `save` settles the small slots first and
+retries the rest for up to six passes so a slot may open on a neighbour
+filled in the same save; a point count above the slot's size, over budget,
+taken back outside a temple, or on a closed slot rejects the whole save with
+a warning naming the slot. Vessels only take a gem of their own domain.
+
+**Application.** Health, mana and magic level through `setVarStats`,
+melee/distance/fist through `setVarSkill`, capacity through a new
+`wheel_capacity` the getter adds, and resistances, weaknesses, mitigation
+(as resistance to all damage), life and mana leech and the healing bonus as
+one augment named "Wheel of Destiny" (percent, rounded from hundredths).
+`Spell::addCooldowns` and `Spell::getManaCost` ask the wheel for the spell's
+bonus. Dodge, critical damage, the damage percent, stages, perks and instants
+have no native engine slot yet; they are exposed to Lua
+(`player:getWheelBonus`, `getWheelStage`, `getWheelPerk`, `hasWheelInstant`,
+`getWheelSpellBonus`, `getWheelPoints`, `unlockWheelScroll`, `openWheel`,
+`Game.getItemIdByClientId`) so the datapack can use them; the five promotion
+scrolls are an `ItemEvent` that calls `unlockWheelScroll`.
+
+**Found on the way.** `Game::removeMoney` never touches the bank, so the
+forge's convergence prices and the atelier's gold silently failed for a
+character whose gold sits in the bank. `Player::payGold` spends the purse
+first and the bank for the rest; the forge and the wheel use it.

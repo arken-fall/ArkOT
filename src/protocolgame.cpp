@@ -20,6 +20,7 @@
 #include "bestiary.h"
 #include "prey.h"
 #include "forge.h"
+#include "wheel.h"
 #include "game.h"
 #include "iologindata.h"
 #include "iomarket.h"
@@ -844,6 +845,8 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::PreyAction: parsePreyAction(msg); break;
 		case ClientCode::ForgeEnter: parseForgeAction(msg); break;
 		case ClientCode::ForgeBrowseHistory: parseForgeHistory(msg); break;
+		case ClientCode::OpenWheel: parseOpenWheel(msg); break;
+		case ClientCode::SaveWheel: parseSaveWheel(msg); break;
 		case ClientCode::BestiaryRaces: addGameTask([player_id]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryRaces(); }); break;
 		case ClientCode::BestiaryCreatures: parseBestiaryOverview(msg); break;
 		case ClientCode::BestiaryMonsterData: parseBestiaryMonsterData(msg); break;
@@ -903,7 +906,7 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::RemoveVip: parseRemoveVip(msg); break;
 		case ClientCode::EditVip: parseEditVip(msg); break;
 		case ClientCode::BugReport: parseBugReport(msg); break;
-		case ClientCode::ThankYou: /* thank you */ break;
+		case ClientCode::WheelGemAction: parseWheelGemAction(msg); break;
 		case ClientCode::DebugAssert: parseDebugAssert(msg); break;
 		///new protocol byte maybe? ///case 0xEE: addGameTask([player_id]() { g_game.playerSay(player_id, 0, TALKTYPE_SAY, "", "hi"); }); break;
 		case ClientCode::ShowQuestLog: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerShowQuestLog(player_id); }); break;
@@ -3194,6 +3197,154 @@ void ProtocolGame::parseForgeHistory(NetworkMessage& msg)
 {
 	const uint16_t page = msg.getByte();
 	addGameTask([=, playerID = player->getID()]() { g_game.playerForgeHistory(playerID, page); });
+}
+
+void ProtocolGame::parseOpenWheel(NetworkMessage& msg)
+{
+	const uint32_t ownerId = msg.get<uint32_t>();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerOpenWheel(playerID, ownerId); });
+}
+
+// every slot's points, then one gem index per vessel
+void ProtocolGame::parseSaveWheel(NetworkMessage& msg)
+{
+	using namespace BlackTek::Wheel;
+	std::array<uint16_t, SlotCount + 1> points {};
+	for (uint8_t slot = 1; slot <= SlotCount; ++slot)
+	{
+		points[slot] = msg.get<uint16_t>();
+	}
+	std::array<uint16_t, QuadrantCount> vessels {};
+	for (auto& vessel : vessels)
+	{
+		const bool hasGem = msg.getByte() != 0;
+		vessel = hasGem ? msg.get<uint16_t>() : 0xFFFF;
+	}
+	addGameTask([=, playerID = player->getID()]() { g_game.playerSaveWheel(playerID, points, vessels); });
+}
+
+void ProtocolGame::parseWheelGemAction(NetworkMessage& msg)
+{
+	using GemAction = BlackTek::Wheel::System::GemAction;
+	const uint8_t action = msg.getByte();
+	uint16_t param = 0;
+	uint8_t position = 0;
+	switch (static_cast<GemAction>(action))
+	{
+		case GemAction::Destroy:
+		case GemAction::SwitchDomain:
+		case GemAction::ToggleLock:
+			param = msg.get<uint16_t>();
+			break;
+		case GemAction::Reveal:
+			param = msg.getByte();
+			break;
+		case GemAction::ImproveGrade:
+			param = msg.getByte();
+			position = msg.getByte();
+			break;
+	}
+	addGameTask([=, playerID = player->getID()]() { g_game.playerWheelGemAction(playerID, action, param, position); });
+}
+
+// the whole wheel: points, scrolls, gems and their grades
+void ProtocolGame::sendWheelWindow(uint32_t ownerId)
+{
+	using namespace BlackTek::Wheel;
+	const auto& wheel = System::getInstance();
+
+	NetworkMessage msg;
+	msg.add(ServerCode::WheelWindow);
+	msg.add<uint32_t>(ownerId);
+	const bool canUse = wheel.canOpen(player);
+	msg.addByte(canUse ? 1 : 0);
+	if (not canUse)
+	{
+		writeToOutputBuffer(msg);
+		return;
+	}
+
+	wheel.grantInitialGems(player);
+	const auto& state = player->getWheelState();
+	const auto vocation = System::getVocation(player);
+	msg.addByte(std::to_underlying(wheel.getOptions(player, ownerId)));
+	msg.addByte(std::to_underlying(vocation));
+	msg.add<uint16_t>(wheel.getPoints(player));
+	msg.add<uint16_t>(wheel.getExtraPoints(player));
+	for (uint8_t slot = 1; slot <= SlotCount; ++slot)
+	{
+		msg.add<uint16_t>(state.points[slot]);
+	}
+
+	msg.add<uint16_t>(static_cast<uint16_t>(state.scrolls.size()));
+	for (const auto itemId : state.scrolls)
+	{
+		msg.add<uint16_t>(itemId);
+		msg.addByte(wheel.getScrollPoints(itemId));
+	}
+
+	// 15.x: a quest bonus the monk earns; nobody here has it
+	msg.addByte(0);
+	msg.add<uint16_t>(0);
+
+	// the gems in their vessels, by their index in the list that follows
+	std::vector<uint16_t> placed;
+	for (uint16_t index = 0; index < state.gems.size(); ++index)
+	{
+		if (state.gems[index].vessel != NoVessel)
+		{
+			placed.push_back(index);
+		}
+	}
+	msg.addByte(static_cast<uint8_t>(placed.size()));
+	for (const auto index : placed)
+	{
+		msg.add<uint16_t>(index);
+	}
+
+	msg.add<uint16_t>(static_cast<uint16_t>(state.gems.size()));
+	for (uint16_t index = 0; index < state.gems.size(); ++index)
+	{
+		const auto& gem = state.gems[index];
+		msg.add<uint16_t>(index);
+		msg.addByte(gem.locked ? 1 : 0);
+		msg.addByte(std::to_underlying(gem.domain));
+		msg.addByte(std::to_underlying(gem.quality));
+		msg.addByte(std::to_underlying(gem.first_modifier));
+		if (gem.quality >= Gem::Quality::Regular)
+		{
+			msg.addByte(std::to_underlying(gem.second_modifier));
+		}
+		if (gem.quality >= Gem::Quality::Greater)
+		{
+			msg.addByte(std::to_underlying(gem.supreme_modifier));
+		}
+	}
+
+	// the grade of every modifier the client lists
+	const auto basics = System::basicPositions();
+	msg.addByte(static_cast<uint8_t>(basics.size()));
+	for (const auto modifier : basics)
+	{
+		msg.addByte(std::to_underlying(modifier));
+		msg.addByte(state.basic_grades[std::to_underlying(modifier)]);
+	}
+	const auto supremes = System::supremePositions(vocation);
+	msg.addByte(static_cast<uint8_t>(supremes.size()));
+	for (const auto modifier : supremes)
+	{
+		msg.addByte(std::to_underlying(modifier));
+		msg.addByte(state.supreme_grades[std::to_underlying(modifier)]);
+	}
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendWheelGemRevealed(uint16_t index)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::WheelGemRevealed);
+	msg.add<uint16_t>(index);
+	writeToOutputBuffer(msg);
 }
 
 // the price list and the forge's tuning, sent once at login

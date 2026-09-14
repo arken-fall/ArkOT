@@ -5,6 +5,7 @@
 
 #include "bestiary.h"
 #include "prey.h"
+#include "wheel.h"
 
 #include <boost/range/adaptor/reversed.hpp>
 #include <fmt/format.h>
@@ -2226,6 +2227,7 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Game", "getExperienceStage", luaGameGetExperienceStage);
 	registerMethod("Game", "getExperienceForLevel", luaGameGetExperienceForLevel);
 	registerMethod("Game", "getMonsterCount", luaGameGetMonsterCount);
+	registerMethod("Game", "getItemIdByClientId", luaGameGetItemIdByClientId);
 	registerMethod("Game", "getPlayerCount", luaGameGetPlayerCount);
 	registerMethod("Game", "getNpcCount", luaGameGetNpcCount);
 	registerMethod("Game", "getMonsterTypes", luaGameGetMonsterTypes);
@@ -2801,6 +2803,14 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "addForgeDust", luaPlayerAddForgeDust);
 	registerMethod("Player", "getForgeDustLevel", luaPlayerGetForgeDustLevel);
 	registerMethod("Player", "openForge", luaPlayerOpenForge);
+	registerMethod("Player", "openWheel", luaPlayerOpenWheel);
+	registerMethod("Player", "getWheelPoints", luaPlayerGetWheelPoints);
+	registerMethod("Player", "getWheelStage", luaPlayerGetWheelStage);
+	registerMethod("Player", "getWheelBonus", luaPlayerGetWheelBonus);
+	registerMethod("Player", "getWheelSpellBonus", luaPlayerGetWheelSpellBonus);
+	registerMethod("Player", "hasWheelInstant", luaPlayerHasWheelInstant);
+	registerMethod("Player", "getWheelPerk", luaPlayerGetWheelPerk);
+	registerMethod("Player", "unlockWheelScroll", luaPlayerUnlockWheelScroll);
 	registerMethod("Player", "sendLootTracker", luaPlayerSendLootTracker);
 	registerMethod("Player", "sendKillTracker", luaPlayerSendKillTracker);
 	registerMethod("Player", "setBankBalance", luaPlayerSetBankBalance);
@@ -5282,6 +5292,13 @@ int LuaScriptInterface::luaGameGetExperienceForLevel(lua_State* L)
 	} else {
 		lua_pushinteger(L, Player::getExpForLevel(level));
 	}
+	return 1;
+}
+
+int LuaScriptInterface::luaGameGetItemIdByClientId(lua_State* L)
+{
+	// Game.getItemIdByClientId(clientId)
+	lua_pushinteger(L, Item::items.getItemIdByModernClientId(getNumber<uint32_t>(L, 1)));
 	return 1;
 }
 
@@ -12929,6 +12946,155 @@ int LuaScriptInterface::luaPlayerGetForgeDustLevel(lua_State* L)
 	} else {
 		lua_pushnil(L);
 	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerOpenWheel(lua_State* L)
+{
+	// player:openWheel()
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	BlackTek::Wheel::System::getInstance().sendResourceBalances(player);
+	player->sendWheelWindow(player->getID());
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetWheelPoints(lua_State* L)
+{
+	// player:getWheelPoints() -> total, extra, used
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto& wheel = BlackTek::Wheel::System::getInstance();
+	lua_pushinteger(L, wheel.getPoints(player));
+	lua_pushinteger(L, wheel.getExtraPoints(player));
+	lua_pushinteger(L, wheel.getUsedPoints(player));
+	return 3;
+}
+
+int LuaScriptInterface::luaPlayerGetWheelStage(lua_State* L)
+{
+	// player:getWheelStage(quadrant) with 0 green, 1 red, 2 blue, 3 purple
+	const auto player = getSharedPtr<Player>(L, 1);
+	const uint8_t quadrant = getNumber<uint8_t>(L, 2);
+	if (not player or quadrant >= BlackTek::Wheel::QuadrantCount) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_pushinteger(L, player->getWheelState().bonuses.stages[quadrant]);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetWheelBonus(lua_State* L)
+{
+	// player:getWheelBonus(name): health, mana, capacity, mitigation, damage, healing, melee, distance, magic, fist, lifeLeech, manaLeech, dodge, criticalDamage
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto& bonuses = player->getWheelState().bonuses;
+	const std::string name = getString(L, 2);
+	static const std::map<std::string, int32_t BlackTek::Wheel::Bonuses::*> fields = {
+		{ "health", &BlackTek::Wheel::Bonuses::health }, { "mana", &BlackTek::Wheel::Bonuses::mana },
+		{ "capacity", &BlackTek::Wheel::Bonuses::capacity }, { "mitigation", &BlackTek::Wheel::Bonuses::mitigation },
+		{ "damage", &BlackTek::Wheel::Bonuses::damage }, { "healing", &BlackTek::Wheel::Bonuses::healing },
+		{ "melee", &BlackTek::Wheel::Bonuses::melee }, { "distance", &BlackTek::Wheel::Bonuses::distance },
+		{ "magic", &BlackTek::Wheel::Bonuses::magic }, { "fist", &BlackTek::Wheel::Bonuses::fist },
+		{ "lifeLeech", &BlackTek::Wheel::Bonuses::life_leech }, { "manaLeech", &BlackTek::Wheel::Bonuses::mana_leech },
+		{ "dodge", &BlackTek::Wheel::Bonuses::dodge }, { "criticalDamage", &BlackTek::Wheel::Bonuses::critical_damage },
+	};
+	const auto it = fields.find(name);
+	if (it == fields.end()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_pushinteger(L, bonuses.*(it->second));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetWheelSpellBonus(lua_State* L)
+{
+	// player:getWheelSpellBonus(spellName) -> table or nil
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto* bonus = BlackTek::Wheel::System::getInstance().getSpellBonus(*player, getString(L, 2));
+	if (not bonus) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_createtable(L, 0, 13);
+	setField(L, "damage", bonus->damage);
+	setField(L, "heal", bonus->heal);
+	setField(L, "criticalDamage", bonus->critical_damage);
+	setField(L, "criticalChance", bonus->critical_chance);
+	setField(L, "cooldown", bonus->cooldown);
+	setField(L, "groupCooldown", bonus->group_cooldown);
+	setField(L, "manaCost", bonus->mana_cost);
+	setField(L, "additionalTargets", bonus->additional_targets);
+	setField(L, "duration", bonus->duration);
+	setField(L, "damageReduction", bonus->damage_reduction);
+	setField(L, "lifeLeech", bonus->life_leech);
+	setField(L, "manaLeech", bonus->mana_leech);
+	pushBoolean(L, bonus->area);
+	lua_setfield(L, -2, "area");
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerHasWheelInstant(lua_State* L)
+{
+	// player:hasWheelInstant(name)
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto instant = BlackTek::Wheel::System::instantByName(getString(L, 2));
+	pushBoolean(L, instant and player->getWheelState().bonuses.instants[std::to_underlying(*instant)]);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetWheelPerk(lua_State* L)
+{
+	// player:getWheelPerk(name) -> stage 0-3
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto perk = BlackTek::Wheel::System::perkByName(getString(L, 2));
+	lua_pushinteger(L, perk ? player->getWheelState().bonuses.perks[std::to_underlying(*perk)] : 0);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerUnlockWheelScroll(lua_State* L)
+{
+	// player:unlockWheelScroll(itemId)
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	pushBoolean(L, BlackTek::Wheel::System::getInstance().unlockScroll(player, getNumber<uint16_t>(L, 2)));
 	return 1;
 }
 

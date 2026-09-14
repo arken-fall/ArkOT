@@ -4,6 +4,7 @@
 #include "otpch.h"
 
 #include "prey.h"
+#include "wheel.h"
 
 #include "iologindata.h"
 #include "configmanager.h"
@@ -986,6 +987,52 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 	BlackTek::Prey::System::getInstance().initializeSlots(player);
 	BlackTek::Prey::System::getInstance().applyAugments(player);
 
+	// the wheel of destiny: points, gems, grades and the scrolls read
+	{
+		using namespace BlackTek::Wheel;
+		auto& wheel = player->getWheelState();
+		if ((result = db.storeQuery(fmt::format("SELECT `slot`, `points` FROM `player_wheel_slots` WHERE `player_id` = {:d}", player->getGUID())))) {
+			do {
+				const uint8_t slot = result->getNumber<uint8_t>("slot");
+				if (slot >= 1 and slot <= SlotCount) {
+					wheel.points[slot] = result->getNumber<uint16_t>("points");
+				}
+			} while (result->next());
+		}
+		if ((result = db.storeQuery(fmt::format("SELECT `gem_id`, `locked`, `domain`, `quality`, `first_modifier`, `second_modifier`, `supreme_modifier`, `vessel` FROM `player_wheel_gems` WHERE `player_id` = {:d} ORDER BY `gem_id`", player->getGUID())))) {
+			do {
+				Gem gem;
+				gem.id = result->getNumber<uint32_t>("gem_id");
+				gem.locked = result->getNumber<uint8_t>("locked") != 0;
+				gem.domain = static_cast<Gem::Domain>(result->getNumber<uint8_t>("domain") % QuadrantCount);
+				gem.quality = static_cast<Gem::Quality>(std::min<uint8_t>(result->getNumber<uint8_t>("quality"), 2));
+				gem.first_modifier = static_cast<Gem::BasicModifier>(result->getNumber<uint8_t>("first_modifier") % BasicModifierCount);
+				gem.second_modifier = static_cast<Gem::BasicModifier>(result->getNumber<uint8_t>("second_modifier") % BasicModifierCount);
+				gem.supreme_modifier = static_cast<Gem::SupremeModifier>(result->getNumber<uint8_t>("supreme_modifier") % SupremeModifierCount);
+				gem.vessel = result->getNumber<uint8_t>("vessel");
+				wheel.gems.push_back(gem);
+				wheel.next_gem_id = std::max(wheel.next_gem_id, gem.id + 1);
+			} while (result->next());
+		}
+		if ((result = db.storeQuery(fmt::format("SELECT `type`, `position`, `grade` FROM `player_wheel_grades` WHERE `player_id` = {:d}", player->getGUID())))) {
+			do {
+				const uint8_t position = result->getNumber<uint8_t>("position");
+				const uint8_t grade = std::min<uint8_t>(result->getNumber<uint8_t>("grade"), MaxGrade);
+				if (result->getNumber<uint8_t>("type") == 0 and position < BasicModifierCount) {
+					wheel.basic_grades[position] = grade;
+				} else if (position < SupremeModifierCount) {
+					wheel.supreme_grades[position] = grade;
+				}
+			} while (result->next());
+		}
+		if ((result = db.storeQuery(fmt::format("SELECT `item_id` FROM `player_wheel_scrolls` WHERE `player_id` = {:d}", player->getGUID())))) {
+			do {
+				wheel.scrolls.push_back(result->getNumber<uint16_t>("item_id"));
+			} while (result->next());
+		}
+		System::getInstance().apply(player);
+	}
+
 	// I used a lambda with immediate execution in order to be able to return early in case of corrupt data or failed loading
 	[&]() -> void 
 		{
@@ -1695,6 +1742,76 @@ bool IOLoginData::savePlayer(const PlayerPtr& player)
 
 	if (!preyQuery.execute()) {
 		return false;
+	}
+
+	// the wheel of destiny
+	{
+		using namespace BlackTek::Wheel;
+		const auto& wheel = player->getWheelState();
+		for (const auto* table : { "player_wheel_slots", "player_wheel_gems", "player_wheel_grades", "player_wheel_scrolls" }) {
+			if (!db.executeQuery(fmt::format("DELETE FROM `{:s}` WHERE `player_id` = {:d}", table, player->getGUID()))) {
+				return false;
+			}
+		}
+
+		DBInsert slotQuery("INSERT INTO `player_wheel_slots` (`player_id`, `slot`, `points`) VALUES ");
+		bool anySlot = false;
+		for (uint8_t slot = 1; slot <= SlotCount; ++slot) {
+			if (wheel.points[slot] == 0) {
+				continue;
+			}
+			anySlot = true;
+			if (!slotQuery.addRow(fmt::format("{:d}, {:d}, {:d}", player->getGUID(), slot, wheel.points[slot]))) {
+				return false;
+			}
+		}
+		if (anySlot && !slotQuery.execute()) {
+			return false;
+		}
+
+		DBInsert gemQuery("INSERT INTO `player_wheel_gems` (`player_id`, `gem_id`, `locked`, `domain`, `quality`, `first_modifier`, `second_modifier`, `supreme_modifier`, `vessel`) VALUES ");
+		for (const auto& gem : wheel.gems) {
+			if (!gemQuery.addRow(fmt::format("{:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}", player->getGUID(), gem.id, gem.locked ? 1 : 0,
+					std::to_underlying(gem.domain), std::to_underlying(gem.quality), std::to_underlying(gem.first_modifier),
+					std::to_underlying(gem.second_modifier), std::to_underlying(gem.supreme_modifier), gem.vessel))) {
+				return false;
+			}
+		}
+		if (!wheel.gems.empty() && !gemQuery.execute()) {
+			return false;
+		}
+
+		DBInsert gradeQuery("INSERT INTO `player_wheel_grades` (`player_id`, `type`, `position`, `grade`) VALUES ");
+		bool anyGrade = false;
+		for (uint8_t position = 0; position < BasicModifierCount; ++position) {
+			if (wheel.basic_grades[position] != 0) {
+				anyGrade = true;
+				if (!gradeQuery.addRow(fmt::format("{:d}, 0, {:d}, {:d}", player->getGUID(), position, wheel.basic_grades[position]))) {
+					return false;
+				}
+			}
+		}
+		for (uint8_t position = 0; position < SupremeModifierCount; ++position) {
+			if (wheel.supreme_grades[position] != 0) {
+				anyGrade = true;
+				if (!gradeQuery.addRow(fmt::format("{:d}, 1, {:d}, {:d}", player->getGUID(), position, wheel.supreme_grades[position]))) {
+					return false;
+				}
+			}
+		}
+		if (anyGrade && !gradeQuery.execute()) {
+			return false;
+		}
+
+		DBInsert scrollQuery("INSERT INTO `player_wheel_scrolls` (`player_id`, `item_id`) VALUES ");
+		for (const auto itemId : wheel.scrolls) {
+			if (!scrollQuery.addRow(fmt::format("{:d}, {:d}", player->getGUID(), itemId))) {
+				return false;
+			}
+		}
+		if (!wheel.scrolls.empty() && !scrollQuery.execute()) {
+			return false;
+		}
 	}
 
 	if (!db.executeQuery(fmt::format("DELETE FROM `player_custom_skills` WHERE `player_id` = {:d}", player->getGUID()))) {

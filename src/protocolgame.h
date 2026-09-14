@@ -11,6 +11,7 @@
 #include "storewindow.h"
 #include "knowncreaturecache.h"
 #include "forge.h"
+#include "wheel.h"
 
 class NetworkMessage;
 class Player;
@@ -152,6 +153,9 @@ class ProtocolGame : public Protocol
 		void parsePreyAction(NetworkMessage& msg);
 		void parseForgeAction(NetworkMessage& msg);
 		void parseForgeHistory(NetworkMessage& msg);
+		void parseOpenWheel(NetworkMessage& msg);
+		void parseSaveWheel(NetworkMessage& msg);
+		void parseWheelGemAction(NetworkMessage& msg);
 		void parseBestiaryOverview(NetworkMessage& msg);
 		void parseBestiaryMonsterData(NetworkMessage& msg);
 		void parseBestiaryTracker(NetworkMessage& msg);
@@ -314,6 +318,10 @@ class ProtocolGame : public Protocol
 		void sendForgeError(const std::string& message);
 		void sendForgeResult(BlackTek::Forge::System::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::System::Bonus bonus, uint8_t coreCount);
 		void sendForgeBalances();
+
+		// 13.x+ wheel of destiny
+		void sendWheelWindow(uint32_t ownerId);
+		void sendWheelGemRevealed(uint16_t index);
 		void addPreyMonster(NetworkMessage& msg, uint16_t raceId) const;
 		void sendBestiaryRaces();
 		void sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters);

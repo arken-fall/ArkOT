@@ -10,6 +10,7 @@
 #include "luavariant.h"
 #include "monster.h"
 #include "spells.h"
+#include "wheel.h"
 
 extern Game g_game;
 extern Spells* g_spells;
@@ -551,8 +552,13 @@ bool Spell::playerRuneSpellCheck(const PlayerPtr& player, const Position& toPos)
 
 void Spell::addCooldowns(const PlayerPtr& player) const
 {
-	if (cooldown > 0) {
-		auto condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_SPELLCOOLDOWN, cooldown, 0, false, spellId);
+	// the wheel of destiny takes seconds off the spells it upgraded
+	const auto* wheelBonus = BlackTek::Wheel::System::getInstance().getSpellBonus(*player, name);
+	const int32_t spellCooldown = std::max<int32_t>(0, static_cast<int32_t>(cooldown) - (wheelBonus ? wheelBonus->cooldown : 0));
+	const int32_t secondaryCooldown = std::max<int32_t>(0, static_cast<int32_t>(secondaryGroupCooldown) - (wheelBonus ? wheelBonus->group_cooldown : 0));
+
+	if (spellCooldown > 0) {
+		auto condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_SPELLCOOLDOWN, spellCooldown, 0, false, spellId);
 		player->addCondition(std::move(condition));
 	}
 
@@ -561,8 +567,8 @@ void Spell::addCooldowns(const PlayerPtr& player) const
 		player->addCondition(std::move(condition));
 	}
 
-	if (secondaryGroup != SPELLGROUP_NONE && secondaryGroupCooldown > 0) {
-		auto condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_SPELLGROUPCOOLDOWN, secondaryGroupCooldown, 0, false, secondaryGroup);
+	if (secondaryGroup != SPELLGROUP_NONE && secondaryCooldown > 0) {
+		auto condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_SPELLGROUPCOOLDOWN, secondaryCooldown, 0, false, secondaryGroup);
 		player->addCondition(std::move(condition));
 	}
 }
@@ -600,17 +606,16 @@ void Spell::postCastSpell(const PlayerPtr& player, uint32_t manaCost, uint32_t s
 
 uint32_t Spell::getManaCost(const PlayerConstPtr& player) const
 {
-	if (mana != 0) {
-		return mana;
+	uint32_t manaCost = mana;
+	if (mana == 0 && manaPercent != 0) {
+		manaCost = (player->getMaxMana() * manaPercent) / 100;
 	}
 
-	if (manaPercent != 0) {
-		uint32_t maxMana = player->getMaxMana();
-		uint32_t manaCost = (maxMana * manaPercent) / 100;
-		return manaCost;
+	// the wheel of destiny takes a share off the spells it upgraded
+	if (const auto* wheelBonus = BlackTek::Wheel::System::getInstance().getSpellBonus(*player, name); wheelBonus && wheelBonus->mana_cost > 0) {
+		manaCost -= manaCost * std::min<int32_t>(wheelBonus->mana_cost, 100) / 100;
 	}
-
-	return 0;
+	return manaCost;
 }
 
 bool InstantSpell::playerCastInstant(const PlayerPtr& player, std::string& param)

@@ -697,6 +697,7 @@ class LuaScriptInterface
 		static int luaGameGetExperienceStage(lua_State* L);
 		static int luaGameGetExperienceForLevel(lua_State* L);
 		static int luaGameGetMonsterCount(lua_State* L);
+		static int luaGameGetItemIdByClientId(lua_State* L);
 		static int luaGameGetPlayerCount(lua_State* L);
 		static int luaGameGetNpcCount(lua_State* L);
 		static int luaGameGetMonsterTypes(lua_State* L);
@@ -1229,6 +1230,14 @@ class LuaScriptInterface
 		static int luaPlayerAddForgeDust(lua_State* L);
 		static int luaPlayerGetForgeDustLevel(lua_State* L);
 		static int luaPlayerOpenForge(lua_State* L);
+		static int luaPlayerOpenWheel(lua_State* L);
+		static int luaPlayerGetWheelPoints(lua_State* L);
+		static int luaPlayerGetWheelStage(lua_State* L);
+		static int luaPlayerGetWheelBonus(lua_State* L);
+		static int luaPlayerGetWheelSpellBonus(lua_State* L);
+		static int luaPlayerHasWheelInstant(lua_State* L);
+		static int luaPlayerGetWheelPerk(lua_State* L);
+		static int luaPlayerUnlockWheelScroll(lua_State* L);
 		static int luaPlayerSendLootTracker(lua_State* L);
 		static int luaPlayerSendKillTracker(lua_State* L);
 		static int luaPlayerSetBankBalance(lua_State* L);
