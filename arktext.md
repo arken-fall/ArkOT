@@ -544,3 +544,26 @@ own `potions.lua` target-nil error, and the kill test needs a proper
 player kill). Unit tests 10/10. The rig also hit one "Allocation failed,
 server out of memory" exit during a mixed test; it did not reproduce under
 gdb with the kill-only or potion-only sequences — watch for it.
+
+## 2026-09-14 — Outfit change layout and the kill-tracker crash
+
+**Why:** Josh's second test session: Customise Character (once the client
+opened it) left the character invisible, and killing a rabbit took the
+server down with "Allocation failed, server out of memory".
+**What:**
+
+- `parseSetOutfit` reads the 12.81+ layout on the modern port: a leading
+  window-type byte before the looktype, and after the mount its four colour
+  bytes, a mounted flag, the familiar and a randomize-mount flag. The
+  legacy read put the window byte into the looktype, so garbage was saved.
+- `luaPlayerSendKillTracker` took the corpse as `getSharedPtr<ItemContainer>`;
+  a Container userdata holds the owning `Item` (every other Container
+  binding does `getSharedPtr<Item>(L, 1)->getContainer()`). Reading the
+  item as a container produced a garbage item deque whose copy threw
+  `bad_alloc`, which BlackTek reports as out of memory. This was also the
+  earlier unexplained rig exit. Fixed the same way as the other bindings.
+
+**Verified:** headless real client, server under a throw catchpoint to find
+it, then plain: kill of a rabbit reports "kill Rabbit drops 1", "loot meat
+x1" and the impact entry, and an outfit change to looktype 128 with
+colours 10/20/30/40 comes back on the local player; server stays up.

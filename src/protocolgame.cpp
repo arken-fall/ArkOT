@@ -1193,6 +1193,15 @@ void ProtocolGame::parseAutoWalk(NetworkMessage& msg)
 
 void ProtocolGame::parseSetOutfit(NetworkMessage& msg)
 {
+	// 12.81+ leads with the window type (0 outfit, 1 podium) and follows
+	// the mount with its colours, a mounted flag, the familiar and a
+	// randomize-mount flag; only the outfit and mount matter here
+	const bool modern = usesModernLayout();
+	if (modern)
+	{
+		msg.getByte();
+	}
+
 	Outfit_t newOutfit;
 	newOutfit.lookType = msg.get<uint16_t>();
 	newOutfit.lookHead = msg.getByte();
@@ -1201,6 +1210,13 @@ void ProtocolGame::parseSetOutfit(NetworkMessage& msg)
 	newOutfit.lookFeet = msg.getByte();
 	newOutfit.lookAddons = msg.getByte();
 	newOutfit.lookMount = msg.get<uint16_t>();
+	if (modern)
+	{
+		msg.skipBytes(4); // mount colours
+		msg.getByte(); // mounted
+		msg.get<uint16_t>(); // familiar
+		msg.getByte(); // randomize mount
+	}
 	addGameTask([=, playerID = player->getID()]() { g_game.playerChangeOutfit(playerID, newOutfit); });
 }
 

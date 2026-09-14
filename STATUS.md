@@ -3,6 +3,14 @@
 Branch: `modern-protocol`. Last session: 2026-09-14.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
 
+**2026-09-14 — Outfit change + kill tracker crash (real-client verified).**
+`parseSetOutfit` now reads the 12.81+ layout (window byte, mount colours,
+mounted flag, familiar, randomize flag) — the legacy read garbled the
+looktype and left the character invisible. The kill-tracker Lua binding
+unwrapped the corpse userdata as a container instead of its item and threw
+`bad_alloc` on every kill ("Allocation failed, server out of memory"); fixed.
+Kill, loot and impact trackers and the outfit change verified live.
+
 **2026-09-14 — Live-test fixes.** From Josh's first session on the deployed
 build: (1) fluids on 12.x+ clients are sent by the client's own fluid list
 (blood was showing as mana/pink) — `ModernFluidId`; (2) use/rotate/wrap/trade

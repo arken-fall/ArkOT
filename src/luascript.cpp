@@ -12967,12 +12967,14 @@ int LuaScriptInterface::luaPlayerSendKillTracker(lua_State* L)
 	// player:sendKillTracker(monster, corpse)
 	const auto player = getSharedPtr<Player>(L, 1);
 	const auto monster = getSharedPtr<Monster>(L, 2);
-	const auto corpse = getSharedPtr<ItemContainer>(L, 3);
 	if (not player or not monster) {
 		lua_pushnil(L);
 		return 1;
 	}
 
+	// a Container userdata carries the owning item; the container hangs off it
+	const auto corpseItem = lua_gettop(L) >= 3 ? getSharedPtr<Item>(L, 3) : nullptr;
+	const auto corpse = corpseItem ? corpseItem->getContainer() : nullptr;
 	player->sendKillTracker(monster->getName(), monster->getCurrentOutfit(), corpse ? corpse->getItemList() : ItemDeque {});
 	lua_pushboolean(L, true);
 	return 1;
