@@ -521,15 +521,26 @@ stacking, monsters respawning next to him, and dead analyser windows.
 - Zone respawns: by design — the converted map's zones are `passive = true,
   forced = true`, so a zone with players waits up to five intervals and then
   spawns anyway; the player list is zone-wide (one zone per floor).
-- Client-side (in `~/Documents/BlackTek15`, not this repo): 78 relative
-  `g_ui.loadUI/displayUI` calls in 43 modules rewritten to absolute paths.
-  The client's path resolver drops the calling script's directory while the
-  renderer is in its pre-draw pass, which runs on another thread, so any
-  layout opened from an event handler failed at random — the blank
-  cyclopedia tabs and the dead Customise Character entry. Backup:
-  `modules-backup-20260914.tar.gz` in the client folder. Also the RubinOT
-  tooltip strings in `gamelib/player.lua` now say ArkOT.
+- Client-side (in `~/Documents/BlackTek15`, not this repo): the client's
+  path resolver drops the calling script's directory while the renderer is
+  in its pre-draw pass (which runs on another thread), so any layout opened
+  by a bare name from an event handler fails at random — the blank
+  cyclopedia tabs and the dead Customise Character entry. Fixed by absolute
+  paths in the nine cyclopedia tab modules and `game_outfit/outfit.lua`.
+  A blanket rewrite of all 78 relative `loadUI/displayUI` calls was tried
+  and REVERTED: with it the client dropped and re-entered the world every
+  few seconds (modules whose windows used to fail now ran their game-start
+  code; exact culprit not isolated, `game_shop`'s extended-opcode fetch is
+  the prime suspect). Backup of the pre-rewrite modules:
+  `modules-backup-20260914.tar.gz` in the client folder. `importStyle`
+  calls have the same weakness and were left alone. The RubinOT tooltip
+  strings in `gamelib/player.lua` now say ArkOT.
 
 **Verified:** headless real client — impact tracker on damage received;
-outfit window and cyclopedia tabs open every time after the module rewrite.
-Unit tests 10/10.
+outfit window opened four times in a row and every cyclopedia tab twice
+over with zero failed layout loads. Not yet observed on the client: the
+supply, loot and kill trackers (the potion hotkey test hit the datapack's
+own `potions.lua` target-nil error, and the kill test needs a proper
+player kill). Unit tests 10/10. The rig also hit one "Allocation failed,
+server out of memory" exit during a mixed test; it did not reproduce under
+gdb with the kill-only or potion-only sequences — watch for it.

@@ -17,8 +17,9 @@ tracker 0xCF and kill tracker 0xD1 from the drop-loot callback
 `HuntAnalytics`. Not a server issue: zone respawns near players are the
 datapack's `passive`/`forced` zone flags by design; blank cyclopedia tabs and
 the dead Customise Character menu were the client resolving bare layout
-names against the wrong directory during the render pass (78 loads in 43
-client modules rewritten to absolute paths, client-side only).
+names against the wrong directory during the render pass (absolute paths
+in the cyclopedia tab modules and the outfit module; a blanket rewrite of
+all 78 loads caused a reconnect loop and was reverted).
 
 **2026-09-14 — Contribution-guide pass.** The bestiary, prey and forge
 sources were audited against `CONTRIBUTING.md`: enums now nest inside
