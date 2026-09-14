@@ -290,6 +290,7 @@ bool Items::loadFromDat(const std::string& file)
 
     // Resize items vector
     items.resize(m_loadedItemsCount + 1);
+    legacy_item_count = m_loadedItemsCount;
 
     for (uint16_t id = 100; id < items.size(); ++id) {
         ItemType& iType = items[id];
@@ -405,6 +406,32 @@ bool Items::loadModernClientIds(const std::string& path)
 		// first mapping wins in reverse: ranged/aliased server ids can share
 		// one appearance, and the lowest server id is the canonical item
 		modernClientIdsReverse.try_emplace(appearanceId, static_cast<uint16_t>(serverId));
+
+		// generated items (past the legacy dat) carry no flags of their own,
+		// so they borrow the appearance's: the client already counts, picks
+		// up and walks around them by these
+		if (serverId > legacy_item_count and serverId < items.size())
+		{
+			if (const auto* app = appearances.getObject(appearanceId))
+			{
+				ItemType& type = items[serverId];
+				type.stackable = type.stackable or app->stackable;
+				type.pickupable = type.pickupable or app->pickupable;
+				type.moveable = type.moveable and app->moveable;
+				type.blockSolid = type.blockSolid or app->blockSolid;
+				type.blockProjectile = type.blockProjectile or app->blockProjectile;
+				type.blockPathFind = type.blockPathFind or app->blockPathFind;
+				type.rotatable = type.rotatable or app->rotatable;
+				type.useable = type.useable or app->useable;
+				type.forceUse = type.forceUse or app->forceUse;
+				type.isHangable = type.isHangable or app->hangable;
+				if (app->topOrder != 0 and not type.alwaysOnTop)
+				{
+					type.alwaysOnTop = true;
+					type.alwaysOnTopOrder = app->topOrder;
+				}
+			}
+		}
 	}
 
 	if (pruned != 0)

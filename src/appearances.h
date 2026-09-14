@@ -32,6 +32,17 @@ namespace BlackTek {
 			bool unwrappable = false;
 			bool pickupable = false;
 			bool marketable = false;
+			// gameplay flags a generated item (one with no legacy dat entry)
+			// borrows, since the appearance is the only source it has
+			bool moveable = true;
+			bool blockSolid = false;
+			bool blockProjectile = false;
+			bool blockPathFind = false;
+			bool rotatable = false;
+			bool useable = false;
+			bool forceUse = false;
+			bool hangable = false;
+			uint8_t topOrder = 0; // 0 none, 1 clip, 2 bottom, 3 top
 			// 12.6+ wire-format extras: each one makes the client read more
 			// bytes after the item id (tier, duration, charges, kit id)
 			uint32_t classification = 0;

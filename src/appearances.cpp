@@ -53,6 +53,15 @@ namespace BlackTek::Assets
 			info.unwrappable = flags.unwrap();
 			info.pickupable = flags.take();
 			info.marketable = flags.has_market();
+			info.moveable = not flags.unmove();
+			info.blockSolid = flags.unpass();
+			info.blockProjectile = flags.unsight();
+			info.blockPathFind = flags.avoid();
+			info.rotatable = flags.rotate();
+			info.useable = flags.multiuse();
+			info.forceUse = flags.forceuse();
+			info.hangable = flags.hang();
+			info.topOrder = flags.top() ? 3 : flags.bottom() ? 2 : flags.clip() ? 1 : 0;
 			if (flags.has_upgradeclassification())
 			{
 				info.classification = flags.upgradeclassification().upgrade_classification();

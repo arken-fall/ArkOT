@@ -482,6 +482,7 @@ class Items
 
 	private:
 		std::vector<ItemType> items;
+		uint16_t legacy_item_count = 0; // the last id the legacy dat described
 		InventoryVector inventory;
 		gtl::flat_hash_map<uint16_t, uint32_t> modernClientIds;
 		gtl::flat_hash_map<uint32_t, uint16_t> modernClientIdsReverse;
