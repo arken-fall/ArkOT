@@ -366,6 +366,15 @@ namespace BlackTek {
             ResourceBalance = 0xEE,
         };
 
+        // Modern (12.51+) market traffic leads with one of these instead of
+        // the u16 sentinels legacy clients use for own offers and history
+        enum class MarketRequestCode : uint8_t
+        {
+            OwnHistory = 0x01,
+            OwnOffers = 0x02,
+            BrowseItem = 0x03,
+        };
+
         // Modern clients keep one balance per resource and read money
         // from these instead of the u64 that used to lead SaleItemList;
         // every entry here carries a u64 value on the wire

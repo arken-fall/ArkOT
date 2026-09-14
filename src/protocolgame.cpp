@@ -1166,7 +1166,7 @@ void ProtocolGame::parseToggleMount(NetworkMessage& msg)
 void ProtocolGame::parseUseItem(NetworkMessage& msg)
 {
 	Position pos = msg.getPosition();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getItemId(msg);
 	uint8_t stackpos = msg.getByte();
 	uint8_t index = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerUseItem(playerID, pos, stackpos, index, spriteId); });
@@ -1175,10 +1175,10 @@ void ProtocolGame::parseUseItem(NetworkMessage& msg)
 void ProtocolGame::parseUseItemEx(NetworkMessage& msg)
 {
 	Position fromPos = msg.getPosition();
-	uint16_t fromSpriteId = msg.get<uint16_t>();
+	uint16_t fromSpriteId = getItemId(msg);
 	uint8_t fromStackPos = msg.getByte();
 	Position toPos = msg.getPosition();
-	uint16_t toSpriteId = msg.get<uint16_t>();
+	uint16_t toSpriteId = getItemId(msg);
 	uint8_t toStackPos = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]()
 	{
@@ -1189,7 +1189,7 @@ void ProtocolGame::parseUseItemEx(NetworkMessage& msg)
 void ProtocolGame::parseUseWithCreature(NetworkMessage& msg)
 {
 	Position fromPos = msg.getPosition();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getItemId(msg);
 	uint8_t fromStackPos = msg.getByte();
 	uint32_t creatureId = msg.get<uint32_t>();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]()
@@ -1219,7 +1219,7 @@ void ProtocolGame::parseUpdateContainer(NetworkMessage& msg)
 void ProtocolGame::parseThrow(NetworkMessage& msg)
 {
 	Position fromPos = msg.getPosition();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getItemId(msg);
 	uint8_t fromStackpos = msg.getByte();
 	Position toPos = msg.getPosition();
 	uint8_t count = msg.getByte();
@@ -1322,8 +1322,12 @@ void ProtocolGame::parseFollow(NetworkMessage& msg)
 
 void ProtocolGame::parseEquipObject(NetworkMessage& msg)
 {
-	uint16_t spriteID = msg.get<uint16_t>();
-	// msg.get<uint8_t>();
+	uint16_t spriteID = getItemId(msg);
+	if (usesModernLayout())
+	{
+		// 12.x+ hotkey equips carry a tier or count byte we have no use for
+		msg.skipBytes(1);
+	}
 
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerEquipItem(playerID, spriteID); });
 }
@@ -1360,14 +1364,14 @@ void ProtocolGame::parseHouseWindow(NetworkMessage& msg)
 void ProtocolGame::parseWrapItem(NetworkMessage& msg)
 {
 	Position pos = msg.getPosition();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getItemId(msg);
 	uint8_t stackpos = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerWrapItem(playerID, pos, stackpos, spriteId); });
 }
 
 void ProtocolGame::parseLookInShop(NetworkMessage& msg)
 {
-	uint16_t id = msg.get<uint16_t>();
+	uint16_t id = getItemId(msg);
 	uint8_t count = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerLookInShop(playerID, id, count); });
 }
@@ -1380,7 +1384,7 @@ void ProtocolGame::parseTeleport(NetworkMessage& msg)
 
 void ProtocolGame::parsePlayerPurchase(NetworkMessage& msg)
 {
-	uint16_t id = msg.get<uint16_t>();
+	uint16_t id = getItemId(msg);
 	uint8_t count = msg.getByte();
 	// 12.90+ clients trade in u16 amounts; the game side still caps at u8
 	uint16_t amount = usesModernLayout() ? msg.get<uint16_t>() : msg.getByte();
@@ -1394,7 +1398,7 @@ void ProtocolGame::parsePlayerPurchase(NetworkMessage& msg)
 
 void ProtocolGame::parsePlayerSale(NetworkMessage& msg)
 {
-	uint16_t id = msg.get<uint16_t>();
+	uint16_t id = getItemId(msg);
 	uint8_t count = msg.getByte();
 	uint16_t amount = usesModernLayout() ? msg.get<uint16_t>() : msg.getByte();
 	bool ignoreEquipped = msg.getByte() != 0;
@@ -1404,7 +1408,7 @@ void ProtocolGame::parsePlayerSale(NetworkMessage& msg)
 void ProtocolGame::parseRequestTrade(NetworkMessage& msg)
 {
 	Position pos = msg.getPosition();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getItemId(msg);
 	uint8_t stackpos = msg.getByte();
 	uint32_t playerId = msg.get<uint32_t>();
 	addGameTask([=, playerID = player->getID()]() { g_game.playerRequestTrade(playerID, pos, stackpos, playerId, spriteId); });
@@ -1441,7 +1445,7 @@ void ProtocolGame::parseEditVip(NetworkMessage& msg)
 void ProtocolGame::parseRotateItem(NetworkMessage& msg)
 {
 	Position pos = msg.getPosition();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getItemId(msg);
 	uint8_t stackpos = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerRotateItem(playerID, pos, stackpos, spriteId); });
 }
@@ -1544,6 +1548,28 @@ void ProtocolGame::parseMarketLeave()
 
 void ProtocolGame::parseMarketBrowse(NetworkMessage& msg)
 {
+	if (usesModernLayout())
+	{
+		// 12.51+ leads with a request byte and only carries an item for a browse
+		const auto request = static_cast<MarketRequestCode>(msg.getByte());
+		if (request == MarketRequestCode::OwnOffers)
+		{
+			g_dispatcher.addTask([playerID = player->getID()]() { g_game.playerBrowseMarketOwnOffers(playerID); });
+		}
+		else if (request == MarketRequestCode::OwnHistory)
+		{
+			g_dispatcher.addTask([playerID = player->getID()]() { g_game.playerBrowseMarketOwnHistory(playerID); });
+		}
+		else if (request == MarketRequestCode::BrowseItem)
+		{
+			if (uint16_t itemId = getMarketItemId(msg); itemId != 0)
+			{
+				g_dispatcher.addTask([=, playerID = player->getID()]() { g_game.playerBrowseMarket(playerID, itemId); });
+			}
+		}
+		return;
+	}
+
 	uint16_t browseId = msg.get<uint16_t>();
 	if (browseId == MARKETREQUEST_OWN_OFFERS)
 	{
@@ -1562,10 +1588,17 @@ void ProtocolGame::parseMarketBrowse(NetworkMessage& msg)
 void ProtocolGame::parseMarketCreateOffer(NetworkMessage& msg)
 {
 	uint8_t type = msg.getByte();
-	uint16_t spriteId = msg.get<uint16_t>();
+	uint16_t spriteId = getMarketItemId(msg);
 	uint16_t amount = msg.get<uint16_t>();
-	uint32_t price = msg.get<uint32_t>();
+	// 12.81+ prices are u64 on the wire; the market itself still deals in u32
+	uint32_t price = usesModernLayout()
+		? static_cast<uint32_t>(std::min<uint64_t>(msg.get<uint64_t>(), std::numeric_limits<uint32_t>::max()))
+		: msg.get<uint32_t>();
 	bool anonymous = (msg.getByte() != 0);
+	if (spriteId == 0)
+	{
+		return;
+	}
 	addGameTask([=, playerID = player->getID()]() { g_game.playerCreateMarketOffer(playerID, type, spriteId, amount, price, anonymous); });
 }
 
@@ -1893,6 +1926,11 @@ void ProtocolGame::sendBasicData()
 // to reduce the size of text message, we can and should make a separate method for handling "channel messages"
 void ProtocolGame::AddTextMessage(NetworkMessage& msg, const TextMessage& message)
 {
+	AddTextMessage(msg, message, shared_modern_layout);
+}
+
+void ProtocolGame::AddTextMessage(NetworkMessage& msg, const TextMessage& message, bool modernLayout)
+{
 	msg.add(ServerCode::TextMessage);
 	msg.addByte(message.type);
 	switch (message.type)
@@ -1910,11 +1948,24 @@ void ProtocolGame::AddTextMessage(NetworkMessage& msg, const TextMessage& messag
 		}
 		case MESSAGE_HEALED:
 		case MESSAGE_HEALED_OTHERS:
+		{
+			msg.addPosition(message.position);
+			msg.add<uint32_t>(message.primary.value);
+			msg.addByte(message.primary.color);
+			break;
+		}
 		case MESSAGE_EXPERIENCE:
 		case MESSAGE_EXPERIENCE_OTHERS:
 		{
 			msg.addPosition(message.position);
-			msg.add<uint32_t>(message.primary.value);
+			if (modernLayout)
+			{
+				msg.add<uint64_t>(message.primary.value); // 13.32+
+			}
+			else
+			{
+				msg.add<uint32_t>(message.primary.value);
+			}
 			msg.addByte(message.primary.color);
 			break;
 		}
@@ -1933,7 +1984,7 @@ void ProtocolGame::AddTextMessage(NetworkMessage& msg, const TextMessage& messag
 void ProtocolGame::sendTextMessage(const TextMessage& message)
 {
 	NetworkMessage msg;
-	AddTextMessage(msg, message);
+	AddTextMessage(msg, message, usesModernLayout());
 	writeToOutputBuffer(msg);
 }
 
@@ -2283,10 +2334,19 @@ void ProtocolGame::sendSaleItemList(const std::list<ShopInfo>& shop)
 
 void ProtocolGame::sendMarketEnter()
 {
+	if (hasFeature(ProtocolFeature::ResourceBalance))
+	{
+		// the modern market window reads the bank balance from the resource
+		sendResourceBalance(ResourceType::Bank, player->getBankBalance());
+	}
+
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketEnter);
 
-	msg.add<uint64_t>(player->getBankBalance());
+	if (not usesModernLayout())
+	{
+		msg.add<uint64_t>(player->getBankBalance());
+	}
 	msg.addByte(std::min<uint32_t>(IOMarket::getPlayerOfferCount(player->getGUID()), std::numeric_limits<uint8_t>::max()));
 
 	player->setInMarket(true);
@@ -2348,8 +2408,7 @@ void ProtocolGame::sendMarketEnter()
 	uint16_t i = 0;
 	for (std::map<uint16_t, uint32_t>::const_iterator it = depotItems.begin(); i < itemsToSend; ++it, ++i)
 	{
-		msg.add<uint16_t>(it->first);
-		
+		addMarketItemId(msg, it->first);
 		msg.add<uint16_t>(std::min<uint32_t>(std::numeric_limits<uint16_t>::max(), it->second));
 	}
 
@@ -2368,7 +2427,11 @@ void ProtocolGame::sendMarketBrowseItem(uint16_t itemId, const MarketOfferList& 
 	NetworkMessage msg;
 	msg.reset();
 	msg.add(ServerCode::MarketAction);
-	addItemId(msg, itemId);
+	if (usesModernLayout())
+	{
+		msg.add(MarketRequestCode::BrowseItem);
+	}
+	addMarketItemId(msg, itemId);
 
 	msg.add<uint32_t>(buyOffers.size());
 
@@ -2377,7 +2440,7 @@ void ProtocolGame::sendMarketBrowseItem(uint16_t itemId, const MarketOfferList& 
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 		msg.addString(offer.playerName);
 	}
 
@@ -2388,7 +2451,7 @@ void ProtocolGame::sendMarketBrowseItem(uint16_t itemId, const MarketOfferList& 
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 		msg.addString(offer.playerName);
 	}
 
@@ -2399,7 +2462,11 @@ void ProtocolGame::sendMarketAcceptOffer(const MarketOfferEx& offer)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketAction);
-	addItemId(msg, offer.itemId);
+	if (usesModernLayout())
+	{
+		msg.add(MarketRequestCode::BrowseItem);
+	}
+	addMarketItemId(msg, offer.itemId);
 
 	if (offer.type == MARKETACTION_BUY)
 	{
@@ -2407,7 +2474,7 @@ void ProtocolGame::sendMarketAcceptOffer(const MarketOfferEx& offer)
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 		msg.addString(offer.playerName);
 		msg.add<uint32_t>(0);
 	}
@@ -2418,7 +2485,7 @@ void ProtocolGame::sendMarketAcceptOffer(const MarketOfferEx& offer)
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 		msg.addString(offer.playerName);
 	}
 
@@ -2429,16 +2496,16 @@ void ProtocolGame::sendMarketBrowseOwnOffers(const MarketOfferList& buyOffers, c
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketAction);
-	msg.add<uint16_t>(MARKETREQUEST_OWN_OFFERS);
+	addMarketRequest(msg, MarketRequestCode::OwnOffers, MARKETREQUEST_OWN_OFFERS);
 
 	msg.add<uint32_t>(buyOffers.size());
 	for (const MarketOffer& offer : buyOffers)
 	{
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		addItemId(msg, offer.itemId);
+		addMarketItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 	}
 
 	msg.add<uint32_t>(sellOffers.size());
@@ -2446,9 +2513,9 @@ void ProtocolGame::sendMarketBrowseOwnOffers(const MarketOfferList& buyOffers, c
 	{
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		addItemId(msg, offer.itemId);
+		addMarketItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 	}
 
 	writeToOutputBuffer(msg);
@@ -2458,16 +2525,16 @@ void ProtocolGame::sendMarketCancelOffer(const MarketOfferEx& offer)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketAction);
-	msg.add<uint16_t>(MARKETREQUEST_OWN_OFFERS);
+	addMarketRequest(msg, MarketRequestCode::OwnOffers, MARKETREQUEST_OWN_OFFERS);
 
 	if (offer.type == MARKETACTION_BUY)
 	{
 		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::True));
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		addItemId(msg, offer.itemId);
+		addMarketItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::Zero));
 	}
 	else
@@ -2476,9 +2543,9 @@ void ProtocolGame::sendMarketCancelOffer(const MarketOfferEx& offer)
 		msg.add<uint32_t>(static_cast<uint32_t>(CommonCode::True));
 		msg.add<uint32_t>(offer.timestamp);
 		msg.add<uint16_t>(offer.counter);
-		addItemId(msg, offer.itemId);
+		addMarketItemId(msg, offer.itemId);
 		msg.add<uint16_t>(offer.amount);
-		msg.add<uint32_t>(offer.price);
+		addMarketPrice(msg, offer.price);
 	}
 
 	writeToOutputBuffer(msg);
@@ -2493,16 +2560,16 @@ void ProtocolGame::sendMarketBrowseOwnHistory(const HistoryMarketOfferList& buyO
 
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketAction);
-	msg.add<uint16_t>(MARKETREQUEST_OWN_HISTORY);
+	addMarketRequest(msg, MarketRequestCode::OwnHistory, MARKETREQUEST_OWN_HISTORY);
 
 	msg.add<uint32_t>(buyOffersToSend);
 	for (auto it = buyOffers.begin(); i < buyOffersToSend; ++it, ++i)
 	{
 		msg.add<uint32_t>(it->timestamp);
 		msg.add<uint16_t>(counterMap[it->timestamp]++);
-		addItemId(msg, it->itemId);
+		addMarketItemId(msg, it->itemId);
 		msg.add<uint16_t>(it->amount);
-		msg.add<uint32_t>(it->price);
+		addMarketPrice(msg, it->price);
 		msg.addByte(it->state);
 	}
 
@@ -2514,9 +2581,9 @@ void ProtocolGame::sendMarketBrowseOwnHistory(const HistoryMarketOfferList& buyO
 	{
 		msg.add<uint32_t>(it->timestamp);
 		msg.add<uint16_t>(counterMap[it->timestamp]++);
-		addItemId(msg, it->itemId);
+		addMarketItemId(msg, it->itemId);
 		msg.add<uint16_t>(it->amount);
-		msg.add<uint32_t>(it->price);
+		addMarketPrice(msg, it->price);
 		msg.addByte(it->state);
 	}
 
@@ -2527,7 +2594,7 @@ void ProtocolGame::sendMarketDetail(uint16_t itemId)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::MarketDetail);
-	addItemId(msg, itemId);
+	addMarketItemId(msg, itemId);
 
 	const ItemType& it = Item::items[itemId];
 	if (it.armor != 0)
@@ -2735,35 +2802,83 @@ void ProtocolGame::sendMarketDetail(uint16_t itemId)
 		msg.add<SpecialCode>(SpecialCode::Zero);
 	}
 
-	MarketStatistics* statistics = IOMarket::getInstance().getPurchaseStatistics(itemId);
-	if (statistics)
+	if (usesModernLayout())
 	{
-		msg.add(CommonCode::True);
-		msg.add<uint32_t>(statistics->numTransactions);
-		msg.add<uint32_t>(std::min<uint64_t>(std::numeric_limits<uint32_t>::max(), statistics->totalPrice));
-		msg.add<uint32_t>(statistics->highestPrice);
-		msg.add<uint32_t>(statistics->lowestPrice);
-	}
-	else
-	{
-		msg.add(CommonCode::Zero);
+		// 12.x-15.x read eleven more description slots after weight; only
+		// the upgrade classification has a value on this server
+		msg.add<SpecialCode>(SpecialCode::Zero); // augment
+		msg.add<SpecialCode>(SpecialCode::Zero); // imbuing slots
+		msg.add<SpecialCode>(SpecialCode::Zero); // magic shield capacity
+		msg.add<SpecialCode>(SpecialCode::Zero); // cleave
+		msg.add<SpecialCode>(SpecialCode::Zero); // damage reflection
+		msg.add<SpecialCode>(SpecialCode::Zero); // perfect shot
+
+		const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(Item::items.getModernClientId(itemId));
+		if (app and app->classification > 0)
+		{
+			msg.addString(std::to_string(app->classification));
+		}
+		else
+		{
+			msg.add<SpecialCode>(SpecialCode::Zero); // upgrade classification
+		}
+
+		msg.add<SpecialCode>(SpecialCode::Zero); // current tier
+		msg.add<SpecialCode>(SpecialCode::Zero); // elemental bond
+		msg.add<SpecialCode>(SpecialCode::Zero); // mantra
+		msg.add<SpecialCode>(SpecialCode::Zero); // imbuement effect
 	}
 
-	statistics = IOMarket::getInstance().getSaleStatistics(itemId);
-	if (statistics)
-	{
-		msg.add(CommonCode::True);
-		msg.add<uint32_t>(statistics->numTransactions);
-		msg.add<uint32_t>(std::min<uint64_t>(std::numeric_limits<uint32_t>::max(), statistics->totalPrice));
-		msg.add<uint32_t>(statistics->highestPrice);
-		msg.add<uint32_t>(statistics->lowestPrice);
-	}
-	else
-	{
-		msg.add(CommonCode::Zero);
-	}
+	addMarketStatistics(msg, IOMarket::getInstance().getPurchaseStatistics(itemId));
+	addMarketStatistics(msg, IOMarket::getInstance().getSaleStatistics(itemId));
 
 	writeToOutputBuffer(msg);
+}
+
+// one day of purchase or sale statistics; 12.81+ prices are u64
+void ProtocolGame::addMarketStatistics(NetworkMessage& msg, const MarketStatistics* statistics) const
+{
+	if (not statistics)
+	{
+		msg.add(CommonCode::Zero);
+		return;
+	}
+
+	msg.add(CommonCode::True);
+	msg.add<uint32_t>(statistics->numTransactions);
+	if (usesModernLayout())
+	{
+		msg.add<uint64_t>(statistics->totalPrice);
+		msg.add<uint64_t>(statistics->highestPrice);
+		msg.add<uint64_t>(statistics->lowestPrice);
+		return;
+	}
+
+	msg.add<uint32_t>(std::min<uint64_t>(std::numeric_limits<uint32_t>::max(), statistics->totalPrice));
+	msg.add<uint32_t>(statistics->highestPrice);
+	msg.add<uint32_t>(statistics->lowestPrice);
+}
+
+void ProtocolGame::addMarketPrice(NetworkMessage& msg, uint32_t price) const
+{
+	if (usesModernLayout())
+	{
+		msg.add<uint64_t>(price); // 12.81+
+		return;
+	}
+	msg.add<uint32_t>(price);
+}
+
+// legacy clients read the own-offers/history marker as a u16 sentinel,
+// modern ones as a request byte
+void ProtocolGame::addMarketRequest(NetworkMessage& msg, MarketRequestCode modernRequest, uint16_t legacyRequest) const
+{
+	if (usesModernLayout())
+	{
+		msg.add(modernRequest);
+		return;
+	}
+	msg.add<uint16_t>(legacyRequest);
 }
 
 void ProtocolGame::sendUnjustifiedStats()
@@ -3997,7 +4112,14 @@ void ProtocolGame::sendSpellCooldown(uint8_t spellId, uint32_t time)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::SpellCooldown);
-	msg.addByte(spellId);
+	if (usesModernLayout())
+	{
+		msg.add<uint16_t>(spellId); // 13.00+
+	}
+	else
+	{
+		msg.addByte(spellId);
+	}
 	msg.add<uint32_t>(time);
 	writeToOutputBuffer(msg);
 }
@@ -4162,6 +4284,54 @@ void ProtocolGame::addItemId(NetworkMessage& msg, uint16_t itemId) const
 		return;
 	}
 	msg.add<uint16_t>(modernItemId(itemId));
+}
+
+// item ids the client sends back to us; modern clients speak in appearance
+// ids, so those come back through the reverse table (0 when unmapped, which
+// the game layer rejects the same way it rejects any id that does not match)
+uint16_t ProtocolGame::getItemId(NetworkMessage& msg) const
+{
+	const uint16_t wireId = msg.get<uint16_t>();
+	if (not usesModernLayout())
+	{
+		return wireId;
+	}
+	return Item::items.getItemIdByModernClientId(wireId);
+}
+
+// market entries: 12.81+ clients read a tier byte after any item whose
+// appearance carries an upgrade classification; BlackTek has no tiers yet
+void ProtocolGame::addMarketItemId(NetworkMessage& msg, uint16_t itemId) const
+{
+	addItemId(msg, itemId);
+	if (not usesModernLayout())
+	{
+		return;
+	}
+
+	const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(modernItemId(itemId));
+	if (app and app->classification > 0)
+	{
+		msg.add(CommonCode::Zero); // tier
+	}
+}
+
+// the mirror of addMarketItemId for ids the client sends us; 0 when the
+// appearance has no item on this server
+uint16_t ProtocolGame::getMarketItemId(NetworkMessage& msg) const
+{
+	const uint16_t wireId = msg.get<uint16_t>();
+	if (not usesModernLayout())
+	{
+		return wireId;
+	}
+
+	const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(wireId);
+	if (app and app->classification > 0)
+	{
+		msg.skipBytes(1); // tier
+	}
+	return Item::items.getItemIdByModernClientId(wireId);
 }
 
 void ProtocolGame::AddCreature(NetworkMessage& msg, const CreatureConstPtr& creature, bool known, uint32_t remove)

@@ -8,15 +8,24 @@ __________________
 __________________
 This repository (**ArkOT**) is the ArkenFall team's fork of BlackTek Server, updated to speak the **modern Tibia 15.25 client protocol**. We are **not part of the BlackTek team** and this fork is not affiliated with or endorsed by them — all credit for the base server belongs to the BlackTek project and its upstream lineage (TFS / OpenTibia). Everything below this section is their original README.
 
+**Where it stands (2026-09-13).** The fork tracks upstream BlackTek `master` (2.0 "Rise After Midnight" plus the August 2026 trunk: unified ItemEvents, shared-pooled allocator, detached coro-timers, spectator broadcast helpers, dispatcher-side login) and is verified against a real [mehah OTClient](https://github.com/mehah/otclient) 15.25 build entering the world, walking, chatting and using the windows listed below with zero parse errors. Progress is tracked gate by gate in `STATUS.md`; every change and the reasoning behind it is recorded in `arktext.md`.
+
 What we changed to get from 10.98 to 15.25:
 
 - **Protocol profiles** (`src/protocolprofile.h`) — a registry describing each supported protocol generation (10.98 / 13.40 / 14.12 / 15.25) with per-version feature bits and a data-driven login layout. It is the only place version numbers appear; everything else asks the profile.
 - **Modern transport** — the 13.40+ wire framing: sequence-number checksums, the padded XTEA layout, block-count outer lengths, and raw-deflate compression, golden-tested against independently generated fixtures.
-- **HTTP login flow** — modern clients authenticate through a login webservice (compatible with [opentibiabr/login-server](https://github.com/opentibiabr/login-server)) that hands out opaque session keys; the server validates them via SHA-256 lookup in a new `account_sessions` table (DB migration included).
-- **A dedicated modern game port** (`game_port_modern`) — the modern handshake is framed differently from the legacy one, so each generation gets its own listener instead of byte-sniffing.
-- **Protobuf appearances** — the server loads a 15.25 `appearances.dat` and maps its unified item ids to modern appearance ids (~42k entries), pruning stale rows at load.
-- **Ported game-packet writers** — login, stats, skills, creatures, items, effects, and map descriptions rewritten for the 15.25 wire format where it diverges, gated on the protocol profile. Verified end-to-end with a real [mehah OTClient](https://github.com/mehah/otclient) 15.25 build entering the world with zero parse errors.
+- **HTTP login flow** — modern clients authenticate through a login webservice (compatible with [opentibiabr/login-server](https://github.com/opentibiabr/login-server)) that hands out opaque session keys; the server validates them via SHA-256 lookup in a new `account_sessions` table (DB migration included). Authentication runs on the dispatcher, as upstream now does it.
+- **A dedicated modern game port** (`game_port_modern`) — the modern handshake is framed differently from the legacy one, so each generation gets its own listener instead of byte-sniffing. Shared spectator broadcasts are written once per server in the layout of the enabled listener; running both listeners at once is refused at startup.
+- **Protobuf appearances** — the server loads a 15.25 `appearances.dat` and maps its unified item ids to modern appearance ids (~42k entries), pruning stale rows at load. The 20,805 appearances with no 10.98 item are registered as server items with gameplay attributes joined from community data.
+- **Ported game-packet writers** — login, stats, skills, creatures, items, effects and map descriptions rewritten for the 15.25 wire format where it diverges, gated on the protocol profile.
+- **Windows a player opens first (Phase E)** — NPC shop and sale lists (currency block, client ids, u16 amounts, resource balances), the outfit window (12.81+ list layout), death and text windows, quest log and quest lines with mission ids, the market (request bytes, item tiers, u64 prices, the full 15.25 description set), u16 spell cooldowns, u64 experience messages, and the gamemaster map-click teleport.
 - **Legacy retired** — this fork is 15.25-only: the 10.98 game/login listeners ship disabled (`game_port = 0`, `login_port = 0`; `0` disables a listener).
+
+Behaviour for the modern packets is taken from the client's own parsers, with [Canary](https://github.com/opentibiabr/canary) as a cross-check; the code itself follows BlackTek's conventions (see `CONTRIBUTING.md`) rather than theirs.
+
+Still to come: player-to-player trade polish, cyclopedia, and the modern side systems (prey, bestiary, forge, wheel, store), which are stubbed off so the client is in-world without them; and a real-map datapack in BlackTek's Lua/TOML layout.
+
+**Verifying a change.** `harness/` holds the packet-diff and scripted-client tools (`harness/README.md`). A full check is: build, `./blacktek_tests`, the scripted 15.25 login (`harness/modern_client.py`), and a headless run of the real client (`xvfb-run -a ./otclient` with an `otclientrc.lua` that logs in and exercises the feature) while `harness/capture_proxy.py` records the session for `packet_diff.py --decode`.
 
 To connect, use a mehah OTClient build with 15.25 assets and HTTP login pointed at your login webservice — the client section further down describes upstream's 10.98 setup, which does not apply to this fork.
 

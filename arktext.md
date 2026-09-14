@@ -246,3 +246,36 @@ cross-check; the code is BlackTek's, not theirs. **What:**
 with `packet_diff.py`: opcodes 0x7A, 0x7C, 0xC8, 0xF0, 0xF1 all accepted;
 client-side counts and item names match the datapack. Unit tests 10/10.
 Not yet covered: player-to-player trade window, market, quest tracker.
+
+## 2026-09-13 — Phase E tranche 2: market, client item ids, cooldowns, experience
+
+**Why:** with the shop working, the next thing a real-map player touches is
+the depot market, and the capture from tranche 1 showed a deeper gap: the
+game layer matches every item id the client sends (`item->getID() !=
+spriteId`) against server ids, while a 15.25 client speaks in appearance
+ids. **What:**
+
+- `ProtocolGame::getItemId` reads a u16 and, on modern connections, maps it
+  back through `Items::getItemIdByModernClientId` (0 when unmapped, which
+  the game layer already rejects). Used by use, use-with, use-on-creature,
+  throw, rotate, wrap, trade request, hotkey equip (which also skips the
+  12.x tier/count byte), shop look and buy/sell.
+- Market: `MarketRequestCode` (own history 1, own offers 2, browse item 3)
+  in `networkopcodes.h`; `addMarketItemId`/`getMarketItemId` write and read
+  the tier byte the client expects after any appearance with an upgrade
+  classification; `addMarketPrice` (u64 from 12.81), `addMarketRequest`
+  (request byte vs the legacy u16 sentinels), `addMarketStatistics` (u64
+  prices). `sendMarketEnter` pushes the bank balance as a resource first
+  and drops the leading u64; `sendMarketDetail` writes the eleven extra
+  12.x-15.x description slots (only the upgrade classification has a
+  value); `parseMarketBrowse`/`parseMarketCreateOffer` read the modern
+  request byte, item+tier and u64 price, clamped to the u32 the market keeps.
+- `sendSpellCooldown` writes u16 spell ids from 13.00; `AddTextMessage`
+  gained the same explicit-layout overload as the effect writers and writes
+  experience values as u64 from 13.32 (heal messages stay u32 — the first
+  cut widened both and the real client caught it).
+
+**Verified:** real mehah 15.25 client, headless: market counter created
+beside the GM via the admin Lua channel, used (0x82 with client id 12903),
+market enter/browse/own offers/own history/leave all parsed; heal message
+parsed after the fix. Unit tests 10/10.

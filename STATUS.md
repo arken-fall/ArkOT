@@ -3,6 +3,14 @@
 Branch: `modern-protocol`. Last session: 2026-09-13.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
 
+**2026-09-13 — Phase E tranche 2 (real-client verified).** Same headless rig,
+this time creating a market counter beside the GM through the admin Lua
+channel (`Game.createItem(14405, 1, p)`), using it (proves the client-id
+reverse mapping: the client names the counter 12903), then browse item /
+own offers / own history / leave: every packet parsed, zero exceptions.
+Regression caught by the capture: heal and experience messages shared one
+case in `AddTextMessage`; the u64 widening now applies to experience only.
+
 **2026-09-13 — Phase E tranche 1 (real-client verified).** Headless rig:
 `xvfb-run -a ./otclient` with a harness `otclientrc.lua` that logs in as
 `GM Josh`, requests the outfit window and quest log, `/goto Eryn`, opens the
@@ -42,7 +50,7 @@ Real client: `~/Documents/BlackTek15` (mehah OTClient Redemption, built from sou
 | B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId; full table appearance-backed (41 stale rows pruned); blacktek_tests 10/10 |
 | C — enter world (mehah) | **PASS** | **real mehah 15.25 client renders the world and walks, zero parse errors / zero invalid-thing warnings** (2026-07-20). Autonomous edit/build/launch/screenshot loop via `otclientrc.lua` auto-login harness |
 | D — feature stubs | IN PROGRESS | side systems (prey/bestiary/forge/wheel/store) still stubbed off; client is in-world without them |
-| E — long tail | IN PROGRESS | 2026-09-13: NPC shop (0x7A/0x7B + 0xEE balances), outfit window (0xC8), death window, text windows, quest line and GM map teleport (0x73) verified on the real 15.25 client; player trade, market, cyclopedia still pending |
+| E — long tail | IN PROGRESS | 2026-09-13: NPC shop (0x7A/0x7B + 0xEE balances), outfit window (0xC8), death window, text windows, quest line, GM map teleport (0x73), market (enter/browse/own offers/history/leave with request bytes, tiers, u64 prices, 15.25 descriptions), client item ids reverse-mapped for use/move/rotate/wrap/trade/equip/shop — all verified on the real 15.25 client; u16 spell cooldowns and u64 experience messages ported by layout (GM has no cooldowns, so not client-verified); cyclopedia still pending |
 
 ### Phase C ground truth (2026-07-20)
 

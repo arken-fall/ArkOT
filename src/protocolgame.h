@@ -121,6 +121,7 @@ class ProtocolGame : public Protocol
 
 		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type, bool modernLayout);
 		static void AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type, bool modernLayout);
+		static void AddTextMessage(NetworkMessage& msg, const TextMessage& message, bool modernLayout);
 
 		void release() override;
 
@@ -350,6 +351,12 @@ class ProtocolGame : public Protocol
 		void addItem(NetworkMessage& msg, const ItemConstPtr& item) const;
 		void addItem(NetworkMessage& msg, uint16_t id, uint8_t count) const;
 		void addItemId(NetworkMessage& msg, uint16_t itemId) const;
+		void addMarketItemId(NetworkMessage& msg, uint16_t itemId) const;
+		uint16_t getMarketItemId(NetworkMessage& msg) const;
+		uint16_t getItemId(NetworkMessage& msg) const;
+		void addMarketPrice(NetworkMessage& msg, uint32_t price) const;
+		void addMarketRequest(NetworkMessage& msg, BlackTek::Network::MarketRequestCode modernRequest, uint16_t legacyRequest) const;
+		void addMarketStatistics(NetworkMessage& msg, const MarketStatistics* statistics) const;
 
 		void AddCreature(NetworkMessage& msg, const CreatureConstPtr& creature, bool known, uint32_t remove);
 		void AddPlayerStats(NetworkMessage& msg) const;
