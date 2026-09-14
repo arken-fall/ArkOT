@@ -11,8 +11,8 @@ print_level = "info"
 
 [logging.channels.network]
 enabled     = true
-min_level   = "warning"
-print_level = "error"
+min_level   = "debug"
+print_level = "info"
 
 [logging.channels.database]
 enabled     = true
@@ -36,8 +36,8 @@ print_level = "warning"
 
 [logging.channels.player]
 enabled     = true
-min_level   = "info"
-print_level = "warning"
+min_level   = "debug"
+print_level = "info"
 
 [logging.channels.admin]
 enabled     = true

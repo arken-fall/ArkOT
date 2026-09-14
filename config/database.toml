@@ -3,8 +3,8 @@
 [mysql]
 host               = "127.0.0.1"
 user               = "forgottenserver"
-pass               = ""
-database           = "forgottenserver"
-port               = 3306
+pass               = "bt_test"
+database           = "blacktek"
+port               = 3307
 socket             = ""
 optimize_on_startup = false
