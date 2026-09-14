@@ -567,3 +567,19 @@ server down with "Allocation failed, server out of memory".
 it, then plain: kill of a rabbit reports "kill Rabbit drops 1", "loot meat
 x1" and the impact entry, and an outfit change to looktype 128 with
 colours 10/20/30/40 comes back on the local player; server stays up.
+
+## 2026-09-14 — Corpse windows: ghost rarity frames and "random" closes
+
+**Ghost frames (client, fixed):** `game_containers/containers.lua`'s
+`onContainerUpdateItem` swapped the slot's item but never touched the
+rarity frame or tier badge that `ItemsDatabase.setRarityItem/setTier` had
+painted at open time, so an emptied slot kept its previous item's frame
+until the window was reopened. The handler now refreshes both for the new
+item and resets the slot image and clip when the slot empties.
+**Closes (not a server fault as far as the rig shows):** the client closes a
+container only on the server's 0x0F. A headless kill, open and loot of a
+rabbit corpse across its 10-second first decay stage produced no 0x0F;
+the in-place transform re-sends the container instead. What does close a
+ground container is stepping out of reach (`Player::onWalk` range 1, as in
+Tibia) and, rarely, a decay stage whose stacking order differs from the
+previous one (the remove/re-add branch of `Game::transformItem`).
