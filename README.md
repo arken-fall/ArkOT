@@ -6,7 +6,7 @@ __________________
 
 ## About this fork — ArkOT, by the ArkenFall team
 __________________
-This repository (**ArkOT**) is the ArkenFall team's fork of BlackTek Server, updated to speak the **modern Tibia 15.25 client protocol**. We are **not part of the BlackTek team** and this fork is not affiliated with or endorsed by them — all credit for the base server belongs to the BlackTek project and its upstream lineage (TFS / OpenTibia). Everything below this section is their original README.
+This repository (**ArkOT**) is the ArkenFall team's fork of BlackTek Server, updated to speak the **modern Tibia 15.25 client protocol**. The world it serves is **[Arkenfall](https://arkenfall.org)** (site source: [arken-fall/arkot-web](https://github.com/arken-fall/arkot-web)). We are **not part of the BlackTek team** and this fork is not affiliated with or endorsed by them — all credit for the base server belongs to the BlackTek project and its upstream lineage (TFS / OpenTibia). Everything below this section is their original README.
 
 **Where it stands (2026-09-13).** The fork tracks upstream BlackTek `master` (2.0 "Rise After Midnight" plus the August 2026 trunk: unified ItemEvents, shared-pooled allocator, detached coro-timers, spectator broadcast helpers, dispatcher-side login) and is verified against a real [mehah OTClient](https://github.com/mehah/otclient) 15.25 build entering the world, walking, chatting and using the windows listed below with zero parse errors. Progress is tracked gate by gate in `STATUS.md`; every change and the reasoning behind it is recorded in `arktext.md`.
 
