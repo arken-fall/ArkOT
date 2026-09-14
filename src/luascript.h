@@ -894,6 +894,8 @@ class LuaScriptInterface
 		static int luaItemSetAttribute(lua_State* L);
 		static int luaItemRemoveAttribute(lua_State* L);
 		static int luaItemGetCustomAttribute(lua_State* L);
+		static int luaItemGetForgeTier(lua_State* L);
+		static int luaItemSetForgeTier(lua_State* L);
 		static int luaItemSetCustomAttribute(lua_State* L);
 		static int luaItemRemoveCustomAttribute(lua_State* L);
 
@@ -1223,6 +1225,10 @@ class LuaScriptInterface
 		static int luaPlayerGetPreyLootPercentage(lua_State* L);
 		static int luaPlayerGetPreyWildcards(lua_State* L);
 		static int luaPlayerAddPreyWildcards(lua_State* L);
+		static int luaPlayerGetForgeDust(lua_State* L);
+		static int luaPlayerAddForgeDust(lua_State* L);
+		static int luaPlayerGetForgeDustLevel(lua_State* L);
+		static int luaPlayerOpenForge(lua_State* L);
 		static int luaPlayerSetBankBalance(lua_State* L);
 
 		static int luaPlayerGetStorageValue(lua_State* L);

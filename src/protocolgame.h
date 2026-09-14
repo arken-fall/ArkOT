@@ -10,6 +10,7 @@
 #include "tasks.h"
 #include "storewindow.h"
 #include "knowncreaturecache.h"
+#include "forge.h"
 
 class NetworkMessage;
 class Player;
@@ -149,6 +150,8 @@ class ProtocolGame : public Protocol
 		void parseTeleport(NetworkMessage& msg);
 		void parseCyclopediaCharacterInfo(NetworkMessage& msg);
 		void parsePreyAction(NetworkMessage& msg);
+		void parseForgeAction(NetworkMessage& msg);
+		void parseForgeHistory(NetworkMessage& msg);
 		void parseBestiaryOverview(NetworkMessage& msg);
 		void parseBestiaryMonsterData(NetworkMessage& msg);
 		void parseBestiaryTracker(NetworkMessage& msg);
@@ -297,6 +300,14 @@ class ProtocolGame : public Protocol
 		void sendPreySlot(uint8_t slotId);
 		void sendPreyTimeLeft(uint8_t slotId);
 		void sendPreyPrices();
+
+		// 12.81+ exaltation forge
+		void sendForgeItemClasses();
+		void sendForgeWindow();
+		void sendForgeHistory(uint16_t page);
+		void sendForgeError(const std::string& message);
+		void sendForgeResult(BlackTek::Forge::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::Bonus bonus, uint8_t coreCount);
+		void sendForgeBalances();
 		void addPreyMonster(NetworkMessage& msg, uint16_t raceId) const;
 		void sendBestiaryRaces();
 		void sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters);

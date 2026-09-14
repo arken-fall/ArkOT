@@ -329,6 +329,8 @@ CREATE TABLE `players` (
     `blessings` tinyint NOT NULL DEFAULT '0',
     `charm_points` int UNSIGNED NOT NULL DEFAULT '0',
     `prey_wildcards` int UNSIGNED NOT NULL DEFAULT '0',
+    `forge_dust` int UNSIGNED NOT NULL DEFAULT '0',
+    `forge_dust_level` smallint UNSIGNED NOT NULL DEFAULT '100',
     `onlinetime` bigint NOT NULL DEFAULT '0',
     `deletion` bigint NOT NULL DEFAULT '0',
     `balance` bigint UNSIGNED NOT NULL DEFAULT '0',
@@ -559,6 +561,21 @@ CREATE TABLE `player_prey` (
     `free_reroll` bigint NOT NULL DEFAULT '0',
     `monster_list` varchar(255) NOT NULL DEFAULT '',
     PRIMARY KEY (`player_id`, `slot`),
+    FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
+
+-- Table structure for table `forge_history`
+-- one line per forge action a character took
+CREATE TABLE `forge_history` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `player_id` int NOT NULL,
+    `action` tinyint UNSIGNED NOT NULL DEFAULT '0',
+    `description` varchar(255) NOT NULL DEFAULT '',
+    `success` tinyint UNSIGNED NOT NULL DEFAULT '0',
+    `bonus` tinyint UNSIGNED NOT NULL DEFAULT '0',
+    `created` bigint NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`),
+    INDEX `player_id` (`player_id`),
     FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 

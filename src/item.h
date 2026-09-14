@@ -802,6 +802,46 @@ class Item : public SharedObject
 			return getAttributes()->getCustomAttribute(key);
 		}
 
+		// the exaltation forge tier rides along as a custom attribute, so
+		// it saves, trades and sells with the item
+		static constexpr std::string_view ForgeTierKey = "forgetier";
+
+		[[nodiscard]] uint8_t getForgeTier() const
+		{
+			if (not attributes)
+			{
+				return 0;
+			}
+
+			const auto* attr = attributes->getExistingAttr(ITEM_ATTRIBUTE_CUSTOM);
+			if (not attr or not attr->value.custom)
+			{
+				return 0;
+			}
+
+			const auto it = attr->value.custom->find(std::string{ ForgeTierKey });
+			if (it == attr->value.custom->end())
+			{
+				return 0;
+			}
+
+			const int64_t* tier = boost::get<int64_t>(&it->second.value);
+			return tier ? static_cast<uint8_t>(std::clamp<int64_t>(*tier, 0, std::numeric_limits<uint8_t>::max())) : 0;
+		}
+
+		void setForgeTier(uint8_t tier)
+		{
+			if (tier == 0)
+			{
+				if (attributes)
+				{
+					attributes->removeCustomAttribute(ForgeTierKey);
+				}
+				return;
+			}
+			getAttributes()->setCustomAttribute(ForgeTierKey, static_cast<int64_t>(tier));
+		}
+
 		// enums declarations
 		//serialization
 		Attr_ReadValue readAttr(AttrTypes_t attr, PropStream& propStream);

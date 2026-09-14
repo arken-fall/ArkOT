@@ -380,6 +380,13 @@ namespace BlackTek {
             PreyTimeLeft = 0xE7,
             PreyData = 0xE8,
             PreyPrices = 0xE9,
+
+            // 12.81+ exaltation forge
+            ForgeItemClasses = 0x86,
+            ForgeOpen = 0x87,
+            ForgeHistory = 0x88,
+            ForgeClose = 0x89,
+            ForgeResult = 0x8A,
         };
 
         // Prey slot states as the 12.x+ client reads them in PreyData
@@ -463,6 +470,9 @@ namespace BlackTek {
             Bank = 0x00,
             Inventory = 0x01,
             PreyWildcards = 0x0A,
+            ForgeDust = 0x46,
+            ForgeSlivers = 0x47,
+            ForgeCores = 0x48,
             // 14.10+ charm balances; these four are u32 on the wire
             CharmPoints = 0x1E,
             MinorCharmEchoes = 0x1F,

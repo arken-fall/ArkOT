@@ -1,0 +1,78 @@
+# Exaltation forge.
+#
+# Items whose appearance carries a classification (1-4) can be raised
+# in tier at the forge. Fusion joins two identical items of one tier
+# into one item a tier higher; transfer moves a tier from one item to
+# an untiered item of the same class, one step lower. Both cost gold,
+# dust and exalted cores. Dust drops from kills and is capped by the
+# character's dust level; dust turns into slivers, slivers into cores.
+
+max_tier = 10
+
+# dust spent for one batch of slivers, and how many slivers that yields
+dust_per_sliver_batch = 20
+slivers_per_batch = 3
+
+# slivers that make one exalted core
+slivers_per_core = 50
+
+# the dust cap every character starts with, its ceiling, and the
+# cost of each raise: the level minus this many dust
+dust_level_start = 100
+dust_level_max = 225
+dust_level_step_cost = 75
+
+# dust each action burns
+fusion_dust_cost = 100
+convergence_fusion_dust_cost = 130
+transfer_dust_cost = 100
+convergence_transfer_dust_cost = 160
+
+# fusion odds in percent: the base chance, what a core adds to it, and
+# the chance a core keeps the tier when the fusion fails
+fusion_base_success = 50
+fusion_improved_success = 15
+fusion_tier_loss_reduction = 50
+
+# dust from kills: percent chance per kill and the amount range
+dust_chance_per_kill = 10
+dust_min_per_kill = 1
+dust_max_per_kill = 3
+
+# gold and cores to reach each tier, by classification; convergence
+# prices only apply to the top class
+[[classifications]]
+id = 1
+tiers = [
+	{ tier = 1, cores = 1, regular = 25000 },
+]
+
+[[classifications]]
+id = 2
+tiers = [
+	{ tier = 1, cores = 1, regular = 750000 },
+	{ tier = 2, cores = 1, regular = 5000000 },
+]
+
+[[classifications]]
+id = 3
+tiers = [
+	{ tier = 1, cores = 1, regular = 4000000 },
+	{ tier = 2, cores = 2, regular = 10000000 },
+	{ tier = 3, cores = 3, regular = 20000000 },
+]
+
+[[classifications]]
+id = 4
+tiers = [
+	{ tier = 1, cores = 1, regular = 8000000, convergence_fusion = 55000000, convergence_transfer = 65000000 },
+	{ tier = 2, cores = 2, regular = 20000000, convergence_fusion = 110000000, convergence_transfer = 165000000 },
+	{ tier = 3, cores = 5, regular = 40000000, convergence_fusion = 170000000, convergence_transfer = 375000000 },
+	{ tier = 4, cores = 10, regular = 65000000, convergence_fusion = 300000000, convergence_transfer = 800000000 },
+	{ tier = 5, cores = 15, regular = 100000000, convergence_fusion = 875000000, convergence_transfer = 2000000000 },
+	{ tier = 6, cores = 25, regular = 250000000, convergence_fusion = 2350000000, convergence_transfer = 5250000000 },
+	{ tier = 7, cores = 35, regular = 750000000, convergence_fusion = 6950000000, convergence_transfer = 14500000000 },
+	{ tier = 8, cores = 50, regular = 2500000000, convergence_fusion = 21250000000, convergence_transfer = 42500000000 },
+	{ tier = 9, cores = 60, regular = 8000000000, convergence_fusion = 50000000000, convergence_transfer = 100000000000 },
+	{ tier = 10, cores = 85, regular = 15000000000, convergence_fusion = 125000000000, convergence_transfer = 300000000000 },
+]

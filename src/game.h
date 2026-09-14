@@ -559,6 +559,8 @@ class Game
 		void playerRequestBlessingsDialog(uint32_t playerId);
 		void playerCharmAction(uint32_t playerId, uint8_t charmId, uint8_t action, uint16_t raceId);
 		void playerPreyAction(uint32_t playerId, uint8_t slotId, uint8_t action, uint8_t index, uint16_t raceId, uint8_t option);
+		void playerForgeAction(uint32_t playerId, uint8_t action, bool convergence, uint16_t firstItemId, uint8_t firstTier, uint16_t secondItemId, bool improveChance, bool reduceTierLoss);
+		void playerForgeHistory(uint32_t playerId, uint16_t page);
 		void playerInspectObject(uint32_t playerId, const Position& pos);
 		void playerInspectItemType(uint32_t playerId, uint16_t itemId, uint8_t inspectionType);
 		void playerInspectCharacter(uint32_t playerId, uint32_t creatureId, bool cyclopedia);

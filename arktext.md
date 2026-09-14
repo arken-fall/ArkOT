@@ -413,3 +413,56 @@ packet shapes); the implementation is BlackTek's. **What:**
 
 **Verified:** real client — lists, pick, bonus reroll, full list, free
 reroll timer, countdown, wildcards, persistence. Unit tests 10/10.
+
+## 2026-09-14 — Exaltation forge: a real system
+
+**Why:** the forge is the third of the 12.x systems the client expects
+(after bestiary and prey); items in 15.25 carry a classification and a tier
+byte on the wire, and until now every item was sent at tier 0. Canary was
+the behaviour reference (the price tables per classification and tier, the
+dust/sliver/core economy, fusion odds and bonuses, the packet shapes); the
+implementation is BlackTek's. **What:**
+
+- `src/forge.h/.cpp` (`BlackTek::Forge`): `Action` and `Bonus` as the
+  client speaks them; `TierPrice` (cores, regular, convergence fusion and
+  transfer gold); `Config` from `config/forge.toml` (max tier, dust per
+  sliver batch, slivers per core, dust level start/max/step cost, the dust
+  each action burns, fusion odds, dust from kills, prices by classification
+  and tier); `System` singleton: `fuse` (two identical items of one tier,
+  gold + dust + optional cores for a better chance or tier protection,
+  convergence always succeeds, a bonus roll can keep dust, cores, gold or
+  the second item), `transfer` (a tier-2+ donor hands its tier, one step
+  lower, to an untiered item of the same class; the donor is spent),
+  `convert` (dust -> slivers, slivers -> core, raise the dust limit),
+  `onKill` (dust from kills), `getHistory` (paged from `forge_history`).
+- `Item::getForgeTier/setForgeTier`: the tier is the custom attribute
+  `forgetier`, so it persists and travels with the item without touching
+  the exhausted attribute bit mask; `addModernItemExtras` writes it as the
+  tier byte for classified appearances.
+- `Player`: `forge_dust`, `forge_dust_level` (`players` columns), the
+  send wrappers; `onKilledCreature` calls `Forge::System::onKill`.
+- Protocol: 0x86 item classes and tuning at login (feature `Forge`),
+  0x87 forge window (fusion pairs, convergence fusion groups per slot,
+  donors with matching receivers, convergence transfer groups per class,
+  dust level), 0x88 history (pages are 1-based on the wire), 0x89 close on
+  a refusal (with the reason as a message), 0x8A result; resource balances
+  70-72 (dust, slivers, cores); `parseForgeAction` (0xBF, reverse-mapped
+  client item ids) and `parseForgeHistory` (0xC0); `Game::playerForgeAction`,
+  `playerForgeHistory`.
+- Lua: `player:getForgeDust`, `addForgeDust`, `getForgeDustLevel`,
+  `openForge`; `item:getForgeTier`, `setForgeTier`; the exaltation forge
+  items (39497-39499) open the window on use.
+- Persistence: `forge_history`, `players.forge_dust`,
+  `players.forge_dust_level`; `data/migrations/4.lua` (5.lua sentinel).
+- Side fixes the rig surfaced: generated 15.25 items (past the legacy dat)
+  now borrow their appearance's gameplay flags in `Items::loadModernClientIds`
+  (stackable, pickupable, moveable, blocking, top order, rotatable,
+  useable, hangable) — the sliver and core were unstackable and could not
+  enter a container; `AppearanceInfo` carries those flags. 16 monster
+  files without a description line had their bestiary block placed before
+  `local monster = {}` and failed to load; moved, and
+  `harness/build_bestiary_data.py` now anchors on that line.
+
+**Verified:** real client — config, window, fusion (failure and success),
+transfer, both conversions, dust limit, history, balances; zero protocol
+exceptions. Unit tests 10/10.

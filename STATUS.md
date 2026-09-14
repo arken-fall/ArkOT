@@ -1,7 +1,30 @@
 # Modern Protocol Port — STATUS
 
-Branch: `modern-protocol`. Last session: 2026-09-13.
+Branch: `modern-protocol`. Last session: 2026-09-14.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
+
+**2026-09-14 — Exaltation forge (real-client verified).** `src/forge.h/.cpp`,
+`config/forge.toml`. Rig proof: price list and tuning at login (four
+classes, ten class-4 tiers with 64-bit gold prices, cores per tier,
+convergence prices), the forge window sorts the carried items into fusion
+pairs, convergence groups, donors and receivers; fusion of two terra rods
+(a failure that spent the second rod, then a success to tier 1), a tier-2
+transfer between two class-2 legs (receiver at tier 1), 20 dust -> 3
+slivers, 50 slivers -> 1 exalted core, the dust limit raised, history paged
+1/2, dust/sliver/core balances after every step; zero protocol exceptions.
+Tier rides on the item as the custom attribute `forgetier` (saves, trades
+and shows in the item's tier byte); dust and its cap are `players`
+columns, history is `forge_history`, migration 4 (5.lua sentinel). Dust
+drops from kills (`Forge::System::onKill`). Lua: `player:getForgeDust`,
+`addForgeDust`, `getForgeDustLevel`, `openForge`; `item:getForgeTier`,
+`setForgeTier`; using an exaltation forge (39497-39499) opens the window.
+Side fixes found by the rig: generated 15.25 items now borrow their
+appearance's flags (stackable, pickupable, moveable, blocking, top order,
+rotatable, useable, hangable) since they have no legacy dat entry; 16
+monster files had their bestiary block placed before `local monster = {}`
+(the generator now anchors on that line when there is no description).
+Client API for the harness: `g_game.forgeRequest(action, convergence,
+firstId, tier, secondId, improve, tierLoss)`, `sendForgeBrowseHistoryRequest(page)`.
 
 **2026-09-14 — Prey system (real-client verified).** `src/prey.h/.cpp`,
 `config/prey.toml`. Rig proof: two slots offer nine creatures at login
@@ -89,7 +112,7 @@ Real client: `~/Documents/BlackTek15` (mehah OTClient Redemption, built from sou
 | A — session login | **PASS** | POST /login on opentibiabr/login-server → session key → modern handshake → "Tester has logged in." → walk answered |
 | B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId; full table appearance-backed (41 stale rows pruned); blacktek_tests 10/10 |
 | C — enter world (mehah) | **PASS** | **real mehah 15.25 client renders the world and walks, zero parse errors / zero invalid-thing warnings** (2026-07-20). Autonomous edit/build/launch/screenshot loop via `otclientrc.lua` auto-login harness |
-| D — feature stubs | IN PROGRESS | 2026-09-14: cyclopedia character info (all 15 request types answered; base, general, combat, offence, defence, misc, deaths, item summary, outfits/mounts, store summary, badges, titles carry real data where the server has it) and the blessings status + dialog verified on the real 15.25 client; prey slots (locked, with prices) sent at login and on request, bestiary races/overview/charms answered empty, object and character inspection windows (0x76) and the cyclopedia inspection page verified on the real client; **bestiary is a real system** (race ids + entries on 456 monsters from Canary's data, kill tracking persisted in `player_bestiary`, staged creature pages, tracker, charm points, `config/charms.toml` runes unlocked/assigned/persisted in `player_charms`, assigned runes applied as augments against the creature) — verified on the real client; **prey is a real system** (`BlackTek::Prey`: three slots, nine-creature lists by level band, bonus rolls with rarity, gold/wildcard rerolls, full-list picks, options, once-a-minute countdown, damage bonuses as augments, experience and loot bonuses at their hooks, `player_prey` + `players.prey_wildcards`, migration 3) — verified on the real client; forge/wheel/store still stubbed off |
+| D — feature stubs | IN PROGRESS | 2026-09-14: cyclopedia character info (all 15 request types answered; base, general, combat, offence, defence, misc, deaths, item summary, outfits/mounts, store summary, badges, titles carry real data where the server has it) and the blessings status + dialog verified on the real 15.25 client; prey slots (locked, with prices) sent at login and on request, bestiary races/overview/charms answered empty, object and character inspection windows (0x76) and the cyclopedia inspection page verified on the real client; **bestiary is a real system** (race ids + entries on 456 monsters from Canary's data, kill tracking persisted in `player_bestiary`, staged creature pages, tracker, charm points, `config/charms.toml` runes unlocked/assigned/persisted in `player_charms`, assigned runes applied as augments against the creature) — verified on the real client; **prey is a real system** (`BlackTek::Prey`: three slots, nine-creature lists by level band, bonus rolls with rarity, gold/wildcard rerolls, full-list picks, options, once-a-minute countdown, damage bonuses as augments, experience and loot bonuses at their hooks, `player_prey` + `players.prey_wildcards`, migration 3) — verified on the real client; **the exaltation forge is a real system** (`BlackTek::Forge`: classification price tables in `config/forge.toml`, fusion with success/bonus rolls, tier transfer, dust from kills capped by a raisable dust level, dust -> slivers -> exalted cores as items, forge history in `forge_history`, tier on the item as a custom attribute, migration 4) — verified on the real client; wheel/store still stubbed off |
 | E — long tail | IN PROGRESS | 2026-09-13: NPC shop (0x7A/0x7B + 0xEE balances), outfit window (0xC8), death window, text windows, quest line, GM map teleport (0x73), market (enter/browse/own offers/history/leave with request bytes, tiers, u64 prices, 15.25 descriptions), client item ids reverse-mapped for use/move/rotate/wrap/trade/equip/shop — all verified on the real 15.25 client; u16 spell cooldowns and u64 experience messages ported by layout (GM has no cooldowns, so not client-verified); cyclopedia still pending |
 
 ### Phase C ground truth (2026-07-20)

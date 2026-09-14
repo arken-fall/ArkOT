@@ -19,6 +19,7 @@
 #include "appearances.h"
 #include "bestiary.h"
 #include "prey.h"
+#include "forge.h"
 #include "game.h"
 #include "iologindata.h"
 #include "iomarket.h"
@@ -810,6 +811,8 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::CyclopediaCharacterInfo: parseCyclopediaCharacterInfo(msg); break;
 		case ClientCode::PreyRequest: addGameTask([player_id]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendPreySlots(); }); break;
 		case ClientCode::PreyAction: parsePreyAction(msg); break;
+		case ClientCode::ForgeEnter: parseForgeAction(msg); break;
+		case ClientCode::ForgeBrowseHistory: parseForgeHistory(msg); break;
 		case ClientCode::BestiaryRaces: addGameTask([player_id]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryRaces(); }); break;
 		case ClientCode::BestiaryCreatures: parseBestiaryOverview(msg); break;
 		case ClientCode::BestiaryMonsterData: parseBestiaryMonsterData(msg); break;
@@ -3048,6 +3051,389 @@ void ProtocolGame::sendPreyPrices()
 	writeToOutputBuffer(msg);
 }
 
+void ProtocolGame::parseForgeAction(NetworkMessage& msg)
+{
+	using BlackTek::Forge::Action;
+	const uint8_t action = msg.getByte();
+	bool convergence = false;
+	uint16_t firstItemId = 0;
+	uint8_t firstTier = 0;
+	uint16_t secondItemId = 0;
+	bool improveChance = false;
+	bool reduceTierLoss = false;
+	if (action == std::to_underlying(Action::Fusion) or action == std::to_underlying(Action::Transfer))
+	{
+		convergence = msg.getByte() != 0;
+		firstItemId = getItemId(msg);
+		firstTier = msg.getByte();
+		secondItemId = getItemId(msg);
+		improveChance = msg.getByte() != 0;
+		reduceTierLoss = msg.getByte() != 0;
+	}
+	addGameTask([=, playerID = player->getID()]() { g_game.playerForgeAction(playerID, action, convergence, firstItemId, firstTier, secondItemId, improveChance, reduceTierLoss); });
+}
+
+void ProtocolGame::parseForgeHistory(NetworkMessage& msg)
+{
+	const uint16_t page = msg.getByte();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerForgeHistory(playerID, page); });
+}
+
+// the price list and the forge's tuning, sent once at login
+void ProtocolGame::sendForgeItemClasses()
+{
+	using namespace BlackTek::Forge;
+	const auto& forge = System::getInstance();
+	const Config& config = forge.getConfig();
+
+	NetworkMessage msg;
+	msg.add(ServerCode::ForgeItemClasses);
+	msg.addByte(ClassificationCount);
+	for (uint8_t classification = 1; classification <= ClassificationCount; ++classification)
+	{
+		const auto& tiers = config.prices[classification];
+		msg.addByte(classification);
+		msg.addByte(static_cast<uint8_t>(tiers.size()));
+		for (const auto& [tier, price] : tiers)
+		{
+			msg.addByte(tier);
+			msg.add<uint64_t>(price.regular);
+		}
+	}
+
+	// exalted cores each tier of the top class asks for
+	const auto& topTiers = config.prices[ClassificationCount];
+	msg.addByte(static_cast<uint8_t>(topTiers.size()));
+	for (const auto& [tier, price] : topTiers)
+	{
+		msg.addByte(tier);
+		msg.addByte(price.cores);
+	}
+
+	// convergence prices, fusion then transfer
+	msg.addByte(static_cast<uint8_t>(topTiers.size()));
+	for (const auto& [tier, price] : topTiers)
+	{
+		msg.addByte(tier);
+		msg.add<uint64_t>(price.convergence_fusion);
+	}
+
+	msg.addByte(static_cast<uint8_t>(topTiers.size()));
+	for (const auto& [tier, price] : topTiers)
+	{
+		msg.addByte(tier);
+		msg.add<uint64_t>(price.convergence_transfer);
+	}
+
+	msg.addByte(config.dust_chance_per_kill);
+	msg.addByte(static_cast<uint8_t>(config.dust_per_sliver_batch));
+	msg.addByte(static_cast<uint8_t>(config.slivers_per_core));
+	msg.addByte(config.slivers_per_batch); // slivers one batch of dust yields
+	msg.add<uint16_t>(config.dust_level_max);
+	msg.add<uint16_t>(config.dust_level_start);
+	msg.addByte(config.fusion_dust_cost);
+	msg.addByte(config.convergence_fusion_dust_cost);
+	msg.addByte(config.transfer_dust_cost);
+	msg.addByte(config.convergence_transfer_dust_cost);
+	msg.addByte(config.fusion_base_success);
+	msg.addByte(config.fusion_improved_success);
+	msg.addByte(config.fusion_tier_loss_reduction);
+	writeToOutputBuffer(msg);
+}
+
+namespace
+{
+	// items grouped for the forge window: id -> tier -> count
+	using ForgeItemMap = std::map<uint16_t, std::map<uint8_t, uint16_t>>;
+
+	uint16_t forgeSlotOf(uint16_t itemId)
+	{
+		uint16_t slot = Item::items[itemId].slotPosition;
+		if ((slot & SLOTP_TWO_HAND) != 0)
+		{
+			slot = SLOTP_HAND;
+		}
+		return slot;
+	}
+
+	void addForgeItemGroup(NetworkMessage& msg, const ForgeItemMap& items)
+	{
+		uint16_t count = 0;
+		for (const auto& [itemId, tiers] : items)
+		{
+			count += static_cast<uint16_t>(tiers.size());
+		}
+
+		msg.add<uint16_t>(count);
+		for (const auto& [itemId, tiers] : items)
+		{
+			for (const auto& [tier, amount] : tiers)
+			{
+				msg.add<uint16_t>(Item::items.getModernClientId(itemId));
+				msg.addByte(tier);
+				msg.add<uint16_t>(amount);
+			}
+		}
+	}
+}
+
+// what the character carries, sorted into what the forge can do with it
+void ProtocolGame::sendForgeWindow()
+{
+	using namespace BlackTek::Forge;
+	const auto& forge = System::getInstance();
+	const uint8_t maxTier = forge.getConfig().max_tier;
+
+	ForgeItemMap fusion;
+	std::map<uint16_t, ForgeItemMap> convergenceFusion; // by equipment slot
+	ForgeItemMap donors;
+	ForgeItemMap receivers;
+	std::map<uint8_t, ForgeItemMap> convergenceTransfer; // by classification
+
+	const auto& appearances = BlackTek::Assets::Appearances::getInstance();
+	const auto sort = [&](const ItemPtr& item)
+	{
+		const auto* app = appearances.getObject(Item::items.getModernClientId(item->getID()));
+		if (not app or app->classification == 0)
+		{
+			return;
+		}
+
+		const auto classification = static_cast<uint8_t>(std::min<uint32_t>(app->classification, ClassificationCount));
+		const uint8_t tier = item->getForgeTier();
+		const uint8_t classTop = classification == ClassificationCount ? maxTier : classification;
+		if (tier < classTop)
+		{
+			fusion[item->getID()][tier] += 1;
+		}
+
+		if (tier > 1)
+		{
+			donors[item->getID()][tier] += 1;
+		}
+		else if (tier == 0)
+		{
+			receivers[item->getID()][tier] += 1;
+		}
+
+		if (classification == ClassificationCount)
+		{
+			if (tier < maxTier)
+			{
+				convergenceFusion[forgeSlotOf(item->getID())][item->getID()][tier] += 1;
+			}
+			convergenceTransfer[classification][item->getID()][tier] += 1;
+		}
+	};
+
+	for (int32_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; ++slot)
+	{
+		const auto& item = player->getInventoryItem(static_cast<slots_t>(slot));
+		if (not item)
+		{
+			continue;
+		}
+
+		sort(item);
+		if (const auto& container = item->getContainer())
+		{
+			for (ContainerIterator it = container->iterator(); it.hasNext(); it.advance())
+			{
+				sort(*it);
+			}
+		}
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::ForgeOpen);
+
+	// fusion: pairs of the same item and tier
+	uint16_t fusionCount = 0;
+	for (const auto& [itemId, tiers] : fusion)
+	{
+		for (const auto& [tier, amount] : tiers)
+		{
+			if (amount >= 2)
+			{
+				++fusionCount;
+			}
+		}
+	}
+
+	msg.add<uint16_t>(fusionCount);
+	for (const auto& [itemId, tiers] : fusion)
+	{
+		for (const auto& [tier, amount] : tiers)
+		{
+			if (amount >= 2)
+			{
+				msg.add(CommonCode::True); // items per line
+				msg.add<uint16_t>(Item::items.getModernClientId(itemId));
+				msg.addByte(tier);
+				msg.add<uint16_t>(amount);
+			}
+		}
+	}
+
+	// convergence fusion: one group per equipment slot
+	msg.add<uint16_t>(static_cast<uint16_t>(convergenceFusion.size()));
+	for (const auto& [slot, items] : convergenceFusion)
+	{
+		uint8_t count = 0;
+		for (const auto& [itemId, tiers] : items)
+		{
+			count += static_cast<uint8_t>(tiers.size());
+		}
+
+		msg.addByte(count);
+		for (const auto& [itemId, tiers] : items)
+		{
+			for (const auto& [tier, amount] : tiers)
+			{
+				msg.add<uint16_t>(Item::items.getModernClientId(itemId));
+				msg.addByte(tier);
+				msg.add<uint16_t>(amount);
+			}
+		}
+	}
+
+	// transfer: each donor with the untiered items of its class and slot
+	msg.addByte(static_cast<uint8_t>(donors.size()));
+	for (const auto& [donorId, tiers] : donors)
+	{
+		const auto* donorApp = appearances.getObject(Item::items.getModernClientId(donorId));
+		const uint32_t donorClass = donorApp ? donorApp->classification : 0;
+		const uint16_t donorSlot = forgeSlotOf(donorId);
+
+		msg.add<uint16_t>(static_cast<uint16_t>(tiers.size()));
+		for (const auto& [tier, amount] : tiers)
+		{
+			msg.add<uint16_t>(Item::items.getModernClientId(donorId));
+			msg.addByte(tier);
+			msg.add<uint16_t>(amount);
+		}
+
+		std::vector<std::pair<uint16_t, uint16_t>> matches;
+		for (const auto& [receiverId, receiverTiers] : receivers)
+		{
+			const auto* receiverApp = appearances.getObject(Item::items.getModernClientId(receiverId));
+			if (receiverApp and receiverApp->classification == donorClass and forgeSlotOf(receiverId) == donorSlot)
+			{
+				matches.emplace_back(receiverId, receiverTiers.at(0));
+			}
+		}
+
+		msg.add<uint16_t>(static_cast<uint16_t>(matches.size()));
+		for (const auto& [receiverId, amount] : matches)
+		{
+			msg.add<uint16_t>(Item::items.getModernClientId(receiverId));
+			msg.add<uint16_t>(amount);
+		}
+	}
+
+	// convergence transfer: one group per classification, donors then receivers
+	msg.addByte(static_cast<uint8_t>(convergenceTransfer.size()));
+	for (const auto& [classification, items] : convergenceTransfer)
+	{
+		ForgeItemMap groupDonors;
+		ForgeItemMap groupReceivers;
+		for (const auto& [itemId, tiers] : items)
+		{
+			for (const auto& [tier, amount] : tiers)
+			{
+				(tier > 0 ? groupDonors : groupReceivers)[itemId][tier] = amount;
+			}
+		}
+
+		addForgeItemGroup(msg, groupDonors);
+		msg.add<uint16_t>(static_cast<uint16_t>(groupReceivers.size()));
+		for (const auto& [itemId, tiers] : groupReceivers)
+		{
+			msg.add<uint16_t>(Item::items.getModernClientId(itemId));
+			msg.add<uint16_t>(tiers.at(0));
+		}
+	}
+
+	msg.add<uint16_t>(player->getForgeDustLevel());
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendForgeHistory(uint16_t page)
+{
+	constexpr uint16_t PerPage = 9;
+	uint16_t pages = 0;
+	const auto entries = BlackTek::Forge::System::getInstance().getHistory(player, page, PerPage, pages);
+
+	// the client asks for page 0 and shows pages from 1
+	NetworkMessage msg;
+	msg.add(ServerCode::ForgeHistory);
+	msg.add<uint16_t>(page + 1);
+	msg.add<uint16_t>(std::max<uint16_t>(pages, 1));
+	msg.addByte(static_cast<uint8_t>(entries.size()));
+	for (const auto& entry : entries)
+	{
+		msg.add<uint32_t>(static_cast<uint32_t>(entry.created_at));
+		msg.add(entry.action);
+		msg.addString(entry.description);
+		msg.addByte(entry.success ? std::to_underlying(entry.bonus) : 0);
+	}
+	writeToOutputBuffer(msg);
+}
+
+// a refusal closes the forge window and explains itself
+void ProtocolGame::sendForgeError(const std::string& message)
+{
+	sendTextMessage(TextMessage(MESSAGE_EVENT_ADVANCE, message));
+
+	NetworkMessage msg;
+	msg.add(ServerCode::ForgeClose);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendForgeResult(BlackTek::Forge::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::Bonus bonus, uint8_t coreCount)
+{
+	using BlackTek::Forge::Action;
+	using BlackTek::Forge::Bonus;
+
+	NetworkMessage msg;
+	msg.add(ServerCode::ForgeResult);
+	msg.add(action);
+	msg.addByte(convergence ? 1 : 0);
+	msg.addByte(success ? 1 : 0);
+	msg.add<uint16_t>(leftItemId != 0 ? Item::items.getModernClientId(leftItemId) : 0);
+	msg.addByte(leftTier);
+	msg.add<uint16_t>(rightItemId != 0 ? Item::items.getModernClientId(rightItemId) : 0);
+	msg.addByte(rightTier);
+	if (action == Action::Transfer)
+	{
+		msg.add(CommonCode::Zero); // transfers never roll a bonus
+	}
+	else
+	{
+		// the client reads the kept cores after CoresKept, and a fresh
+		// item after the item-kept bonuses (4-8)
+		msg.add(bonus);
+		if (bonus == Bonus::CoresKept)
+		{
+			msg.addByte(coreCount);
+		}
+		else if (bonus == Bonus::SecondItemKept)
+		{
+			msg.add<uint16_t>(rightItemId != 0 ? Item::items.getModernClientId(rightItemId) : 0);
+			msg.addByte(rightTier);
+		}
+	}
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendForgeBalances()
+{
+	const auto& forge = BlackTek::Forge::System::getInstance();
+	sendResourceBalance(ResourceType::ForgeDust, player->getForgeDust());
+	sendResourceBalance(ResourceType::ForgeSlivers, forge.getSliverId() != 0 ? player->getItemTypeCount(forge.getSliverId()) : 0);
+	sendResourceBalance(ResourceType::ForgeCores, forge.getCoreId() != 0 ? player->getItemTypeCount(forge.getCoreId()) : 0);
+}
+
 void ProtocolGame::sendBestiaryRaces()
 {
 	using BlackTek::Bestiary::Race;
@@ -4893,6 +5279,12 @@ void ProtocolGame::sendAddCreature(const CreatureConstPtr& creature, const Posit
 	{
 		sendPreySlots();
 	}
+
+	if (hasFeature(ProtocolFeature::Forge))
+	{
+		sendForgeItemClasses();
+		sendForgeBalances();
+	}
 }
 
 void ProtocolGame::sendMoveCreature(const CreatureConstPtr& creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)
@@ -5430,7 +5822,7 @@ namespace
 	// count/subtype byte is the caller's; everything else is neutral filler
 	// until the underlying systems (tiers, charges, podiums) get ported.
 	void addModernItemExtras(NetworkMessage& msg, const BlackTek::Assets::AppearanceInfo* app,
-	                         uint8_t countOrSubType, uint32_t durationSeconds, uint16_t charges)
+	                         uint8_t countOrSubType, uint32_t durationSeconds, uint16_t charges, uint8_t tier)
 	{
 		if (not app)
 		{
@@ -5458,7 +5850,7 @@ namespace
 
 		if (app->classification > 0)
 		{
-			msg.add(CommonCode::Zero); // tier
+			msg.addByte(tier);
 		}
 
 		if (app->clockExpire or app->expire or app->expireStop)
@@ -5490,7 +5882,7 @@ void ProtocolGame::addItem(NetworkMessage& msg, uint16_t id, uint8_t count) cons
 
 	const uint16_t clientId = modernItemId(id);
 	msg.add<uint16_t>(clientId);
-	addModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId), count, 0, 0);
+	addModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId), count, 0, 0, 0);
 }
 
 void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
@@ -5518,7 +5910,7 @@ void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
 		countOrSubType = static_cast<uint8_t>(std::min<uint16_t>(0xFF, std::max<uint16_t>(1, item->getItemCount())));
 	}
 
-	addModernItemExtras(msg, app, countOrSubType, item->getDuration() / 1000, item->getCharges());
+	addModernItemExtras(msg, app, countOrSubType, item->getDuration() / 1000, item->getCharges(), item->getForgeTier());
 }
 
 void ProtocolGame::addItemId(NetworkMessage& msg, uint16_t itemId) const

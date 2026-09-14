@@ -2458,6 +2458,8 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Item", "setAttribute", luaItemSetAttribute);
 	registerMethod("Item", "removeAttribute", luaItemRemoveAttribute);
 	registerMethod("Item", "getCustomAttribute", luaItemGetCustomAttribute);
+	registerMethod("Item", "getForgeTier", luaItemGetForgeTier);
+	registerMethod("Item", "setForgeTier", luaItemSetForgeTier);
 	registerMethod("Item", "setCustomAttribute", luaItemSetCustomAttribute);
 	registerMethod("Item", "removeCustomAttribute", luaItemRemoveCustomAttribute);
 
@@ -2795,6 +2797,10 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getPreyLootPercentage", luaPlayerGetPreyLootPercentage);
 	registerMethod("Player", "getPreyWildcards", luaPlayerGetPreyWildcards);
 	registerMethod("Player", "addPreyWildcards", luaPlayerAddPreyWildcards);
+	registerMethod("Player", "getForgeDust", luaPlayerGetForgeDust);
+	registerMethod("Player", "addForgeDust", luaPlayerAddForgeDust);
+	registerMethod("Player", "getForgeDustLevel", luaPlayerGetForgeDustLevel);
+	registerMethod("Player", "openForge", luaPlayerOpenForge);
 	registerMethod("Player", "setBankBalance", luaPlayerSetBankBalance);
 
 	registerMethod("Player", "getStorageValue", luaPlayerGetStorageValue);
@@ -7935,6 +7941,31 @@ int LuaScriptInterface::luaItemRemoveAttribute(lua_State* L)
 	return 1;
 }
 
+int LuaScriptInterface::luaItemGetForgeTier(lua_State* L)
+{
+	// item:getForgeTier()
+	if (const auto item = getSharedPtr<Item>(L, 1)) {
+		lua_pushinteger(L, item->getForgeTier());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemSetForgeTier(lua_State* L)
+{
+	// item:setForgeTier(tier)
+	const auto item = getSharedPtr<Item>(L, 1);
+	if (not item) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	item->setForgeTier(getNumber<uint8_t>(L, 2));
+	lua_pushboolean(L, true);
+	return 1;
+}
+
 int LuaScriptInterface::luaItemGetCustomAttribute(lua_State* L) {
 	// item:getCustomAttribute(key)
 	const auto item = getSharedPtr<Item>(L, 1);
@@ -12858,6 +12889,58 @@ int LuaScriptInterface::luaPlayerAddPreyWildcards(lua_State* L)
 
 	player->addPreyWildcards(getNumber<uint32_t>(L, 2));
 	player->sendPreySlots();
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetForgeDust(lua_State* L)
+{
+	// player:getForgeDust()
+	if (const auto player = getSharedPtr<Player>(L, 1)) {
+		lua_pushinteger(L, player->getForgeDust());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddForgeDust(lua_State* L)
+{
+	// player:addForgeDust(amount)
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	player->addForgeDust(getNumber<uint32_t>(L, 2));
+	player->sendForgeBalances();
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetForgeDustLevel(lua_State* L)
+{
+	// player:getForgeDustLevel()
+	if (const auto player = getSharedPtr<Player>(L, 1)) {
+		lua_pushinteger(L, player->getForgeDustLevel());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerOpenForge(lua_State* L)
+{
+	// player:openForge()
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	player->sendForgeBalances();
+	player->sendForgeWindow();
 	lua_pushboolean(L, true);
 	return 1;
 }

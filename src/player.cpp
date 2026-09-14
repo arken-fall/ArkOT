@@ -4710,6 +4710,7 @@ bool Player::onKilledCreature(const CreaturePtr& target, bool lastHit/* = true*/
 	if (const auto& monster = target->getMonster(); monster and lastHit)
 	{
 		BlackTek::Bestiary::Registry::getInstance().addKill(getPlayer(), *monster->getMonsterType());
+		BlackTek::Forge::System::getInstance().onKill(getPlayer());
 	}
 
 	PlayerPtr targetPlayer = target->getPlayer();

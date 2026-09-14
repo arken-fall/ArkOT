@@ -5,6 +5,7 @@
 
 #include "bestiary.h"
 #include "prey.h"
+#include "forge.h"
 
 #include "pugicast.h"
 
@@ -4783,6 +4784,45 @@ void Game::playerPreyAction(const uint32_t playerId, const uint8_t slotId, const
 	}
 
 	BlackTek::Prey::System::getInstance().action(player, slotId, static_cast<BlackTek::Prey::Action>(action), index, raceId, static_cast<BlackTek::Prey::Option>(option));
+}
+
+void Game::playerForgeAction(const uint32_t playerId, const uint8_t action, const bool convergence, const uint16_t firstItemId, const uint8_t firstTier, const uint16_t secondItemId, const bool improveChance, const bool reduceTierLoss)
+{
+	using BlackTek::Forge::Action;
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	const auto& forge = BlackTek::Forge::System::getInstance();
+	switch (static_cast<Action>(action))
+	{
+		case Action::Fusion:
+			forge.fuse(player, firstItemId, firstTier, secondItemId, convergence, improveChance, reduceTierLoss);
+			break;
+		case Action::Transfer:
+			forge.transfer(player, firstItemId, firstTier, secondItemId, convergence);
+			break;
+		case Action::DustToSlivers:
+		case Action::SliversToCores:
+		case Action::IncreaseDustLimit:
+			forge.convert(player, static_cast<Action>(action));
+			break;
+		default:
+			break;
+	}
+}
+
+void Game::playerForgeHistory(const uint32_t playerId, const uint16_t page)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	player->sendForgeHistory(page);
 }
 
 void Game::playerRequestBlessingsDialog(const uint32_t playerId)

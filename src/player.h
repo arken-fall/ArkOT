@@ -19,6 +19,7 @@
 #include "augments.h"
 #include "bestiary.h"
 #include "prey.h"
+#include "forge.h"
 #include "accountmanager.h"
 
 #include <array>
@@ -895,6 +896,19 @@ class Player final : public Creature
 		bool removePreyWildcards(uint32_t amount);
 		void sendPreySlot(uint8_t slotId) const														{ if (client) client->sendPreySlot(slotId); }
 		void sendPreyTimeLeft(uint8_t slotId) const													{ if (client) client->sendPreyTimeLeft(slotId); }
+
+		// exaltation forge: dust and its cap live on the character, slivers
+		// and cores are items, the tier is on the item
+		[[nodiscard]] uint32_t getForgeDust() const noexcept											{ return forge_dust; }
+		[[nodiscard]] uint16_t getForgeDustLevel() const noexcept										{ return forge_dust_level; }
+		void addForgeDust(uint32_t amount)																{ forge_dust = std::min<uint32_t>(forge_dust + amount, forge_dust_level); }
+		void removeForgeDust(uint32_t amount)															{ forge_dust -= std::min(amount, forge_dust); }
+		void setForgeDustLevel(uint16_t level)															{ forge_dust_level = level; }
+		void sendForgeWindow() const																	{ if (client) client->sendForgeWindow(); }
+		void sendForgeHistory(uint16_t page) const														{ if (client) client->sendForgeHistory(page); }
+		void sendForgeError(const std::string& message) const											{ if (client) client->sendForgeError(message); }
+		void sendForgeResult(BlackTek::Forge::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::Bonus bonus, uint8_t coreCount) const { if (client) client->sendForgeResult(action, convergence, success, leftItemId, leftTier, rightItemId, rightTier, bonus, coreCount); }
+		void sendForgeBalances() const																	{ if (client) client->sendForgeBalances(); }
 		void sendItemInspection(const ItemPtr& item, bool cyclopedia) const						{ if (client) client->sendItemInspection(item, cyclopedia); }
 		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType) const					{ if (client) client->sendItemTypeInspection(itemId, inspectionType); }
 		void sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia) const			{ if (client) client->sendCharacterInspection(target, cyclopedia); }
@@ -1011,6 +1025,10 @@ class Player final : public Creature
 		std::array<BlackTek::Prey::Slot, BlackTek::Prey::SlotCount> prey_slots {};
 		uint32_t prey_wildcards = 0;
 		uint32_t prey_tick_ticks = 0;
+
+		// exaltation forge dust and the most dust the character may hold
+		uint32_t forge_dust = 0;
+		uint16_t forge_dust_level = 100;
 		uint64_t lastQuestlogUpdate = 0;
 
 		uint64_t getLostExperience() const override { return skillLoss ? static_cast<uint64_t>(experience * getLostPercent()) : 0; }
@@ -1211,6 +1229,7 @@ class Player final : public Creature
 		friend class IOLoginData;
 		friend class ProtocolGame;
 		friend class ItemContainer;
+		friend class BlackTek::Forge::System;
 };
 
 #endif
