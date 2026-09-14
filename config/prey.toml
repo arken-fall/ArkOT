@@ -1,0 +1,29 @@
+# Prey system.
+#
+# A character has three prey slots; each offers a list of nine bestiary
+# creatures and, once one is chosen, a bonus against it (damage boost,
+# damage reduction, experience or loot) for `bonus_time` seconds of play.
+# Lists reroll for free every `free_reroll_time` seconds, otherwise for
+# gold (`reroll_price_per_level` x level). Prey wildcards pay for a bonus
+# reroll, for picking any creature, and for the automatic-reroll and lock
+# options.
+
+enabled = true
+
+# the third slot is unlocked through the store; true hands it out for free
+free_third_slot = false
+
+# gold per character level for a new list before the free reroll is due
+reroll_price_per_level = 200
+
+# wildcards to pick a creature from the whole bestiary (also the lock option)
+selection_list_price = 5
+
+# wildcards to reroll the bonus (also the automatic-reroll option)
+bonus_reroll_price = 1
+
+# seconds of bonus time a chosen prey grants
+bonus_time = 7200
+
+# seconds between free list rerolls
+free_reroll_time = 72000

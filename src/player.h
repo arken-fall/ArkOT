@@ -18,6 +18,7 @@
 #include "mounts.h"
 #include "augments.h"
 #include "bestiary.h"
+#include "prey.h"
 #include "accountmanager.h"
 
 #include <array>
@@ -884,6 +885,16 @@ class Player final : public Creature
 		void removeCharmPoints(uint32_t amount)														{ charm_points -= std::min(amount, charm_points); }
 		[[nodiscard]] CharmSlot& getCharmSlot(uint8_t charmId)											{ return charm_slots[charmId]; }
 		[[nodiscard]] const CharmSlot& getCharmSlot(uint8_t charmId) const								{ return charm_slots[charmId]; }
+
+		[[nodiscard]] BlackTek::Prey::Slot& getPreySlot(uint8_t slotId)								{ return prey_slots[slotId]; }
+		[[nodiscard]] const BlackTek::Prey::Slot& getPreySlot(uint8_t slotId) const						{ return prey_slots[slotId]; }
+		[[nodiscard]] const BlackTek::Prey::Slot* getPreyWithMonster(uint16_t raceId) const;
+		[[nodiscard]] std::vector<uint16_t> getPreyRaceIds() const;
+		[[nodiscard]] uint32_t getPreyWildcards() const noexcept										{ return prey_wildcards; }
+		void addPreyWildcards(uint32_t amount)															{ prey_wildcards += amount; }
+		bool removePreyWildcards(uint32_t amount);
+		void sendPreySlot(uint8_t slotId) const														{ if (client) client->sendPreySlot(slotId); }
+		void sendPreyTimeLeft(uint8_t slotId) const													{ if (client) client->sendPreyTimeLeft(slotId); }
 		void sendItemInspection(const ItemPtr& item, bool cyclopedia) const						{ if (client) client->sendItemInspection(item, cyclopedia); }
 		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType) const					{ if (client) client->sendItemTypeInspection(itemId, inspectionType); }
 		void sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia) const			{ if (client) client->sendCharacterInspection(target, cyclopedia); }
@@ -995,6 +1006,11 @@ class Player final : public Creature
 		std::set<uint16_t> bestiary_tracker;
 		std::array<CharmSlot, BlackTek::Bestiary::Registry::MaxCharms> charm_slots {};
 		uint32_t charm_points = 0;
+
+		// prey slots, wildcards, and the tick that counts bonus time down
+		std::array<BlackTek::Prey::Slot, BlackTek::Prey::SlotCount> prey_slots {};
+		uint32_t prey_wildcards = 0;
+		uint32_t prey_tick_ticks = 0;
 		uint64_t lastQuestlogUpdate = 0;
 
 		uint64_t getLostExperience() const override { return skillLoss ? static_cast<uint64_t>(experience * getLostPercent()) : 0; }

@@ -2327,6 +2327,15 @@ void Player::onThink(const uint32_t interval)
 {
 	Creature::onThink(interval);
 
+	// prey bonus time counts down once a minute; the client keeps its own
+	// second-by-second display between updates
+	prey_tick_ticks += interval;
+	if (prey_tick_ticks >= 60000)
+	{
+		BlackTek::Prey::System::getInstance().tick(getPlayer(), static_cast<uint16_t>(prey_tick_ticks / 1000));
+		prey_tick_ticks %= 60000;
+	}
+
 	modifier_charge_ticks += interval;
 	const uint32_t mod_interval = get_defense_charge_interval();
 	if (mod_interval > 0 and modifier_charge_ticks >= mod_interval)
@@ -4729,6 +4738,48 @@ bool Player::onKilledCreature(const CreaturePtr& target, bool lastHit/* = true*/
 	return unjustified;
 }
 
+const BlackTek::Prey::Slot* Player::getPreyWithMonster(uint16_t raceId) const
+{
+	for (const auto& slot : prey_slots)
+	{
+		if (slot.isOccupied() and slot.selected_race == raceId)
+		{
+			return &slot;
+		}
+	}
+	return nullptr;
+}
+
+// every creature any slot shows or holds, so lists never overlap
+std::vector<uint16_t> Player::getPreyRaceIds() const
+{
+	std::vector<uint16_t> raceIds;
+	for (const auto& slot : prey_slots)
+	{
+		if (slot.selected_race != 0)
+		{
+			raceIds.push_back(slot.selected_race);
+		}
+		raceIds.insert(raceIds.end(), slot.race_list.begin(), slot.race_list.end());
+	}
+	return raceIds;
+}
+
+bool Player::removePreyWildcards(uint32_t amount)
+{
+	if (prey_wildcards < amount)
+	{
+		return false;
+	}
+
+	prey_wildcards -= amount;
+	if (client)
+	{
+		client->sendResourceBalance(BlackTek::Network::ResourceType::PreyWildcards, prey_wildcards);
+	}
+	return true;
+}
+
 // the client tracks up to a handful of creatures at a time; the list is
 // per session, so it lives in memory only
 void Player::setBestiaryTracking(uint16_t raceId, bool tracking)
@@ -4766,6 +4817,15 @@ void Player::onGainExperience(uint64_t gainExp, const CreaturePtr& target)
 		getParty()->shareExperience(gainExp, target);
 		//We will get a share of the experience through the sharing mechanism
 		return;
+	}
+
+	// an active experience prey on this creature raises the gain
+	if (const auto& monster = target ? target->getMonster() : nullptr)
+	{
+		if (const auto* slot = getPreyWithMonster(monster->getMonsterType()->info.bestiary.race_id); slot and slot->bonus == BlackTek::Prey::Bonus::Experience)
+		{
+			gainExp += gainExp * slot->percentage / 100;
+		}
 	}
 
 	Creature::onGainExperience(gainExp, target);

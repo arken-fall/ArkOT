@@ -1219,6 +1219,10 @@ class LuaScriptInterface
 		static int luaPlayerGetMaxSoul(lua_State* L);
 
 		static int luaPlayerGetBankBalance(lua_State* L);
+		static int luaPlayerGetPreyExperiencePercentage(lua_State* L);
+		static int luaPlayerGetPreyLootPercentage(lua_State* L);
+		static int luaPlayerGetPreyWildcards(lua_State* L);
+		static int luaPlayerAddPreyWildcards(lua_State* L);
 		static int luaPlayerSetBankBalance(lua_State* L);
 
 		static int luaPlayerGetStorageValue(lua_State* L);

@@ -328,6 +328,7 @@ CREATE TABLE `players` (
     `lastlogout` bigint UNSIGNED NOT NULL DEFAULT '0',
     `blessings` tinyint NOT NULL DEFAULT '0',
     `charm_points` int UNSIGNED NOT NULL DEFAULT '0',
+    `prey_wildcards` int UNSIGNED NOT NULL DEFAULT '0',
     `onlinetime` bigint NOT NULL DEFAULT '0',
     `deletion` bigint NOT NULL DEFAULT '0',
     `balance` bigint UNSIGNED NOT NULL DEFAULT '0',
@@ -540,6 +541,24 @@ CREATE TABLE `player_charms` (
     `tier` tinyint UNSIGNED NOT NULL DEFAULT '1',
     `race_id` smallint UNSIGNED NOT NULL DEFAULT '0',
     PRIMARY KEY (`player_id`, `charm_id`),
+    FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
+
+-- Table structure for table `player_prey`
+-- one row per prey slot: its state, creature, bonus and the list on offer
+CREATE TABLE `player_prey` (
+    `player_id` int NOT NULL,
+    `slot` tinyint UNSIGNED NOT NULL,
+    `state` tinyint UNSIGNED NOT NULL DEFAULT '0',
+    `race_id` smallint UNSIGNED NOT NULL DEFAULT '0',
+    `option` tinyint UNSIGNED NOT NULL DEFAULT '0',
+    `bonus_type` tinyint UNSIGNED NOT NULL DEFAULT '4',
+    `bonus_rarity` tinyint UNSIGNED NOT NULL DEFAULT '1',
+    `bonus_percentage` smallint UNSIGNED NOT NULL DEFAULT '0',
+    `bonus_time` smallint UNSIGNED NOT NULL DEFAULT '0',
+    `free_reroll` bigint NOT NULL DEFAULT '0',
+    `monster_list` varchar(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (`player_id`, `slot`),
     FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 

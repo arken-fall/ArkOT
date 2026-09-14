@@ -4,6 +4,7 @@
 #include "otpch.h"
 
 #include "bestiary.h"
+#include "prey.h"
 
 #include "server.h"
 
@@ -521,6 +522,7 @@ void mainLoader(int, char*[], ServiceManager* services)
 	// Load augments
 	BlackTek::Augments::loadAll();
 	BlackTek::Bestiary::Registry::getInstance().loadCharms();
+	BlackTek::Prey::System::getInstance().loadConfig();
 	Console::printProgress("Augments", true, std::to_string(BlackTek::Augments::count()));
 
 

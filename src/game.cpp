@@ -4,6 +4,7 @@
 #include "otpch.h"
 
 #include "bestiary.h"
+#include "prey.h"
 
 #include "pugicast.h"
 
@@ -4771,6 +4772,17 @@ void Game::playerCharmAction(const uint32_t playerId, const uint8_t charmId, con
 	}
 
 	player->sendBestiaryCharms();
+}
+
+void Game::playerPreyAction(const uint32_t playerId, const uint8_t slotId, const uint8_t action, const uint8_t index, const uint16_t raceId, const uint8_t option)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	BlackTek::Prey::System::getInstance().action(player, slotId, static_cast<BlackTek::Prey::Action>(action), index, raceId, static_cast<BlackTek::Prey::Option>(option));
 }
 
 void Game::playerRequestBlessingsDialog(const uint32_t playerId)

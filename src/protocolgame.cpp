@@ -18,6 +18,7 @@
 #include "console.h"
 #include "appearances.h"
 #include "bestiary.h"
+#include "prey.h"
 #include "game.h"
 #include "iologindata.h"
 #include "iomarket.h"
@@ -1404,19 +1405,25 @@ void ProtocolGame::parseCyclopediaCharacterInfo(NetworkMessage& msg)
 
 void ProtocolGame::parsePreyAction(NetworkMessage& msg)
 {
-	// slot, action, and the action's argument; every slot is locked, so the
-	// payload is consumed and the slots are simply re-sent
-	msg.skipBytes(1); // slot
+	using BlackTek::Prey::Action;
+	const uint8_t slotId = msg.getByte();
 	const uint8_t action = msg.getByte();
-	if (action == 2 or action == 5)
+	uint8_t index = 0;
+	uint16_t raceId = 0;
+	uint8_t option = 0;
+	if (action == std::to_underlying(Action::MonsterSelection))
 	{
-		msg.skipBytes(1); // list index
+		index = msg.getByte();
 	}
-	else if (action == 4)
+	else if (action == std::to_underlying(Action::Option))
 	{
-		msg.skipBytes(2); // race id
+		option = msg.getByte();
 	}
-	addGameTask([player_id = player->getID()]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendPreySlots(); });
+	else if (action == std::to_underlying(Action::ChangeFromAll))
+	{
+		raceId = msg.get<uint16_t>();
+	}
+	addGameTask([=, playerID = player->getID()]() { g_game.playerPreyAction(playerID, slotId, action, index, raceId, option); });
 }
 
 void ProtocolGame::parseBestiaryOverview(NetworkMessage& msg)
@@ -2913,27 +2920,131 @@ void ProtocolGame::sendCyclopediaCharacterInspection()
 	writeToOutputBuffer(msg);
 }
 
-// three locked slots; the unlock path is "none" because there is no store
-// or prey system yet, and the client draws them as locked without a hang
 void ProtocolGame::sendPreySlots()
 {
-	for (uint8_t slot = 0; slot < 3; ++slot)
+	for (uint8_t slotId = 0; slotId < BlackTek::Prey::SlotCount; ++slotId)
 	{
-		NetworkMessage msg;
-		msg.add(ServerCode::PreyData);
-		msg.addByte(slot);
-		msg.add(PreySlotState::Locked);
-		msg.add(PreyUnlockState::None);
-		msg.add<uint32_t>(0); // next free reroll
-		msg.add(CommonCode::Zero); // wildcards
-		writeToOutputBuffer(msg);
+		sendPreySlot(slotId);
+	}
+	sendPreyPrices();
+	sendResourceBalance(ResourceType::PreyWildcards, player->getPreyWildcards());
+}
+
+// a creature on a prey list: its name and how it looks
+void ProtocolGame::addPreyMonster(NetworkMessage& msg, uint16_t raceId) const
+{
+	const MonsterType* monsterType = BlackTek::Bestiary::Registry::getInstance().getMonster(raceId);
+	if (not monsterType)
+	{
+		msg.add<SpecialCode>(SpecialCode::Zero); // name
+		msg.add<SpecialCode>(SpecialCode::Zero); // look type
+		msg.add<SpecialCode>(SpecialCode::Zero); // look type ex
+		return;
 	}
 
+	msg.addString(monsterType->name);
+	addOutfitLook(msg, monsterType->info.outfit);
+}
+
+void ProtocolGame::sendPreySlot(uint8_t slotId)
+{
+	using BlackTek::Prey::SlotState;
+	const auto& slot = player->getPreySlot(slotId);
+	const auto& config = BlackTek::Prey::System::getInstance().getConfig();
+	const int64_t now = OTSYS_TIME();
+	const uint32_t nextFreeReroll = slot.free_reroll_at > now ? static_cast<uint32_t>((slot.free_reroll_at - now) / 60000) : 0; // minutes
+	const uint8_t wildcards = static_cast<uint8_t>(std::min<uint32_t>(player->getPreyWildcards(), std::numeric_limits<uint8_t>::max()));
+
+	NetworkMessage msg;
+	msg.add(ServerCode::PreyData);
+	msg.addByte(slotId);
+	msg.add(slot.state);
+	switch (slot.state)
+	{
+		case SlotState::Locked:
+			msg.add(config.free_third_slot ? PreyUnlockState::None : PreyUnlockState::Store);
+			break;
+		case SlotState::Inactive:
+			break;
+		case SlotState::Active:
+			addPreyMonster(msg, slot.selected_race);
+			msg.add(slot.bonus);
+			msg.add<uint16_t>(slot.percentage);
+			msg.addByte(slot.rarity);
+			msg.add<uint16_t>(slot.time_left);
+			break;
+		case SlotState::Selection:
+			msg.addByte(slot.race_list.size());
+			for (uint16_t raceId : slot.race_list)
+			{
+				addPreyMonster(msg, raceId);
+			}
+			break;
+		case SlotState::SelectionChangeMonster:
+			msg.add(slot.bonus);
+			msg.add<uint16_t>(slot.percentage);
+			msg.addByte(slot.rarity);
+			msg.addByte(slot.race_list.size());
+			for (uint16_t raceId : slot.race_list)
+			{
+				addPreyMonster(msg, raceId);
+			}
+			break;
+		case SlotState::WildcardSelection:
+			msg.add(slot.bonus);
+			msg.add<uint16_t>(slot.percentage);
+			msg.addByte(slot.rarity);
+			[[fallthrough]];
+		case SlotState::ListSelection:
+		{
+			// every creature the bestiary knows, for a wildcard pick
+			const auto& bestiary = BlackTek::Bestiary::Registry::getInstance();
+			std::vector<uint16_t> raceIds;
+			for (auto race = static_cast<uint8_t>(BlackTek::Bestiary::Race::First); race <= static_cast<uint8_t>(BlackTek::Bestiary::Race::Last); ++race)
+			{
+				for (const MonsterType* monsterType : bestiary.getRaceMembers(static_cast<BlackTek::Bestiary::Race>(race)))
+				{
+					raceIds.push_back(monsterType->info.bestiary.race_id);
+				}
+			}
+			msg.add<uint16_t>(raceIds.size());
+			for (uint16_t raceId : raceIds)
+			{
+				msg.add<uint16_t>(raceId);
+			}
+			break;
+		}
+	}
+
+	msg.add<uint32_t>(nextFreeReroll);
+	if (slot.state == SlotState::Active)
+	{
+		msg.add(slot.option); // what happens when the time runs out
+	}
+	else
+	{
+		msg.addByte(wildcards);
+	}
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendPreyTimeLeft(uint8_t slotId)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::PreyTimeLeft);
+	msg.addByte(slotId);
+	msg.add<uint16_t>(player->getPreySlot(slotId).time_left);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendPreyPrices()
+{
+	const auto& prey = BlackTek::Prey::System::getInstance();
 	NetworkMessage msg;
 	msg.add(ServerCode::PreyPrices);
-	msg.add<uint32_t>(0); // reroll price
-	msg.add(CommonCode::Zero); // bonus reroll price in wildcards
-	msg.add(CommonCode::Zero); // selection list price in wildcards
+	msg.add<uint32_t>(prey.getRerollPrice(player));
+	msg.addByte(static_cast<uint8_t>(prey.getConfig().bonus_reroll_price));
+	msg.addByte(static_cast<uint8_t>(prey.getConfig().selection_list_price));
 	writeToOutputBuffer(msg);
 }
 

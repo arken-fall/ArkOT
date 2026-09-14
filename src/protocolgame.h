@@ -294,6 +294,10 @@ class ProtocolGame : public Protocol
 		// 12.x+ prey and bestiary; the slots stay locked and the bestiary
 		// empty until those systems land, but the windows open cleanly
 		void sendPreySlots();
+		void sendPreySlot(uint8_t slotId);
+		void sendPreyTimeLeft(uint8_t slotId);
+		void sendPreyPrices();
+		void addPreyMonster(NetworkMessage& msg, uint16_t raceId) const;
 		void sendBestiaryRaces();
 		void sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters);
 		void sendBestiaryMonsterData(uint16_t raceId);

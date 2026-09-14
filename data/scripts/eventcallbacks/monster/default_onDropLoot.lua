@@ -9,8 +9,14 @@ ec.onDropLoot = function(self, corpse)
 	local mType = self:getType()
 	if not player or player:getStamina() > 840 then
 		local monsterLoot = mType:getLoot()
+		-- an active loot prey on this creature raises every drop chance
+		local preyBonus = player and player:getPreyLootPercentage(mType:raceId()) or 0
 		for i = 1, #monsterLoot do
-			local item = corpse:createLootItem(monsterLoot[i])
+			local lootBlock = monsterLoot[i]
+			if preyBonus > 0 then
+				lootBlock.chance = math.floor(lootBlock.chance * (100 + preyBonus) / 100)
+			end
+			local item = corpse:createLootItem(lootBlock)
 			if not item then
 				print('[Warning] DropLoot:', 'Could not add loot item to corpse.')
 			end

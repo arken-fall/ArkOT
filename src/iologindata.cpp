@@ -3,6 +3,8 @@
 
 #include "otpch.h"
 
+#include "prey.h"
+
 #include "iologindata.h"
 #include "configmanager.h"
 #include "game.h"
@@ -546,7 +548,7 @@ bool IOLoginData::preloadPlayer(const PlayerPtr& player)
 bool IOLoginData::loadPlayerById(const PlayerPtr& player, uint32_t id, std::vector<ConditionHandle>* outConditions)
 {
 	Database& db = Database::getInstance();
-	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction`, `charm_points` FROM `players` WHERE `id` = {:d}", id)), outConditions);
+	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction`, `charm_points`, `prey_wildcards` FROM `players` WHERE `id` = {:d}", id)), outConditions);
 }
 
 bool IOLoginData::loadPlayerByName(const PlayerPtr& player, const std::string& name)
@@ -583,6 +585,7 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 
 	player->bankBalance = result->getNumber<uint64_t>("balance");
 	player->charm_points = result->getNumber<uint32_t>("charm_points");
+	player->prey_wildcards = result->getNumber<uint32_t>("prey_wildcards");
 
 	player->setSex(static_cast<PlayerSex_t>(result->getNumber<uint16_t>("sex")));
 	player->level = std::max<uint32_t>(1, result->getNumber<uint32_t>("level"));
@@ -951,6 +954,35 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 		} while (result->next());
 	}
 	BlackTek::Bestiary::Registry::getInstance().applyCharmAugments(player);
+
+	//load prey slots; a character without rows gets its starting slots
+	if ((result = db.storeQuery(fmt::format("SELECT `slot`, `state`, `race_id`, `option`, `bonus_type`, `bonus_rarity`, `bonus_percentage`, `bonus_time`, `free_reroll`, `monster_list` FROM `player_prey` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			const uint8_t slotId = result->getNumber<uint8_t>("slot");
+			if (slotId >= BlackTek::Prey::SlotCount) {
+				continue;
+			}
+
+			auto& slot = player->getPreySlot(slotId);
+			slot.id = slotId;
+			slot.state = static_cast<BlackTek::Prey::SlotState>(result->getNumber<uint8_t>("state"));
+			slot.selected_race = result->getNumber<uint16_t>("race_id");
+			slot.option = static_cast<BlackTek::Prey::Option>(result->getNumber<uint8_t>("option"));
+			slot.bonus = static_cast<BlackTek::Prey::Bonus>(result->getNumber<uint8_t>("bonus_type"));
+			slot.rarity = result->getNumber<uint8_t>("bonus_rarity");
+			slot.percentage = result->getNumber<uint16_t>("bonus_percentage");
+			slot.time_left = result->getNumber<uint16_t>("bonus_time");
+			slot.free_reroll_at = result->getNumber<int64_t>("free_reroll");
+			slot.race_list.clear();
+			for (const auto& raceId : explodeString(result->getString("monster_list"), ",")) {
+				if (not raceId.empty()) {
+					slot.race_list.push_back(static_cast<uint16_t>(std::stoul(std::string(raceId))));
+				}
+			}
+		} while (result->next());
+	}
+	BlackTek::Prey::System::getInstance().initializeSlots(player);
+	BlackTek::Prey::System::getInstance().applyAugments(player);
 
 	// I used a lambda with immediate execution in order to be able to return early in case of corrupt data or failed loading
 	[&]() -> void 
@@ -1435,6 +1467,7 @@ bool IOLoginData::savePlayer(const PlayerPtr& player)
 	query << "`lastlogout` = " << player->getLastLogout() << ',';
 	query << "`balance` = " << player->bankBalance << ',';
 	query << "`charm_points` = " << player->charm_points << ',';
+	query << "`prey_wildcards` = " << player->prey_wildcards << ',';
 	query << "`offlinetraining_time` = " << player->getOfflineTrainingTime() / 1000 << ',';
 	query << "`offlinetraining_skill` = " << player->getOfflineTrainingSkill() << ',';
 	query << "`stamina` = " << player->getStaminaMinutes() << ',';
@@ -1636,6 +1669,27 @@ bool IOLoginData::savePlayer(const PlayerPtr& player)
 	}
 
 	if (!charmsQuery.execute()) {
+		return false;
+	}
+
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_prey` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
+
+	DBInsert preyQuery("INSERT INTO `player_prey` (`player_id`, `slot`, `state`, `race_id`, `option`, `bonus_type`, `bonus_rarity`, `bonus_percentage`, `bonus_time`, `free_reroll`, `monster_list`) VALUES ");
+	for (uint8_t slotId = 0; slotId < BlackTek::Prey::SlotCount; ++slotId) {
+		const auto& slot = player->getPreySlot(slotId);
+		std::string raceList;
+		for (uint16_t raceId : slot.race_list) {
+			raceList += (raceList.empty() ? "" : ",") + std::to_string(raceId);
+		}
+
+		if (!preyQuery.addRow(fmt::format("{:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}, {:s}", player->getGUID(), slotId, std::to_underlying(slot.state), slot.selected_race, std::to_underlying(slot.option), std::to_underlying(slot.bonus), slot.rarity, slot.percentage, slot.time_left, slot.free_reroll_at, db.escapeString(raceList)))) {
+			return false;
+		}
+	}
+
+	if (!preyQuery.execute()) {
 		return false;
 	}
 

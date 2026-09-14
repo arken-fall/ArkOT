@@ -4,6 +4,7 @@
 #include "otpch.h"
 
 #include "bestiary.h"
+#include "prey.h"
 
 #include <boost/range/adaptor/reversed.hpp>
 #include <fmt/format.h>
@@ -2790,6 +2791,10 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getMaxSoul", luaPlayerGetMaxSoul);
 
 	registerMethod("Player", "getBankBalance", luaPlayerGetBankBalance);
+	registerMethod("Player", "getPreyExperiencePercentage", luaPlayerGetPreyExperiencePercentage);
+	registerMethod("Player", "getPreyLootPercentage", luaPlayerGetPreyLootPercentage);
+	registerMethod("Player", "getPreyWildcards", luaPlayerGetPreyWildcards);
+	registerMethod("Player", "addPreyWildcards", luaPlayerAddPreyWildcards);
 	registerMethod("Player", "setBankBalance", luaPlayerSetBankBalance);
 
 	registerMethod("Player", "getStorageValue", luaPlayerGetStorageValue);
@@ -12800,6 +12805,60 @@ int LuaScriptInterface::luaPlayerGetMaxSoul(lua_State* L)
 	} else {
 		lua_pushnil(L);
 	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetPreyExperiencePercentage(lua_State* L)
+{
+	// player:getPreyExperiencePercentage(raceId)
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto* slot = player->getPreyWithMonster(getNumber<uint16_t>(L, 2));
+	lua_pushinteger(L, slot and slot->bonus == BlackTek::Prey::Bonus::Experience ? 100 + slot->percentage : 100);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetPreyLootPercentage(lua_State* L)
+{
+	// player:getPreyLootPercentage(raceId)
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto* slot = player->getPreyWithMonster(getNumber<uint16_t>(L, 2));
+	lua_pushinteger(L, slot and slot->bonus == BlackTek::Prey::Bonus::Loot ? slot->percentage : 0);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetPreyWildcards(lua_State* L)
+{
+	// player:getPreyWildcards()
+	if (const auto player = getSharedPtr<Player>(L, 1)) {
+		lua_pushinteger(L, player->getPreyWildcards());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddPreyWildcards(lua_State* L)
+{
+	// player:addPreyWildcards(amount)
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	player->addPreyWildcards(getNumber<uint32_t>(L, 2));
+	player->sendPreySlots();
+	lua_pushboolean(L, true);
 	return 1;
 }
 

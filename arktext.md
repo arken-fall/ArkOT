@@ -379,3 +379,37 @@ augments for charm effects, and the player's own persistence style.
 
 **Verified:** real client — races/overview/creature page/tracker/charm
 purchase and assignment, kill counted and saved. Unit tests 10/10.
+
+## 2026-09-14 — Prey: a real system on top of the bestiary
+
+**Why:** with race ids on the monsters, prey is the next system a 15.25
+player uses every session. Canary was the behaviour reference (list shape
+by level band, bonus rarity rolls and percentages, prices, options, the
+packet shapes); the implementation is BlackTek's. **What:**
+
+- `src/prey.h/.cpp` (`BlackTek::Prey`): `SlotState`, `Bonus`, `Option`,
+  `Action` as the client speaks them; `Slot` (state, bonus, rarity,
+  percentage, time left, creature, option, free-reroll due time, list);
+  `Config` from `config/prey.toml`; `System` singleton with slot
+  initialisation (two slots free, the third by config or store), list
+  rolls (nine preyable bestiary creatures spread over star bands for the
+  level, never overlapping another slot), bonus type/value rolls, the six
+  client actions, the once-a-minute tick that expires or renews bonuses,
+  and `applyAugments`: damage boost and damage reduction become augments
+  named per slot and filtered by the creature's name.
+- `Player`: prey slots, wildcards, tick accumulator; `getPreyWithMonster`,
+  `getPreyRaceIds`, `removePreyWildcards` (pushes the wildcard resource);
+  the experience bonus applies in `onGainExperience` for the prey creature;
+  the loot bonus scales drop chances in `default_onDropLoot.lua` through
+  `player:getPreyLootPercentage(raceId)`.
+- Persistence: `player_prey` (one row per slot, list as a comma list) and
+  `players.prey_wildcards`; `data/migrations/3.lua` (4.lua sentinel).
+- Protocol: 0xE8 per state (locked, inactive, active, selection, change
+  monster, list selection, wildcard selection), 0xE7 time left, 0xE9
+  prices, the wildcard resource balance; `parsePreyAction` reads the
+  index/option/race id the action carries; `Game::playerPreyAction`.
+- Lua: `player:getPreyExperiencePercentage`, `getPreyLootPercentage`,
+  `getPreyWildcards`, `addPreyWildcards`.
+
+**Verified:** real client — lists, pick, bonus reroll, full list, free
+reroll timer, countdown, wildcards, persistence. Unit tests 10/10.

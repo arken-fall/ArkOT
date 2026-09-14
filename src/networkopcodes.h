@@ -462,6 +462,7 @@ namespace BlackTek {
         {
             Bank = 0x00,
             Inventory = 0x01,
+            PreyWildcards = 0x0A,
             // 14.10+ charm balances; these four are u32 on the wire
             CharmPoints = 0x1E,
             MinorCharmEchoes = 0x1F,
