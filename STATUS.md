@@ -3,6 +3,14 @@
 Branch: `modern-protocol`. Last session: 2026-09-13.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
 
+**2026-09-14 — Phase D tranche 2 (real-client verified).** Prey (three
+locked slots + prices, at login and on 0xED), bestiary (0xE1 races, 0xE2
+overview, 0xE4 charms, empty), object inspection (0xCD -> 0x76) with the
+item's name, look and description rows, character inspection (0xCE and
+cyclopedia type 9) with the worn items and outfit. Base info now writes the
+outfit without a mount, which the client reads that way (2 leftover bytes
+had been showing as an "unhandled opcode 0x01" warning client-side).
+
 **2026-09-14 — Phase D tranche 1 (real-client verified).** Cyclopedia
 character pages and the blessings dialog, driven from a harness rc that
 requests every info type. Two 15.25 deltas the client's own feature table
@@ -57,7 +65,7 @@ Real client: `~/Documents/BlackTek15` (mehah OTClient Redemption, built from sou
 | A — session login | **PASS** | POST /login on opentibiabr/login-server → session key → modern handshake → "Tester has logged in." → walk answered |
 | B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId; full table appearance-backed (41 stale rows pruned); blacktek_tests 10/10 |
 | C — enter world (mehah) | **PASS** | **real mehah 15.25 client renders the world and walks, zero parse errors / zero invalid-thing warnings** (2026-07-20). Autonomous edit/build/launch/screenshot loop via `otclientrc.lua` auto-login harness |
-| D — feature stubs | IN PROGRESS | 2026-09-14: cyclopedia character info (all 15 request types answered; base, general, combat, offence, defence, misc, deaths, item summary, outfits/mounts, store summary, badges, titles carry real data where the server has it) and the blessings status + dialog verified on the real 15.25 client; prey/bestiary/forge/wheel/store still stubbed off |
+| D — feature stubs | IN PROGRESS | 2026-09-14: cyclopedia character info (all 15 request types answered; base, general, combat, offence, defence, misc, deaths, item summary, outfits/mounts, store summary, badges, titles carry real data where the server has it) and the blessings status + dialog verified on the real 15.25 client; prey slots (locked, with prices) sent at login and on request, bestiary races/overview/charms answered empty, object and character inspection windows (0x76) and the cyclopedia inspection page verified on the real client; forge/wheel/store still stubbed off |
 | E — long tail | IN PROGRESS | 2026-09-13: NPC shop (0x7A/0x7B + 0xEE balances), outfit window (0xC8), death window, text windows, quest line, GM map teleport (0x73), market (enter/browse/own offers/history/leave with request bytes, tiers, u64 prices, 15.25 descriptions), client item ids reverse-mapped for use/move/rotate/wrap/trade/equip/shop — all verified on the real 15.25 client; u16 spell cooldowns and u64 experience messages ported by layout (GM has no cooldowns, so not client-verified); cyclopedia still pending |
 
 ### Phase C ground truth (2026-07-20)

@@ -806,6 +806,15 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::Teleport: parseTeleport(msg); break;
 		case ClientCode::RequestBlessingsDialog: addGameTask([player_id]() { g_game.playerRequestBlessingsDialog(player_id); }); break;
 		case ClientCode::CyclopediaCharacterInfo: parseCyclopediaCharacterInfo(msg); break;
+		case ClientCode::PreyRequest: addGameTask([player_id]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendPreySlots(); }); break;
+		case ClientCode::PreyAction: parsePreyAction(msg); break;
+		case ClientCode::BestiaryRaces: addGameTask([player_id]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryRaces(); }); break;
+		case ClientCode::BestiaryCreatures: parseBestiaryOverview(msg); break;
+		case ClientCode::BestiaryMonsterData: msg.skipBytes(2); break; // race id; there are no races yet
+		case ClientCode::BuyCharmRune: parseBuyCharmRune(msg); break;
+		case ClientCode::CyclopediaMonsterTracker: msg.skipBytes(3); break; // race id + status; no tracker yet
+		case ClientCode::InspectionObject: parseInspectionObject(msg); break;
+		case ClientCode::InspectPlayer: parseInspectPlayer(msg); break;
 		case ClientCode::EquipObject: parseEquipObject(msg); break;
 		case ClientCode::Throw: parseThrow(msg); break;
 		case ClientCode::LookInShop: parseLookInShop(msg); break;
@@ -1390,6 +1399,70 @@ void ProtocolGame::parseCyclopediaCharacterInfo(NetworkMessage& msg)
 		page = std::max<uint16_t>(1, msg.get<uint16_t>());
 	}
 	addGameTask([=, playerID = player->getID()]() { g_game.playerCyclopediaCharacterInfo(playerID, characterId, infoType, entriesPerPage, page); });
+}
+
+void ProtocolGame::parsePreyAction(NetworkMessage& msg)
+{
+	// slot, action, and the action's argument; every slot is locked, so the
+	// payload is consumed and the slots are simply re-sent
+	msg.skipBytes(1); // slot
+	const uint8_t action = msg.getByte();
+	if (action == 2 or action == 5)
+	{
+		msg.skipBytes(1); // list index
+	}
+	else if (action == 4)
+	{
+		msg.skipBytes(2); // race id
+	}
+	addGameTask([player_id = player->getID()]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendPreySlots(); });
+}
+
+void ProtocolGame::parseBestiaryOverview(NetworkMessage& msg)
+{
+	std::string raceName;
+	if (msg.getByte() != 0)
+	{
+		// a search by race ids
+		const uint16_t count = msg.get<uint16_t>();
+		msg.skipBytes(count * 2);
+	}
+	else
+	{
+		raceName = msg.getString();
+	}
+	addGameTask([player_id = player->getID(), raceName]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryOverview(raceName); });
+}
+
+void ProtocolGame::parseBuyCharmRune(NetworkMessage& msg)
+{
+	msg.skipBytes(4); // rune, action, race id; charms are not for sale yet
+	addGameTask([player_id = player->getID()]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryCharms(); });
+}
+
+void ProtocolGame::parseInspectionObject(NetworkMessage& msg)
+{
+	const uint8_t inspectionType = msg.getByte();
+	if (inspectionType == static_cast<uint8_t>(InspectionType::NormalObject))
+	{
+		Position pos = msg.getPosition();
+		addGameTask([=, playerID = player->getID()]() { g_game.playerInspectObject(playerID, pos); });
+		return;
+	}
+
+	uint16_t itemId = getItemId(msg);
+	msg.skipBytes(1); // count
+	if (itemId != 0)
+	{
+		addGameTask([=, playerID = player->getID()]() { g_game.playerInspectItemType(playerID, itemId, inspectionType); });
+	}
+}
+
+void ProtocolGame::parseInspectPlayer(NetworkMessage& msg)
+{
+	msg.skipBytes(1); // tab
+	uint32_t creatureId = msg.get<uint32_t>();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerInspectCharacter(playerID, creatureId, false); });
 }
 
 void ProtocolGame::parseTeleport(NetworkMessage& msg)
@@ -2287,7 +2360,7 @@ void ProtocolGame::sendCyclopediaCharacterInfo(uint8_t infoType)
 		case CyclopediaInfoCode::OffenceStats: sendCyclopediaCharacterOffenceStats(); break;
 		case CyclopediaInfoCode::DefenceStats: sendCyclopediaCharacterDefenceStats(); break;
 		case CyclopediaInfoCode::MiscStats: sendCyclopediaCharacterMiscStats(); break;
-		// inspection waits for its system
+		case CyclopediaInfoCode::Inspection: sendCyclopediaCharacterInspection(); break;
 		default: sendCyclopediaCharacterNoData(infoType); break;
 	}
 }
@@ -2319,7 +2392,7 @@ void ProtocolGame::sendCyclopediaCharacterBaseInformation()
 	msg.addString(player->getName());
 	msg.addString(player->getVocation()->getVocName());
 	msg.add<uint16_t>(player->getLevel());
-	AddOutfit(msg, player->getDefaultOutfit());
+	addOutfitLook(msg, player->getDefaultOutfit()); // read without a mount here
 	msg.add(CommonCode::False); // hide stamina
 	msg.add(CommonCode::True); // store summary and titles enabled
 	msg.add<SpecialCode>(SpecialCode::Zero); // current title
@@ -2787,6 +2860,179 @@ void ProtocolGame::sendCyclopediaCharacterMiscStats()
 	msg.add(CommonCode::Zero); // weapon proficiency augments
 	msg.add(CommonCode::Zero); // wheel augments
 	msg.add(CommonCode::Zero); // equipped augments
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCyclopediaCharacterInspection()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaCharacterInfo);
+	msg.add(CyclopediaInfoCode::Inspection);
+	msg.add(CyclopediaErrorCode::None);
+	addCharacterInspection(msg, player);
+	writeToOutputBuffer(msg);
+}
+
+// three locked slots; the unlock path is "none" because there is no store
+// or prey system yet, and the client draws them as locked without a hang
+void ProtocolGame::sendPreySlots()
+{
+	for (uint8_t slot = 0; slot < 3; ++slot)
+	{
+		NetworkMessage msg;
+		msg.add(ServerCode::PreyData);
+		msg.addByte(slot);
+		msg.add(PreySlotState::Locked);
+		msg.add(PreyUnlockState::None);
+		msg.add<uint32_t>(0); // next free reroll
+		msg.add(CommonCode::Zero); // wildcards
+		writeToOutputBuffer(msg);
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::PreyPrices);
+	msg.add<uint32_t>(0); // reroll price
+	msg.add(CommonCode::Zero); // bonus reroll price in wildcards
+	msg.add(CommonCode::Zero); // selection list price in wildcards
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendBestiaryRaces()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::BestiaryRaces);
+	msg.add<SpecialCode>(SpecialCode::Zero); // races
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendBestiaryOverview(const std::string& raceName)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::BestiaryOverview);
+	msg.addString(raceName);
+	msg.add<SpecialCode>(SpecialCode::Zero); // creatures
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendBestiaryCharms()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::BestiaryCharms);
+	msg.add<uint64_t>(0); // reset all charms cost (14.10+)
+	msg.add(CommonCode::Zero); // charms
+	msg.add(CommonCode::Zero); // available charm slots
+	msg.add<SpecialCode>(SpecialCode::Zero); // finished monsters
+	writeToOutputBuffer(msg);
+}
+
+// the description rows an inspection window lists under an item
+void ProtocolGame::addInspectionDescriptions(NetworkMessage& msg, const ItemType& it) const
+{
+	std::vector<std::pair<std::string, std::string>> rows;
+	if (it.armor != 0)
+	{
+		rows.emplace_back("Armor", std::to_string(it.armor));
+	}
+	if (it.attack != 0)
+	{
+		rows.emplace_back("Attack", std::to_string(it.attack));
+	}
+	if (it.defense != 0)
+	{
+		rows.emplace_back("Defense", std::to_string(it.defense));
+	}
+	if (it.weight != 0)
+	{
+		rows.emplace_back("Weight", fmt::format("{:.2f} oz", it.weight / 100.0));
+	}
+	if (not it.description.empty())
+	{
+		rows.emplace_back("Description", it.description);
+	}
+
+	msg.addByte(rows.size());
+	for (const auto& [key, value] : rows)
+	{
+		msg.addString(key);
+		msg.addString(value);
+	}
+}
+
+void ProtocolGame::addInspectionItem(NetworkMessage& msg, const ItemPtr& item, const ItemType& it) const
+{
+	msg.addString(it.name);
+	if (item)
+	{
+		addItem(msg, item);
+	}
+	else
+	{
+		addItem(msg, it.getID(), 1);
+	}
+	msg.add(CommonCode::Zero); // imbuements
+	addInspectionDescriptions(msg, it);
+}
+
+void ProtocolGame::sendItemInspection(const ItemPtr& item, bool cyclopedia)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaItemDetail);
+	msg.add(InspectionWindow::Item);
+	msg.add(cyclopedia ? InspectionType::Cyclopedia : InspectionType::NormalObject);
+	msg.add<uint32_t>(player->getID());
+	msg.add(CommonCode::True); // one item
+	addInspectionItem(msg, item, Item::items[item->getID()]);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaItemDetail);
+	msg.add(InspectionWindow::Item);
+	msg.addByte(inspectionType);
+	msg.add<uint32_t>(player->getID());
+	msg.add(CommonCode::True); // one item
+	addInspectionItem(msg, nullptr, Item::items[itemId]);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::addCharacterInspection(NetworkMessage& msg, const PlayerConstPtr& target) const
+{
+	std::vector<std::pair<uint8_t, ItemPtr>> worn;
+	for (uint8_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; ++slot)
+	{
+		if (const auto& item = target->getInventoryItem(slot))
+		{
+			worn.emplace_back(slot, item);
+		}
+	}
+
+	msg.addByte(worn.size());
+	for (const auto& [slot, item] : worn)
+	{
+		msg.addByte(slot);
+		addInspectionItem(msg, item, Item::items[item->getID()]);
+	}
+
+	msg.addString(target->getName());
+	addOutfitLook(msg, target->getDefaultOutfit());
+
+	msg.addByte(2); // character rows
+	msg.addString("Level");
+	msg.addString(std::to_string(target->getLevel()));
+	msg.addString("Vocation");
+	msg.addString(target->getVocation()->getVocName());
+}
+
+void ProtocolGame::sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::CyclopediaItemDetail);
+	msg.add(InspectionWindow::Character);
+	msg.add(cyclopedia ? InspectionType::Cyclopedia : InspectionType::NormalObject);
+	msg.add<uint32_t>(target->getID());
+	addCharacterInspection(msg, target);
 	writeToOutputBuffer(msg);
 }
 
@@ -4249,6 +4495,11 @@ void ProtocolGame::sendAddCreature(const CreatureConstPtr& creature, const Posit
 	{
 		sendBlessStatus();
 	}
+
+	if (hasFeature(ProtocolFeature::PreySystem))
+	{
+		sendPreySlots();
+	}
 }
 
 void ProtocolGame::sendMoveCreature(const CreatureConstPtr& creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)
@@ -5321,7 +5572,8 @@ void ProtocolGame::AddPlayerSkills(NetworkMessage& msg) const
 	}
 }
 
-void ProtocolGame::AddOutfit(NetworkMessage& msg, const Outfit_t& outfit)
+// the look without its mount: a few 12.x+ windows read only this part
+void ProtocolGame::addOutfitLook(NetworkMessage& msg, const Outfit_t& outfit) const
 {
 	msg.add<uint16_t>(outfit.lookType);
 
@@ -5337,6 +5589,11 @@ void ProtocolGame::AddOutfit(NetworkMessage& msg, const Outfit_t& outfit)
 	{
 		addItemId(msg, outfit.lookTypeEx);
 	}
+}
+
+void ProtocolGame::AddOutfit(NetworkMessage& msg, const Outfit_t& outfit)
+{
+	addOutfitLook(msg, outfit);
 
 	msg.add<uint16_t>(outfit.lookMount);
 	if (usesModernLayout() and outfit.lookMount != 0)

@@ -4679,6 +4679,67 @@ void Game::playerCyclopediaCharacterInfo(const uint32_t playerId, const uint32_t
 	player->sendCyclopediaCharacterInfo(infoType);
 }
 
+void Game::playerInspectObject(const uint32_t playerId, const Position& pos)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player or not player->canSee(pos))
+	{
+		return;
+	}
+
+	const auto& tile = map.getTile(pos);
+	if (not tile)
+	{
+		return;
+	}
+
+	// the item the client shows on top: a moveable first, then furniture, then the ground
+	ItemPtr item = tile->getTopDownItem();
+	if (not item)
+	{
+		item = tile->getTopTopItem();
+	}
+	if (not item)
+	{
+		item = tile->getGround();
+	}
+	if (not item)
+	{
+		return;
+	}
+
+	player->sendItemInspection(item, false);
+}
+
+void Game::playerInspectItemType(const uint32_t playerId, const uint16_t itemId, const uint8_t inspectionType)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player or Item::items[itemId].getID() == 0)
+	{
+		return;
+	}
+
+	player->sendItemTypeInspection(itemId, inspectionType);
+}
+
+void Game::playerInspectCharacter(const uint32_t playerId, const uint32_t creatureId, const bool cyclopedia)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	// own character, or one in view
+	const auto& target = creatureId == 0 or creatureId == player->getID() ? player : getPlayerByID(creatureId);
+	if (not target or (target != player and not player->canSeeCreature(target)))
+	{
+		return;
+	}
+
+	player->sendCharacterInspection(target, cyclopedia);
+}
+
 void Game::playerRequestBlessingsDialog(const uint32_t playerId)
 {
 	const auto& player = getPlayerByID(playerId);

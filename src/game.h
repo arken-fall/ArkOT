@@ -557,6 +557,9 @@ class Game
 		void playerTeleport(uint32_t playerId, const Position& newPosition);
 		void playerCyclopediaCharacterInfo(uint32_t playerId, uint32_t characterId, uint8_t infoType, uint16_t entriesPerPage, uint16_t page);
 		void playerRequestBlessingsDialog(uint32_t playerId);
+		void playerInspectObject(uint32_t playerId, const Position& pos);
+		void playerInspectItemType(uint32_t playerId, uint16_t itemId, uint8_t inspectionType);
+		void playerInspectCharacter(uint32_t playerId, uint32_t creatureId, bool cyclopedia);
 		void playerShowQuestLog(uint32_t playerId);
 		void playerShowQuestLine(uint32_t playerId, uint16_t questId);
 		void playerSay(uint32_t playerId, uint16_t channelId, SpeakClasses type,

@@ -148,6 +148,11 @@ class ProtocolGame : public Protocol
 		void parseEquipObject(NetworkMessage& msg);
 		void parseTeleport(NetworkMessage& msg);
 		void parseCyclopediaCharacterInfo(NetworkMessage& msg);
+		void parsePreyAction(NetworkMessage& msg);
+		void parseBestiaryOverview(NetworkMessage& msg);
+		void parseBuyCharmRune(NetworkMessage& msg);
+		void parseInspectionObject(NetworkMessage& msg);
+		void parseInspectPlayer(NetworkMessage& msg);
 
 		void parseBugReport(NetworkMessage& msg);
 		void parseDebugAssert(NetworkMessage& msg);
@@ -282,6 +287,23 @@ class ProtocolGame : public Protocol
 		void sendCyclopediaCharacterBadges();
 		void sendCyclopediaCharacterTitles();
 		void sendCyclopediaCharacterOffenceStats();
+		void sendCyclopediaCharacterInspection();
+
+		// 12.x+ prey and bestiary; the slots stay locked and the bestiary
+		// empty until those systems land, but the windows open cleanly
+		void sendPreySlots();
+		void sendBestiaryRaces();
+		void sendBestiaryOverview(const std::string& raceName);
+		void sendBestiaryCharms();
+
+		// 12.x+ inspection windows
+		void sendItemInspection(const ItemPtr& item, bool cyclopedia);
+		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType);
+		void sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia);
+		void addInspectionItem(NetworkMessage& msg, const ItemPtr& item, const ItemType& it) const;
+		void addInspectionDescriptions(NetworkMessage& msg, const ItemType& it) const;
+		void addCharacterInspection(NetworkMessage& msg, const PlayerConstPtr& target) const;
+		void addOutfitLook(NetworkMessage& msg, const Outfit_t& outfit) const;
 		void sendCyclopediaCharacterDefenceStats();
 		void sendCyclopediaCharacterMiscStats();
 		void sendCyclopediaCharacterHeaderOnly(BlackTek::Network::CyclopediaInfoCode infoType);

@@ -224,7 +224,7 @@ namespace BlackTek {
             // Misc systems
             RequestBlessingsDialog = 0xCF,
             SetHirelingName = 0xEC,
-            RequestResourceBalance = 0xED,
+            PreyRequest = 0xED, // the client asks for its prey slots (was RequestResourceBalance)
             RewardChestCollect = 0xFF
         };
 
@@ -369,6 +369,51 @@ namespace BlackTek {
             BlessDialog = 0x9B,
             BlessStatus = 0x9C,
             CyclopediaCharacterInfo = 0xDA,
+            CyclopediaItemDetail = 0x76,
+
+            // Modern (12.x+) bestiary and prey
+            BestiaryRaces = 0xD5,
+            BestiaryOverview = 0xD6,
+            BestiaryMonsterData = 0xD7,
+            BestiaryCharms = 0xD8,
+            BestiaryTracker = 0xD9,
+            PreyTimeLeft = 0xE7,
+            PreyData = 0xE8,
+            PreyPrices = 0xE9,
+        };
+
+        // Prey slot states as the 12.x+ client reads them in PreyData
+        enum class PreySlotState : uint8_t
+        {
+            Locked = 0x00,
+            Inactive = 0x01,
+            Active = 0x02,
+            Selection = 0x03,
+            SelectionChangeMonster = 0x04,
+        };
+
+        // How a locked prey slot may be unlocked
+        enum class PreyUnlockState : uint8_t
+        {
+            StoreAndPremium = 0x00,
+            Store = 0x01,
+            None = 0x02,
+        };
+
+        // Which window a CyclopediaItemDetail reply fills
+        enum class InspectionWindow : uint8_t
+        {
+            Item = 0x00,
+            Character = 0x01,
+        };
+
+        // The client's InspectionObject request types
+        enum class InspectionType : uint8_t
+        {
+            NormalObject = 0x00,
+            NpcTrade = 0x01,
+            PlayerTrade = 0x02,
+            Cyclopedia = 0x03,
         };
 
         // The character info request types a 12.x+ cyclopedia asks for; the

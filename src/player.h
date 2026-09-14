@@ -853,6 +853,13 @@ class Player final : public Creature
 		void sendCyclopediaCharacterNoData(uint8_t infoType) const									{ if (client) client->sendCyclopediaCharacterNoData(infoType); }
 		void sendCyclopediaCharacterRecentDeaths(uint16_t page, uint16_t pages, const std::vector<std::pair<uint32_t, std::string>>& entries) const { if (client) client->sendCyclopediaCharacterRecentDeaths(page, pages, entries); }
 		void sendBlessStatus() const																{ if (client) client->sendBlessStatus(); }
+		void sendPreySlots() const																	{ if (client) client->sendPreySlots(); }
+		void sendBestiaryRaces() const																{ if (client) client->sendBestiaryRaces(); }
+		void sendBestiaryOverview(const std::string& raceName) const								{ if (client) client->sendBestiaryOverview(raceName); }
+		void sendBestiaryCharms() const																{ if (client) client->sendBestiaryCharms(); }
+		void sendItemInspection(const ItemPtr& item, bool cyclopedia) const						{ if (client) client->sendItemInspection(item, cyclopedia); }
+		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType) const					{ if (client) client->sendItemTypeInspection(itemId, inspectionType); }
+		void sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia) const			{ if (client) client->sendCharacterInspection(target, cyclopedia); }
 		void sendBlessDialog() const																{ if (client) client->sendBlessDialog(); }
 		void sendToChannel(const CreatureConstPtr& creature, SpeakClasses type, const std::string& text, uint16_t channelId) const { if (client) client->sendToChannel(creature, type, text, channelId); }
 

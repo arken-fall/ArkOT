@@ -307,3 +307,36 @@ and the blessings dialog is the second; both were answered with silence.
 blessings dialog: general stats (level, 7 skills), combat, offence, defence,
 misc, deaths, kills, item summary, outfits/mounts (55/100), store summary,
 badges, titles, blessings — zero protocol exceptions. Unit tests 10/10.
+
+## 2026-09-14 — Phase D tranche 2: prey, bestiary, inspection
+
+**Why:** the prey widget, bestiary and inspection windows are the next
+things a 15.25 client opens, and each one hung on a request the server
+ignored. None of the underlying systems exist yet, so the answers are
+honest empties, shaped exactly as the client reads them, until they do.
+**What:**
+
+- `networkopcodes.h`: `ServerCode` entries for the item-detail window
+  (0x76), bestiary (0xD5-0xD9) and prey (0xE7-0xE9); `PreySlotState`,
+  `PreyUnlockState`, `InspectionWindow`, `InspectionType` groups.
+  `ClientCode::PreyRequest` (0xED) replaces the misnamed
+  `RequestResourceBalance` — the client sends it when the prey widget opens.
+- Prey: `sendPreySlots` writes three locked slots (unlock path "none") and
+  the reroll prices; sent after login and on request; prey actions are
+  consumed and answered with the same slots.
+- Bestiary: races, overview and charms writers with zero entries; monster
+  data and tracker requests are consumed.
+- Inspection: `Game::playerInspectObject` (top item of a seen tile),
+  `playerInspectItemType`, `playerInspectCharacter` (self or a player in
+  view); `sendItemInspection`/`sendItemTypeInspection`/
+  `sendCharacterInspection` share `addInspectionItem` and
+  `addInspectionDescriptions` (armor, attack, defense, weight, description
+  rows from the item type). The cyclopedia inspection page reuses
+  `addCharacterInspection`.
+- `addOutfitLook` splits the mount off `AddOutfit` for the windows that read
+  the look alone (base info, inspection).
+
+**Verified:** headless real client — prey slots at login and on request,
+prices, bestiary races, character inspection (1 worn item), item detail
+("wooden floor"), plus every cyclopedia page again; zero protocol
+exceptions. Unit tests 10/10.
