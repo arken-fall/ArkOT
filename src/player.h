@@ -907,7 +907,7 @@ class Player final : public Creature
 		void sendForgeWindow() const																	{ if (client) client->sendForgeWindow(); }
 		void sendForgeHistory(uint16_t page) const														{ if (client) client->sendForgeHistory(page); }
 		void sendForgeError(const std::string& message) const											{ if (client) client->sendForgeError(message); }
-		void sendForgeResult(BlackTek::Forge::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::Bonus bonus, uint8_t coreCount) const { if (client) client->sendForgeResult(action, convergence, success, leftItemId, leftTier, rightItemId, rightTier, bonus, coreCount); }
+		void sendForgeResult(BlackTek::Forge::System::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::System::Bonus bonus, uint8_t coreCount) const { if (client) client->sendForgeResult(action, convergence, success, leftItemId, leftTier, rightItemId, rightTier, bonus, coreCount); }
 		void sendForgeBalances() const																	{ if (client) client->sendForgeBalances(); }
 		void sendItemInspection(const ItemPtr& item, bool cyclopedia) const						{ if (client) client->sendItemInspection(item, cyclopedia); }
 		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType) const					{ if (client) client->sendItemTypeInspection(itemId, inspectionType); }

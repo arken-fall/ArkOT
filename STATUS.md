@@ -3,6 +3,12 @@
 Branch: `modern-protocol`. Last session: 2026-09-14.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
 
+**2026-09-14 — Contribution-guide pass.** The bestiary, prey and forge
+sources were audited against `CONTRIBUTING.md`: enums now nest inside
+their owning class, `continue` loops became filtered views, free helpers
+are PascalCase, struct fields and inline getters are column-aligned. No
+behaviour change; all three harnesses rerun clean on the real client.
+
 **2026-09-14 — Exaltation forge (real-client verified).** `src/forge.h/.cpp`,
 `config/forge.toml`. Rig proof: price list and tuning at login (four
 classes, ten class-4 tiers with 64-bit gold prices, cores per tier,

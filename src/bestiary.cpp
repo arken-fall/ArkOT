@@ -11,6 +11,7 @@
 #include "player.h"
 #include "tools.h"
 
+#include <ranges>
 #include <toml++/toml.hpp>
 
 extern Game g_game;
@@ -19,7 +20,7 @@ namespace BlackTek::Bestiary
 {
 	namespace
 	{
-		constexpr std::array<std::string_view, static_cast<size_t>(Race::Last) + 1> RaceNames {
+		constexpr std::array<std::string_view, static_cast<size_t>(Registry::Race::Last) + 1> RaceNames {
 			"",
 			"Amphibic",
 			"Aquatic",
@@ -45,7 +46,7 @@ namespace BlackTek::Bestiary
 		};
 
 		template<typename T, size_t N>
-		std::array<T, N> readTierValues(const toml::node_view<const toml::node>& node, T fallback)
+		std::array<T, N> ReadTierValues(const toml::node_view<const toml::node>& node, T fallback)
 		{
 			std::array<T, N> values;
 			values.fill(fallback);
@@ -69,19 +70,19 @@ namespace BlackTek::Bestiary
 		}
 	}
 
-	Race ParseRace(std::string_view name) noexcept
+	Registry::Race ParseRace(std::string_view name) noexcept
 	{
-		for (size_t index = static_cast<size_t>(Race::First); index <= static_cast<size_t>(Race::Last); ++index)
+		for (size_t index = static_cast<size_t>(Registry::Race::First); index <= static_cast<size_t>(Registry::Race::Last); ++index)
 		{
 			if (caseInsensitiveEqual(RaceNames[index], name))
 			{
-				return static_cast<Race>(index);
+				return static_cast<Registry::Race>(index);
 			}
 		}
-		return Race::None;
+		return Registry::Race::None;
 	}
 
-	std::string_view RaceName(Race race) noexcept
+	std::string_view RaceName(Registry::Race race) noexcept
 	{
 		const auto index = static_cast<size_t>(race);
 		return index < RaceNames.size() ? RaceNames[index] : std::string_view{};
@@ -110,13 +111,10 @@ namespace BlackTek::Bestiary
 		try
 		{
 			auto config = toml::parse_file("config/charms.toml");
-			for (const auto& [key, value] : config)
+			auto runes = config | std::views::filter([](const auto& entry) { return entry.second.is_table(); });
+			for (const auto& [key, value] : runes)
 			{
 				const auto* table = value.as_table();
-				if (not table)
-				{
-					continue;
-				}
 
 				Charm charm;
 				charm.id = (*table)["id"].value_or(0);
@@ -136,19 +134,14 @@ namespace BlackTek::Bestiary
 
 				charm.damage_type = Augments::ParseDamage((*table)["damage"].value_or("none"));
 				charm.percent = (*table)["percent"].value_or(0.0);
-				charm.chance = readTierValues<double, Charm::Tiers>((*table)["chance"], 0.0);
-				charm.points = readTierValues<uint16_t, Charm::Tiers>((*table)["points"], 0);
+				charm.chance = ReadTierValues<double, Charm::Tiers>((*table)["chance"], 0.0);
+				charm.points = ReadTierValues<uint16_t, Charm::Tiers>((*table)["points"], 0);
 
 				if (const auto* modifiers = (*table)["modifiers"].as_array())
 				{
-					for (const auto& entry : *modifiers)
+					for (const auto& entry : *modifiers | std::views::filter(&toml::node::is_table))
 					{
 						const auto* modifierTable = entry.as_table();
-						if (not modifierTable)
-						{
-							continue;
-						}
-
 						const std::string_view modType = (*modifierTable)["mod"].value_or("none");
 						CharmModifier recipe;
 						recipe.stance = Augments::ParseStance(modType);
@@ -157,17 +150,19 @@ namespace BlackTek::Bestiary
 						recipe.factor = Augments::ParseFactor((*modifierTable)["factor"].value_or("percent"));
 						recipe.damage_type = Augments::ParseDamage((*modifierTable)["damage"].value_or("none"));
 						recipe.origin = Augments::ParseOrigin((*modifierTable)["origin"].value_or("none"));
-						recipe.chance = readTierValues<uint8_t, Charm::Tiers>((*modifierTable)["chance"], 100);
+						recipe.chance = ReadTierValues<uint8_t, Charm::Tiers>((*modifierTable)["chance"], 100);
 						charm.modifiers.push_back(std::move(recipe));
 					}
 				}
 
-				if (charm.id >= MaxCharms)
+				if (charm.id < MaxCharms)
+				{
+					charms.push_back(std::move(charm));
+				}
+				else
 				{
 					Console::Warn("Bestiary::Registry::loadCharms: charm '{:s}' has id {:d}, the limit is {:d}", charm.name, charm.id, MaxCharms - 1);
-					continue;
 				}
-				charms.push_back(std::move(charm));
 			}
 		}
 		catch (const toml::parse_error& err)
@@ -239,7 +234,7 @@ namespace BlackTek::Bestiary
 		return nullptr;
 	}
 
-	Stage Registry::getStage(const MonsterType& monsterType, uint32_t kills) noexcept
+	Registry::Stage Registry::getStage(const MonsterType& monsterType, uint32_t kills) noexcept
 	{
 		const auto& entry = monsterType.info.bestiary;
 		if (kills == 0)
@@ -425,16 +420,19 @@ namespace BlackTek::Bestiary
 
 		for (const auto& charm : charms)
 		{
-			const auto& slot = player->getCharmSlot(charm.id);
 			player->removeAugment(charm.augmentName());
+		}
 
-			const MonsterType* target = slot.race_id != 0 ? getMonster(slot.race_id) : nullptr;
-			if (slot.tier == 0 or not target or charm.modifiers.empty())
-			{
-				continue;
-			}
-
-			player->addAugment(charm.makeAugment(slot.tier, *target));
+		// only assigned runes with a known creature and something to grant become augments
+		auto assigned = charms | std::views::filter([&](const Charm& charm)
+		{
+			const auto& slot = player->getCharmSlot(charm.id);
+			return slot.tier != 0 and not charm.modifiers.empty() and getMonster(slot.race_id) != nullptr;
+		});
+		for (const auto& charm : assigned)
+		{
+			const auto& slot = player->getCharmSlot(charm.id);
+			player->addAugment(charm.makeAugment(slot.tier, *getMonster(slot.race_id)));
 		}
 	}
 

@@ -306,7 +306,7 @@ class ProtocolGame : public Protocol
 		void sendForgeWindow();
 		void sendForgeHistory(uint16_t page);
 		void sendForgeError(const std::string& message);
-		void sendForgeResult(BlackTek::Forge::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::Bonus bonus, uint8_t coreCount);
+		void sendForgeResult(BlackTek::Forge::System::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::System::Bonus bonus, uint8_t coreCount);
 		void sendForgeBalances();
 		void addPreyMonster(NetworkMessage& msg, uint16_t raceId) const;
 		void sendBestiaryRaces();

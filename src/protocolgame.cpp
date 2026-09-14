@@ -26,6 +26,7 @@
 #include "ban.h"
 #include "scheduler.h"
 
+#include <ranges>
 #include <fmt/format.h>
 #include <gtl/btree.hpp>
 
@@ -42,7 +43,7 @@ namespace
 	// types have to collapse onto them or the client throws (and mehah
 	// crashes on the null creature that leaves behind). Bosses render as
 	// monsters, guild/party summons as hostile summons.
-	CreatureType_t modernCreatureType(CreatureType_t type)
+	CreatureType_t ModernCreatureType(CreatureType_t type)
 	{
 		switch (type)
 		{
@@ -1408,7 +1409,7 @@ void ProtocolGame::parseCyclopediaCharacterInfo(NetworkMessage& msg)
 
 void ProtocolGame::parsePreyAction(NetworkMessage& msg)
 {
-	using BlackTek::Prey::Action;
+	using Action = BlackTek::Prey::System::Action;
 	const uint8_t slotId = msg.getByte();
 	const uint8_t action = msg.getByte();
 	uint8_t index = 0;
@@ -1452,7 +1453,7 @@ void ProtocolGame::parseBestiaryOverview(NetworkMessage& msg)
 	{
 		raceName = msg.getString();
 		const auto race = BlackTek::Bestiary::ParseRace(raceName);
-		monsters = race != BlackTek::Bestiary::Race::None ? bestiary.getRaceMembers(race) : bestiary.findByName(raceName);
+		monsters = race != BlackTek::Bestiary::Registry::Race::None ? bestiary.getRaceMembers(race) : bestiary.findByName(raceName);
 	}
 	addGameTask([player_id = player->getID(), raceName, monsters]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryOverview(raceName, monsters); });
 }
@@ -1932,7 +1933,7 @@ void ProtocolGame::sendCreatureType(uint32_t creatureId, uint8_t creatureType)
 	msg.add<uint32_t>(creatureId);
 	if (usesModernLayout())
 	{
-		msg.addByte(modernCreatureType(static_cast<CreatureType_t>(creatureType)));
+		msg.addByte(ModernCreatureType(static_cast<CreatureType_t>(creatureType)));
 	}
 	else
 	{
@@ -2951,7 +2952,7 @@ void ProtocolGame::addPreyMonster(NetworkMessage& msg, uint16_t raceId) const
 
 void ProtocolGame::sendPreySlot(uint8_t slotId)
 {
-	using BlackTek::Prey::SlotState;
+	using SlotState = BlackTek::Prey::Slot::State;
 	const auto& slot = player->getPreySlot(slotId);
 	const auto& config = BlackTek::Prey::System::getInstance().getConfig();
 	const int64_t now = OTSYS_TIME();
@@ -3003,9 +3004,9 @@ void ProtocolGame::sendPreySlot(uint8_t slotId)
 			// every creature the bestiary knows, for a wildcard pick
 			const auto& bestiary = BlackTek::Bestiary::Registry::getInstance();
 			std::vector<uint16_t> raceIds;
-			for (auto race = static_cast<uint8_t>(BlackTek::Bestiary::Race::First); race <= static_cast<uint8_t>(BlackTek::Bestiary::Race::Last); ++race)
+			for (auto race = static_cast<uint8_t>(BlackTek::Bestiary::Registry::Race::First); race <= static_cast<uint8_t>(BlackTek::Bestiary::Registry::Race::Last); ++race)
 			{
-				for (const MonsterType* monsterType : bestiary.getRaceMembers(static_cast<BlackTek::Bestiary::Race>(race)))
+				for (const MonsterType* monsterType : bestiary.getRaceMembers(static_cast<BlackTek::Bestiary::Registry::Race>(race)))
 				{
 					raceIds.push_back(monsterType->info.bestiary.race_id);
 				}
@@ -3053,7 +3054,7 @@ void ProtocolGame::sendPreyPrices()
 
 void ProtocolGame::parseForgeAction(NetworkMessage& msg)
 {
-	using BlackTek::Forge::Action;
+	using Action = BlackTek::Forge::System::Action;
 	const uint8_t action = msg.getByte();
 	bool convergence = false;
 	uint16_t firstItemId = 0;
@@ -3146,7 +3147,7 @@ namespace
 	// items grouped for the forge window: id -> tier -> count
 	using ForgeItemMap = std::map<uint16_t, std::map<uint8_t, uint16_t>>;
 
-	uint16_t forgeSlotOf(uint16_t itemId)
+	uint16_t ForgeSlotOf(uint16_t itemId)
 	{
 		uint16_t slot = Item::items[itemId].slotPosition;
 		if ((slot & SLOTP_TWO_HAND) != 0)
@@ -3156,7 +3157,7 @@ namespace
 		return slot;
 	}
 
-	void addForgeItemGroup(NetworkMessage& msg, const ForgeItemMap& items)
+	void AddForgeItemGroup(NetworkMessage& msg, const ForgeItemMap& items)
 	{
 		uint16_t count = 0;
 		for (const auto& [itemId, tiers] : items)
@@ -3220,20 +3221,17 @@ void ProtocolGame::sendForgeWindow()
 		{
 			if (tier < maxTier)
 			{
-				convergenceFusion[forgeSlotOf(item->getID())][item->getID()][tier] += 1;
+				convergenceFusion[ForgeSlotOf(item->getID())][item->getID()][tier] += 1;
 			}
 			convergenceTransfer[classification][item->getID()][tier] += 1;
 		}
 	};
 
-	for (int32_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; ++slot)
+	auto carried = std::views::iota(static_cast<int32_t>(CONST_SLOT_FIRST), static_cast<int32_t>(CONST_SLOT_LAST) + 1)
+		| std::views::transform([&](int32_t slot) { return player->getInventoryItem(static_cast<slots_t>(slot)); })
+		| std::views::filter([](const ItemPtr& item) { return item != nullptr; });
+	for (const auto& item : carried)
 	{
-		const auto& item = player->getInventoryItem(static_cast<slots_t>(slot));
-		if (not item)
-		{
-			continue;
-		}
-
 		sort(item);
 		if (const auto& container = item->getContainer())
 		{
@@ -3303,7 +3301,7 @@ void ProtocolGame::sendForgeWindow()
 	{
 		const auto* donorApp = appearances.getObject(Item::items.getModernClientId(donorId));
 		const uint32_t donorClass = donorApp ? donorApp->classification : 0;
-		const uint16_t donorSlot = forgeSlotOf(donorId);
+		const uint16_t donorSlot = ForgeSlotOf(donorId);
 
 		msg.add<uint16_t>(static_cast<uint16_t>(tiers.size()));
 		for (const auto& [tier, amount] : tiers)
@@ -3317,7 +3315,7 @@ void ProtocolGame::sendForgeWindow()
 		for (const auto& [receiverId, receiverTiers] : receivers)
 		{
 			const auto* receiverApp = appearances.getObject(Item::items.getModernClientId(receiverId));
-			if (receiverApp and receiverApp->classification == donorClass and forgeSlotOf(receiverId) == donorSlot)
+			if (receiverApp and receiverApp->classification == donorClass and ForgeSlotOf(receiverId) == donorSlot)
 			{
 				matches.emplace_back(receiverId, receiverTiers.at(0));
 			}
@@ -3345,7 +3343,7 @@ void ProtocolGame::sendForgeWindow()
 			}
 		}
 
-		addForgeItemGroup(msg, groupDonors);
+		AddForgeItemGroup(msg, groupDonors);
 		msg.add<uint16_t>(static_cast<uint16_t>(groupReceivers.size()));
 		for (const auto& [itemId, tiers] : groupReceivers)
 		{
@@ -3390,10 +3388,10 @@ void ProtocolGame::sendForgeError(const std::string& message)
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendForgeResult(BlackTek::Forge::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::Bonus bonus, uint8_t coreCount)
+void ProtocolGame::sendForgeResult(BlackTek::Forge::System::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::System::Bonus bonus, uint8_t coreCount)
 {
-	using BlackTek::Forge::Action;
-	using BlackTek::Forge::Bonus;
+	using Action = BlackTek::Forge::System::Action;
+	using Bonus = BlackTek::Forge::System::Bonus;
 
 	NetworkMessage msg;
 	msg.add(ServerCode::ForgeResult);
@@ -3436,7 +3434,7 @@ void ProtocolGame::sendForgeBalances()
 
 void ProtocolGame::sendBestiaryRaces()
 {
-	using BlackTek::Bestiary::Race;
+	using Race = BlackTek::Bestiary::Registry::Race;
 	const auto& bestiary = BlackTek::Bestiary::Registry::getInstance();
 
 	NetworkMessage msg;
@@ -3466,7 +3464,7 @@ void ProtocolGame::sendBestiaryRaces()
 void ProtocolGame::sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters)
 {
 	using BlackTek::Bestiary::Registry;
-	using BlackTek::Bestiary::Stage;
+	using Stage = BlackTek::Bestiary::Registry::Stage;
 
 	NetworkMessage msg;
 	msg.add(ServerCode::BestiaryOverview);
@@ -3491,7 +3489,7 @@ void ProtocolGame::sendBestiaryOverview(const std::string& raceName, const std::
 void ProtocolGame::sendBestiaryMonsterData(uint16_t raceId)
 {
 	using BlackTek::Bestiary::Registry;
-	using BlackTek::Bestiary::Stage;
+	using Stage = BlackTek::Bestiary::Registry::Stage;
 
 	const MonsterType* monsterType = Registry::getInstance().getMonster(raceId);
 	if (not monsterType)
@@ -3605,7 +3603,7 @@ void ProtocolGame::sendBestiaryMonsterData(uint16_t raceId)
 void ProtocolGame::sendBestiaryCharms()
 {
 	using BlackTek::Bestiary::Registry;
-	using BlackTek::Bestiary::Stage;
+	using Stage = BlackTek::Bestiary::Registry::Stage;
 	const auto& bestiary = Registry::getInstance();
 	const auto& self = player;
 
@@ -3620,15 +3618,8 @@ void ProtocolGame::sendBestiaryCharms()
 	{
 		const auto& slot = self->getCharmSlot(charm.id);
 		msg.addByte(charm.id);
-		if (slot.tier == 0)
-		{
-			msg.add(CommonCode::Zero); // tier: locked
-			msg.add(CommonCode::False); // not assigned
-			continue;
-		}
-
-		msg.addByte(slot.tier);
-		if (slot.race_id != 0)
+		msg.addByte(slot.tier); // 0: locked
+		if (slot.tier != 0 and slot.race_id != 0)
 		{
 			++assigned;
 			msg.add(CommonCode::True);
@@ -3676,7 +3667,7 @@ void ProtocolGame::sendCharmBalance()
 void ProtocolGame::sendBestiaryTracker()
 {
 	using BlackTek::Bestiary::Registry;
-	using BlackTek::Bestiary::Stage;
+	using Stage = BlackTek::Bestiary::Registry::Stage;
 	const auto& bestiary = Registry::getInstance();
 
 	NetworkMessage msg;
@@ -3684,14 +3675,10 @@ void ProtocolGame::sendBestiaryTracker()
 	msg.add(CommonCode::Zero); // creatures, not bosses (13.20+)
 	const auto& tracked = player->getBestiaryTracker();
 	msg.addByte(std::min<size_t>(tracked.size(), std::numeric_limits<uint8_t>::max()));
-	for (uint16_t raceId : tracked)
+	auto known = tracked | std::views::filter([&](uint16_t raceId) { return bestiary.getMonster(raceId) != nullptr; });
+	for (const uint16_t raceId : known)
 	{
 		const MonsterType* monsterType = bestiary.getMonster(raceId);
-		if (not monsterType)
-		{
-			continue;
-		}
-
 		const auto& entry = monsterType->info.bestiary;
 		const uint32_t kills = player->getBestiaryKills(raceId);
 		msg.add<uint16_t>(raceId);
@@ -5806,7 +5793,7 @@ namespace
 	// mapped id for a modern client, with a visible placeholder when the
 	// server id has no surviving appearance - a wrong-looking item beats a
 	// client-side parse exception on id 0
-	uint16_t modernItemId(uint16_t serverId)
+	uint16_t ModernItemId(uint16_t serverId)
 	{
 		constexpr uint16_t FALLBACK_GOLD_COIN = 3031;
 		const uint32_t mapped = Item::items.getModernClientId(serverId);
@@ -5821,7 +5808,7 @@ namespace
 	// about the appearance (mehah getItem with the 15.25 feature set). The
 	// count/subtype byte is the caller's; everything else is neutral filler
 	// until the underlying systems (tiers, charges, podiums) get ported.
-	void addModernItemExtras(NetworkMessage& msg, const BlackTek::Assets::AppearanceInfo* app,
+	void AddModernItemExtras(NetworkMessage& msg, const BlackTek::Assets::AppearanceInfo* app,
 	                         uint8_t countOrSubType, uint32_t durationSeconds, uint16_t charges, uint8_t tier)
 	{
 		if (not app)
@@ -5880,9 +5867,9 @@ void ProtocolGame::addItem(NetworkMessage& msg, uint16_t id, uint8_t count) cons
 		return;
 	}
 
-	const uint16_t clientId = modernItemId(id);
+	const uint16_t clientId = ModernItemId(id);
 	msg.add<uint16_t>(clientId);
-	addModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId), count, 0, 0, 0);
+	AddModernItemExtras(msg, BlackTek::Assets::Appearances::getInstance().getObject(clientId), count, 0, 0, 0);
 }
 
 void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
@@ -5893,7 +5880,7 @@ void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
 		return;
 	}
 
-	const uint16_t clientId = modernItemId(item->getID());
+	const uint16_t clientId = ModernItemId(item->getID());
 	msg.add<uint16_t>(clientId);
 
 	// the count/fluid decision keys off what the CLIENT believes about the
@@ -5910,7 +5897,7 @@ void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
 		countOrSubType = static_cast<uint8_t>(std::min<uint16_t>(0xFF, std::max<uint16_t>(1, item->getItemCount())));
 	}
 
-	addModernItemExtras(msg, app, countOrSubType, item->getDuration() / 1000, item->getCharges(), item->getForgeTier());
+	AddModernItemExtras(msg, app, countOrSubType, item->getDuration() / 1000, item->getCharges(), item->getForgeTier());
 }
 
 void ProtocolGame::addItemId(NetworkMessage& msg, uint16_t itemId) const
@@ -5920,7 +5907,7 @@ void ProtocolGame::addItemId(NetworkMessage& msg, uint16_t itemId) const
 		msg.addItemId(itemId);
 		return;
 	}
-	msg.add<uint16_t>(modernItemId(itemId));
+	msg.add<uint16_t>(ModernItemId(itemId));
 }
 
 // item ids the client sends back to us; modern clients speak in appearance
@@ -5946,7 +5933,7 @@ void ProtocolGame::addMarketItemId(NetworkMessage& msg, uint16_t itemId) const
 		return;
 	}
 
-	const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(modernItemId(itemId));
+	const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(ModernItemId(itemId));
 	if (app and app->classification > 0)
 	{
 		msg.add(CommonCode::Zero); // tier
@@ -5979,7 +5966,7 @@ void ProtocolGame::AddCreature(NetworkMessage& msg, const CreatureConstPtr& crea
 		// summon-own master ids, a per-creature icon list, a vocation byte
 		// for players, an inspection byte, no speech bubble and no helpers,
 		// unscaled speed, and mount color bytes inside the outfit.
-		CreatureType_t modernType = modernCreatureType(creature->getType());
+		CreatureType_t modernType = ModernCreatureType(creature->getType());
 		if (modernType == CREATURETYPE_MONSTER)
 		{
 			if (const auto& master = creature->getMaster())

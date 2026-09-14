@@ -4783,12 +4783,12 @@ void Game::playerPreyAction(const uint32_t playerId, const uint8_t slotId, const
 		return;
 	}
 
-	BlackTek::Prey::System::getInstance().action(player, slotId, static_cast<BlackTek::Prey::Action>(action), index, raceId, static_cast<BlackTek::Prey::Option>(option));
+	BlackTek::Prey::System::getInstance().action(player, slotId, static_cast<BlackTek::Prey::System::Action>(action), index, raceId, static_cast<BlackTek::Prey::Slot::Option>(option));
 }
 
 void Game::playerForgeAction(const uint32_t playerId, const uint8_t action, const bool convergence, const uint16_t firstItemId, const uint8_t firstTier, const uint16_t secondItemId, const bool improveChance, const bool reduceTierLoss)
 {
-	using BlackTek::Forge::Action;
+	using Action = BlackTek::Forge::System::Action;
 	const auto& player = getPlayerByID(playerId);
 	if (not player)
 	{

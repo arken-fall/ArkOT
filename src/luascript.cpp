@@ -12849,7 +12849,7 @@ int LuaScriptInterface::luaPlayerGetPreyExperiencePercentage(lua_State* L)
 	}
 
 	const auto* slot = player->getPreyWithMonster(getNumber<uint16_t>(L, 2));
-	lua_pushinteger(L, slot and slot->bonus == BlackTek::Prey::Bonus::Experience ? 100 + slot->percentage : 100);
+	lua_pushinteger(L, slot and slot->bonus == BlackTek::Prey::Slot::Bonus::Experience ? 100 + slot->percentage : 100);
 	return 1;
 }
 
@@ -12863,7 +12863,7 @@ int LuaScriptInterface::luaPlayerGetPreyLootPercentage(lua_State* L)
 	}
 
 	const auto* slot = player->getPreyWithMonster(getNumber<uint16_t>(L, 2));
-	lua_pushinteger(L, slot and slot->bonus == BlackTek::Prey::Bonus::Loot ? slot->percentage : 0);
+	lua_pushinteger(L, slot and slot->bonus == BlackTek::Prey::Slot::Bonus::Loot ? slot->percentage : 0);
 	return 1;
 }
 
@@ -20808,7 +20808,7 @@ int LuaScriptInterface::luaMonsterTypeBestiary(lua_State* L)
 	lua_pop(L, 9);
 
 	if (entry.class_name.empty()) {
-		entry.class_name = std::string(BlackTek::Bestiary::RaceName(static_cast<BlackTek::Bestiary::Race>(entry.race)));
+		entry.class_name = std::string(BlackTek::Bestiary::RaceName(static_cast<BlackTek::Bestiary::Registry::Race>(entry.race)));
 	}
 
 	BlackTek::Bestiary::Registry::getInstance().registerMonster(*monsterType);

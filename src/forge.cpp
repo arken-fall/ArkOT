@@ -14,6 +14,7 @@
 #include "player.h"
 #include "tools.h"
 
+#include <ranges>
 #include <toml++/toml.hpp>
 
 extern Game g_game;
@@ -26,7 +27,7 @@ namespace BlackTek::Forge
 		constexpr uint32_t SliverAppearance = 37109;
 		constexpr uint32_t CoreAppearance = 37110;
 
-		uint8_t classificationOf(uint16_t itemId)
+		uint8_t ClassificationOf(uint16_t itemId) noexcept
 		{
 			const auto* app = BlackTek::Assets::Appearances::getInstance().getObject(Item::items.getModernClientId(itemId));
 			return app ? static_cast<uint8_t>(std::min<uint32_t>(app->classification, ClassificationCount)) : 0;
@@ -34,16 +35,13 @@ namespace BlackTek::Forge
 
 		// every item the character carries, containers included
 		template<typename Visitor>
-		void forEachCarriedItem(const PlayerPtr& player, Visitor&& visit)
+		void ForEachCarriedItem(const PlayerPtr& player, Visitor&& visit)
 		{
-			for (int32_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; ++slot)
+			auto carried = std::views::iota(static_cast<int32_t>(CONST_SLOT_FIRST), static_cast<int32_t>(CONST_SLOT_LAST) + 1)
+				| std::views::transform([&](int32_t slot) { return player->getInventoryItem(static_cast<slots_t>(slot)); })
+				| std::views::filter([](const ItemPtr& item) { return item != nullptr; });
+			for (const auto& item : carried)
 			{
-				const auto& item = player->getInventoryItem(static_cast<slots_t>(slot));
-				if (not item)
-				{
-					continue;
-				}
-
 				visit(item);
 				if (const auto& container = item->getContainer())
 				{
@@ -55,29 +53,29 @@ namespace BlackTek::Forge
 			}
 		}
 
-		Bonus rollBonus()
+		System::Bonus RollBonus() noexcept
 		{
 			const int32_t roll = uniform_random(0, 10000);
 			if (roll <= 8000)
 			{
-				return Bonus::None;
+				return System::Bonus::None;
 			}
 
 			if (roll <= 8500)
 			{
-				return Bonus::DustKept;
+				return System::Bonus::DustKept;
 			}
 
 			if (roll <= 9000)
 			{
-				return Bonus::CoresKept;
+				return System::Bonus::CoresKept;
 			}
 
 			if (roll <= 9500)
 			{
-				return Bonus::GoldKept;
+				return System::Bonus::GoldKept;
 			}
-			return Bonus::SecondItemKept;
+			return System::Bonus::SecondItemKept;
 		}
 	}
 
@@ -107,37 +105,24 @@ namespace BlackTek::Forge
 			// [[classifications]] id = N, tiers = [{ tier, cores, regular, convergence_fusion, convergence_transfer }]
 			if (const auto* classes = table["classifications"].as_array())
 			{
-				for (const auto& entry : *classes)
+				for (const auto& entry : *classes | std::views::filter(&toml::node::is_table))
 				{
-					const auto* classTable = entry.as_table();
-					if (not classTable)
+					const auto& classTable = *entry.as_table();
+					const auto classification = static_cast<uint8_t>(classTable["id"].value_or(int64_t{ 0 }));
+					const bool known = classification != 0 and classification <= ClassificationCount;
+					const auto* tiers = known ? classTable["tiers"].as_array() : nullptr;
+					if (tiers)
 					{
-						continue;
-					}
-
-					const auto classification = static_cast<uint8_t>((*classTable)["id"].value_or(int64_t{ 0 }));
-					if (classification == 0 or classification > ClassificationCount)
-					{
-						continue;
-					}
-
-					if (const auto* tiers = (*classTable)["tiers"].as_array())
-					{
-						for (const auto& tierEntry : *tiers)
+						for (const auto& tierEntry : *tiers | std::views::filter(&toml::node::is_table))
 						{
-							const auto* tierTable = tierEntry.as_table();
-							if (not tierTable)
-							{
-								continue;
-							}
-
 							// the top tiers cost more than an int holds, so read them as int64
+							const auto& tierTable = *tierEntry.as_table();
 							TierPrice price;
-							price.cores = static_cast<uint8_t>((*tierTable)["cores"].value_or(int64_t{ 1 }));
-							price.regular = static_cast<uint64_t>((*tierTable)["regular"].value_or(int64_t{ 0 }));
-							price.convergence_fusion = static_cast<uint64_t>((*tierTable)["convergence_fusion"].value_or(int64_t{ 0 }));
-							price.convergence_transfer = static_cast<uint64_t>((*tierTable)["convergence_transfer"].value_or(int64_t{ 0 }));
-							config.prices[classification][static_cast<uint8_t>((*tierTable)["tier"].value_or(int64_t{ 0 }))] = price;
+							price.cores = static_cast<uint8_t>(tierTable["cores"].value_or(int64_t{ 1 }));
+							price.regular = static_cast<uint64_t>(tierTable["regular"].value_or(int64_t{ 0 }));
+							price.convergence_fusion = static_cast<uint64_t>(tierTable["convergence_fusion"].value_or(int64_t{ 0 }));
+							price.convergence_transfer = static_cast<uint64_t>(tierTable["convergence_transfer"].value_or(int64_t{ 0 }));
+							config.prices[classification][static_cast<uint8_t>(tierTable["tier"].value_or(int64_t{ 0 }))] = price;
 						}
 					}
 				}
@@ -158,7 +143,7 @@ namespace BlackTek::Forge
 		return true;
 	}
 
-	const TierPrice* System::getPrice(uint8_t classification, uint8_t tier) const
+	const TierPrice* System::getPrice(uint8_t classification, uint8_t tier) const noexcept
 	{
 		if (classification == 0 or classification > ClassificationCount)
 		{
@@ -173,7 +158,7 @@ namespace BlackTek::Forge
 	ItemPtr System::findItem(const PlayerPtr& player, uint16_t itemId, uint8_t tier, const ItemPtr& exclude) const
 	{
 		ItemPtr found;
-		forEachCarriedItem(player, [&](const ItemPtr& item)
+		ForEachCarriedItem(player, [&](const ItemPtr& item)
 		{
 			if (not found and item != exclude and item->getID() == itemId and item->getForgeTier() == tier)
 			{
@@ -183,7 +168,7 @@ namespace BlackTek::Forge
 		return found;
 	}
 
-	uint32_t System::countCores(const PlayerPtr& player) const
+	uint32_t System::countCores(const PlayerPtr& player) const noexcept
 	{
 		return core_id != 0 ? player->getItemTypeCount(core_id) : 0;
 	}
@@ -200,7 +185,7 @@ namespace BlackTek::Forge
 			player->getGUID(), std::to_underlying(entry.action), db.escapeString(entry.description), entry.success ? 1 : 0, std::to_underlying(entry.bonus), entry.created_at));
 	}
 
-	std::vector<HistoryEntry> System::getHistory(const PlayerPtr& player, uint16_t page, uint16_t perPage, uint16_t& pages) const
+	std::vector<System::HistoryEntry> System::getHistory(const PlayerPtr& player, uint16_t page, uint16_t perPage, uint16_t& pages) const
 	{
 		std::vector<HistoryEntry> entries;
 		pages = 0;
@@ -242,7 +227,7 @@ namespace BlackTek::Forge
 			return;
 		}
 
-		const uint8_t classification = classificationOf(itemId);
+		const uint8_t classification = ClassificationOf(itemId);
 		if (classification == 0 or tier >= config.max_tier or (not convergence and itemId != secondItemId))
 		{
 			player->sendForgeError("These items can not be fused.");
@@ -283,7 +268,7 @@ namespace BlackTek::Forge
 		// chance, improved when a core is spent
 		uint8_t successChance = config.fusion_base_success + (improveChance ? config.fusion_improved_success : 0);
 		const bool success = convergence or uniform_random(1, 100) <= successChance;
-		const Bonus bonus = success and not convergence ? rollBonus() : Bonus::None;
+		const Bonus bonus = success and not convergence ? RollBonus() : Bonus::None;
 
 		if (bonus != Bonus::DustKept)
 		{
@@ -348,8 +333,8 @@ namespace BlackTek::Forge
 			return;
 		}
 
-		const uint8_t classification = classificationOf(donorItemId);
-		if (classification == 0 or tier == 0 or classification != classificationOf(receiverItemId))
+		const uint8_t classification = ClassificationOf(donorItemId);
+		if (classification == 0 or tier == 0 or classification != ClassificationOf(receiverItemId))
 		{
 			player->sendForgeError("A tier can only move between items of the same class.");
 			return;

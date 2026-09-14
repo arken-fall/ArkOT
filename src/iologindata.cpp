@@ -967,10 +967,10 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 
 			auto& slot = player->getPreySlot(slotId);
 			slot.id = slotId;
-			slot.state = static_cast<BlackTek::Prey::SlotState>(result->getNumber<uint8_t>("state"));
+			slot.state = static_cast<BlackTek::Prey::Slot::State>(result->getNumber<uint8_t>("state"));
 			slot.selected_race = result->getNumber<uint16_t>("race_id");
-			slot.option = static_cast<BlackTek::Prey::Option>(result->getNumber<uint8_t>("option"));
-			slot.bonus = static_cast<BlackTek::Prey::Bonus>(result->getNumber<uint8_t>("bonus_type"));
+			slot.option = static_cast<BlackTek::Prey::Slot::Option>(result->getNumber<uint8_t>("option"));
+			slot.bonus = static_cast<BlackTek::Prey::Slot::Bonus>(result->getNumber<uint8_t>("bonus_type"));
 			slot.rarity = result->getNumber<uint8_t>("bonus_rarity");
 			slot.percentage = result->getNumber<uint16_t>("bonus_percentage");
 			slot.time_left = result->getNumber<uint16_t>("bonus_time");

@@ -19,61 +19,16 @@ using PlayerPtr = std::shared_ptr<Player>;
 
 namespace BlackTek::Bestiary
 {
-	// The bestiary groups every creature under one of these races; the
-	// values are what the client reads, so they never change order.
-	enum class Race : uint8_t
-	{
-		None = 0,
-		Amphibic = 1,
-		Aquatic = 2,
-		Bird = 3,
-		Construct = 4,
-		Demon = 5,
-		Dragon = 6,
-		Elemental = 7,
-		Fey = 8,
-		Giant = 9,
-		Human = 10,
-		Humanoid = 11,
-		Lycanthrope = 12,
-		Magical = 13,
-		Mammal = 14,
-		Plant = 15,
-		Reptile = 16,
-		Slime = 17,
-		Undead = 18,
-		Vermin = 19,
-		ExtraDimensional = 20,
-		Inkborn = 21,
-
-		First = Amphibic,
-		Last = Inkborn,
-	};
-
-	[[nodiscard]] Race ParseRace(std::string_view name) noexcept;
-	[[nodiscard]] std::string_view RaceName(Race race) noexcept;
-
-	// How far a character has come with one creature; the client shows
-	// more of the entry at every stage
-	enum class Stage : uint8_t
-	{
-		Unknown = 0,
-		Seen = 1,
-		Familiar = 2,
-		Known = 3,
-		Complete = 4,
-	};
-
 	// One modifier a charm grants against its assigned creature, in the
 	// vocabulary of the augment system; the chance is per charm tier
 	struct CharmModifier
 	{
-		uint8_t stance = 0;
-		uint8_t mod_type = 0;
-		uint16_t value = 0;
-		uint8_t factor = 0;
-		uint16_t damage_type = COMBAT_NONE;
-		uint8_t origin = 0;
+		uint8_t		stance = 0;
+		uint8_t		mod_type = 0;
+		uint16_t	value = 0;
+		uint8_t		factor = 0;
+		uint16_t	damage_type = COMBAT_NONE;
+		uint8_t		origin = 0;
 		std::array<uint8_t, 3> chance {};
 	};
 
@@ -96,13 +51,13 @@ namespace BlackTek::Bestiary
 
 			static constexpr uint8_t Tiers = 3;
 
-			uint8_t id = 0;
-			std::string name;
-			std::string description;
-			Category category = Category::Major;
-			Effect effect = Effect::Offensive;
-			uint16_t damage_type = COMBAT_NONE;
-			double percent = 0.0;
+			uint8_t		id = 0;
+			std::string	name;
+			std::string	description;
+			Category	category = Category::Major;
+			Effect		effect = Effect::Offensive;
+			uint16_t	damage_type = COMBAT_NONE;
+			double		percent = 0.0;
 			std::array<double, Tiers> chance {};
 			std::array<uint16_t, Tiers> points {};
 			std::vector<CharmModifier> modifiers;
@@ -117,6 +72,48 @@ namespace BlackTek::Bestiary
 	class Registry
 	{
 		public:
+			// The bestiary groups every creature under one of these races; the
+			// values are what the client reads, so they never change order.
+			enum class Race : uint8_t
+			{
+				None = 0,
+				Amphibic = 1,
+				Aquatic = 2,
+				Bird = 3,
+				Construct = 4,
+				Demon = 5,
+				Dragon = 6,
+				Elemental = 7,
+				Fey = 8,
+				Giant = 9,
+				Human = 10,
+				Humanoid = 11,
+				Lycanthrope = 12,
+				Magical = 13,
+				Mammal = 14,
+				Plant = 15,
+				Reptile = 16,
+				Slime = 17,
+				Undead = 18,
+				Vermin = 19,
+				ExtraDimensional = 20,
+				Inkborn = 21,
+
+				First = Amphibic,
+				Last = Inkborn,
+			};
+
+			// How far a character has come with one creature; the client shows
+			// more of the entry at every stage
+			enum class Stage : uint8_t
+			{
+				Unknown = 0,
+				Seen = 1,
+				Familiar = 2,
+				Known = 3,
+				Complete = 4,
+			};
+
 			static constexpr uint8_t MaxCharms = 32;
 
 			// non-copyable
@@ -160,4 +157,7 @@ namespace BlackTek::Bestiary
 			std::array<std::vector<const MonsterType*>, static_cast<size_t>(Race::Last) + 1> monsters_by_race;
 			std::vector<Charm> charms;
 	};
+
+	[[nodiscard]] Registry::Race ParseRace(std::string_view name) noexcept;
+	[[nodiscard]] std::string_view RaceName(Registry::Race race) noexcept;
 }

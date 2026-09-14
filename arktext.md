@@ -466,3 +466,27 @@ implementation is BlackTek's. **What:**
 **Verified:** real client — config, window, fusion (failure and success),
 transfer, both conversions, dust limit, history, balances; zero protocol
 exceptions. Unit tests 10/10.
+
+## 2026-09-14 — Contribution guide pass over the bestiary, prey and forge
+
+**Why:** Josh asked whether the new systems follow `CONTRIBUTING.md`; an
+audit found four rules they missed. **What changed (no behaviour change):**
+
+- Enums nest in the class that uses them instead of sitting at namespace
+  scope: `Bestiary::Registry::Race/Stage`, `Prey::Slot::State/Bonus/Option`,
+  `Prey::System::Action`, `Forge::System::Action/Bonus/HistoryEntry`.
+  Call sites use `using X = ...::Type;` aliases (a using-declaration
+  cannot name a class member).
+- Loops filter with `std::views::filter` instead of `continue` (toml
+  tables via `&toml::node::is_table`, slots via `std::views::iota`,
+  carried items via `iota | transform | filter`); a `filter_view` must be
+  held in a non-const variable since its `begin()` is not const.
+- Anonymous-namespace helpers are PascalCase (`RollBonus`,
+  `ClassificationOf`, `ForEachCarriedItem`, `ShapeForLevel`, `IsPreyable`,
+  `ReadTierValues`, `ForgeSlotOf`, `AddForgeItemGroup`, `ModernItemId`,
+  `AddModernItemExtras`, `ModernCreatureType`).
+- Struct fields and inline getters are tab-aligned into name and brace
+  columns per the guide; `noexcept` on the pure helpers.
+
+**Verified:** rebuilt, unit tests 10/10, and the bestiary, prey and forge
+harnesses rerun on the real client with zero protocol exceptions.

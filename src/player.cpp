@@ -4823,7 +4823,7 @@ void Player::onGainExperience(uint64_t gainExp, const CreaturePtr& target)
 	// an active experience prey on this creature raises the gain
 	if (const auto& monster = target ? target->getMonster() : nullptr)
 	{
-		if (const auto* slot = getPreyWithMonster(monster->getMonsterType()->info.bestiary.race_id); slot and slot->bonus == BlackTek::Prey::Bonus::Experience)
+		if (const auto* slot = getPreyWithMonster(monster->getMonsterType()->info.bestiary.race_id); slot and slot->bonus == BlackTek::Prey::Slot::Bonus::Experience)
 		{
 			gainExp += gainExp * slot->percentage / 100;
 		}

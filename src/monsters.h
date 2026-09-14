@@ -171,7 +171,7 @@ class MonsterType
 			uint16_t first_unlock = 0;
 			uint16_t second_unlock = 0;
 			uint16_t charm_points = 0;
-			uint8_t race = 0; // BlackTek::Bestiary::Race
+			uint8_t race = 0; // BlackTek::Bestiary::Registry::Race
 			uint8_t stars = 0;
 			uint8_t occurrence = 0;
 		} bestiary;
