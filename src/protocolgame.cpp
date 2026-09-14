@@ -17,7 +17,6 @@
 #include "configmanager.h"
 #include "console.h"
 #include "appearances.h"
-#include "actions.h"
 #include "game.h"
 #include "iologindata.h"
 #include "iomarket.h"
@@ -28,7 +27,6 @@
 #include <gtl/btree.hpp>
 
 extern ConfigManager g_config;
-extern Actions actions;
 extern CreatureEvents* g_creatureEvents;
 extern Chat* g_chat;
 
@@ -385,13 +383,13 @@ void ProtocolGame::logout(bool displayEffect, bool forced)
 		{
 			if (not player->isAccessPlayer())
 			{
-				if (player->getTile()->hasFlag(TILESTATE_NOLOGOUT))
+				if (Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::NoLogout))
 				{
 					player->sendCancelMessage(RETURNVALUE_YOUCANNOTLOGOUTHERE);
 					return;
 				}
 
-				if (not player->getTile()->hasFlag(TILESTATE_PROTECTIONZONE) and player->hasCondition(CONDITION_INFIGHT))
+				if (not Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::Protection) and player->hasCondition(CONDITION_INFIGHT))
 				{
 					player->sendCancelMessage(RETURNVALUE_YOUMAYNOTLOGOUTDURINGAFIGHT);
 					return;
@@ -577,7 +575,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		msg.getString();
 	}
 
-	auto characterName = msg.getString();
+	std::string characterName{ msg.getString() };
 	uint32_t timeStamp = msg.get<uint32_t>();
 	uint8_t randNumber = msg.getByte();
 
@@ -595,6 +593,19 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 			msg.skipBytes(2); // OTCv8 build number
 		}
 	}
+
+	// the rest touches the database, so it runs on the dispatcher; the
+	// credential views point into this message and have to be copied out
+	g_dispatcher.addTask([thisPtr = getThis(), accountName = std::string(accountName), password = std::string(password), characterName = std::string(characterName), token = std::string(token), tokenTime, operatingSystem, sessionKey = opaqueSessionKey ? std::string(credentialString) : std::string()]() mutable
+	{
+		thisPtr->authenticateAndLogin(std::move(accountName), std::move(password), std::move(characterName), std::move(token), tokenTime, operatingSystem, std::move(sessionKey));
+	});
+}
+
+void ProtocolGame::authenticateAndLogin(std::string accountName, std::string password, std::string characterName, std::string token, uint32_t tokenTime, OperatingSystem_t operatingSystem, std::string sessionKey)
+{
+	//dispatcher thread
+	const bool opaqueSessionKey = not sessionKey.empty();
 
 	if (not opaqueSessionKey
 		and accountName.empty()
@@ -631,7 +642,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	}
 
 	auto [accountId, characterId] = opaqueSessionKey
-		? IOLoginData::sessionKeyAuthentication(credentialString, characterName)
+		? IOLoginData::sessionKeyAuthentication(sessionKey, characterName)
 		: IOLoginData::gameworldAuthentication(accountName, password, characterName, token, tokenTime);
 	if (characterName == AccountManager::NAME)
 	{
@@ -653,7 +664,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
-	g_dispatcher.addTask([=, thisPtr = getThis()]() { thisPtr->login(characterId, accountId, operatingSystem); });
+	login(characterId, accountId, operatingSystem);
 }
 
 void ProtocolGame::onConnect()
@@ -945,7 +956,7 @@ void ProtocolGame::GetMapDescription(int32_t x, int32_t y, int32_t z, int32_t wi
 	if (z > 7)
 	{
 		startz = z - 2;
-		endz = std::min<int32_t>(MAP_MAX_LAYERS - 1, z + 2);
+		endz = std::min<int32_t>(BlackTek::World::MaxLayers - 1, z + 2);
 		zstep = 1;
 	} 
 	else
@@ -1000,43 +1011,9 @@ void ProtocolGame::GetFloorDescription(NetworkMessage& msg, int32_t x, int32_t y
 
 void ProtocolGame::checkCreatureAsKnown(uint32_t id, bool& known, uint32_t& removedKnown)
 {
-	const auto result = knownCreatureSet.insert(id);
-	if (not result.second) 
-	{
-		known = true;
-		return;
-	}
-
-	known = false;
-
-	if (knownCreatureSet.size() > 1300)
-	{
-		// Look for a creature to remove
-		for (auto it = knownCreatureSet.begin(), end = knownCreatureSet.end(); it != end; ++it)
-		{
-			const auto& creature = g_game.getCreatureByID(*it);
-			if (not canSee(creature))
-			{
-				removedKnown = *it;
-				knownCreatureSet.erase(it);
-				return;
-			}
-		}
-
-		// Bad situation. Let's just remove anyone.
-		auto it = knownCreatureSet.begin();
-		if (*it == id)
-		{
-			++it;
-		}
-
-		removedKnown = *it;
-		knownCreatureSet.erase(it);
-	} 
-	else
-	{
-		removedKnown = 0;
-	}
+	const auto result = knownCreatureSet.Insert(id);
+	known = result.known;
+	removedKnown = result.evictedId;
 }
 
 bool ProtocolGame::canSee(const CreatureConstPtr& creature) const
@@ -1902,9 +1879,8 @@ void ProtocolGame::sendBasicData()
 }
 
 // to reduce the size of text message, we can and should make a separate method for handling "channel messages"
-void ProtocolGame::sendTextMessage(const TextMessage& message)
+void ProtocolGame::AddTextMessage(NetworkMessage& msg, const TextMessage& message)
 {
-	NetworkMessage msg;
 	msg.add(ServerCode::TextMessage);
 	msg.addByte(message.type);
 	switch (message.type)
@@ -1940,6 +1916,12 @@ void ProtocolGame::sendTextMessage(const TextMessage& message)
 		default: break;
 	}
 	msg.addString(message.text);
+}
+
+void ProtocolGame::sendTextMessage(const TextMessage& message)
+{
+	NetworkMessage msg;
+	AddTextMessage(msg, message);
 	writeToOutputBuffer(msg);
 }
 
@@ -3111,13 +3093,19 @@ void ProtocolGame::sendPingBack()
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendDistanceShoot(const Position& from, const Position& to, uint8_t type)
+bool ProtocolGame::shared_modern_layout = false;
+
+void ProtocolGame::AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type)
 {
-	if (usesModernLayout())
+	AddDistanceShoot(msg, from, to, type, shared_modern_layout);
+}
+
+void ProtocolGame::AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type, bool modernLayout)
+{
+	if (modernLayout)
 	{
 		// 12.03+ distance effects ride the magic-effect loop: anchored at
 		// `from`, with a signed offset to the target
-		NetworkMessage msg;
 		msg.add(ServerCode::MagicEffect);
 		msg.addPosition(from);
 		msg.add(EffectLoopCode::CreateDistanceEffect);
@@ -3126,28 +3114,25 @@ void ProtocolGame::sendDistanceShoot(const Position& from, const Position& to, u
 		msg.addByte(static_cast<uint8_t>(static_cast<int8_t>(to.y - from.y)));
 		msg.add(CommonCode::Zero); // effect source (15.14+)
 		msg.add(EffectLoopCode::EndLoop);
-		writeToOutputBuffer(msg);
 		return;
 	}
 
-	NetworkMessage msg;
 	msg.add(ServerCode::DistanceShoot);
 	msg.addPosition(from);
 	msg.addPosition(to);
 	msg.addByte(type);
-	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendMagicEffect(const Position& pos, uint8_t type)
+void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type)
 {
-	if (not canSee(pos)) {
-		return;
-	}
+	AddMagicEffect(msg, pos, type, shared_modern_layout);
+}
 
-	NetworkMessage msg;
+void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type, bool modernLayout)
+{
 	msg.add(ServerCode::MagicEffect);
 	msg.addPosition(pos);
-	if (usesModernLayout())
+	if (modernLayout)
 	{
 		// 12.03+ effects are a typed loop; effect ids are appearance ids and
 		// CipSoft keeps those append-only, so legacy CONST_ME values hold
@@ -3160,12 +3145,10 @@ void ProtocolGame::sendMagicEffect(const Position& pos, uint8_t type)
 	{
 		msg.addByte(type);
 	}
-	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendCreatureHealth(const CreatureConstPtr& creature)
+void ProtocolGame::AddCreatureHealth(NetworkMessage& msg, const CreatureConstPtr& creature)
 {
-	NetworkMessage msg;
 	msg.add(ServerCode::CreatureHealth);
 	msg.add<uint32_t>(creature->getID());
 
@@ -3177,6 +3160,30 @@ void ProtocolGame::sendCreatureHealth(const CreatureConstPtr& creature)
 	{
 		msg.addByte(std::ceil((static_cast<double>(creature->getHealth()) / std::max<int32_t>(creature->getMaxHealth(), 1)) * 100));
 	}
+}
+
+void ProtocolGame::sendDistanceShoot(const Position& from, const Position& to, uint8_t type)
+{
+	NetworkMessage msg;
+	AddDistanceShoot(msg, from, to, type, usesModernLayout());
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendMagicEffect(const Position& pos, uint8_t type)
+{
+	if (not canSee(pos)) {
+		return;
+	}
+
+	NetworkMessage msg;
+	AddMagicEffect(msg, pos, type, usesModernLayout());
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCreatureHealth(const CreatureConstPtr& creature)
+{
+	NetworkMessage msg;
+	AddCreatureHealth(msg, creature);
 	writeToOutputBuffer(msg);
 }
 
@@ -3204,7 +3211,7 @@ void ProtocolGame::refreshWorldView()
 		return;
 	}
 
-	knownCreatureSet.clear();
+	knownCreatureSet.Clear();
 	sendMapDescription(player->getPosition());
 }
 

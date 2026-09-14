@@ -1,7 +1,19 @@
 # Modern Protocol Port — STATUS
 
-Branch: `modern-protocol`. Last session: 2026-08-11.
+Branch: `modern-protocol`. Last session: 2026-09-13.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
+
+**2026-09-13 — upstream trunk merged.** `origin/master` (BlackTek 2.0 +
+the Aug 2026 trunk: unified ItemEvents, shared-pooled allocator, detached
+coro-timers, spectator broadcast helpers, dispatcher-side login) merged
+into `modern-protocol`. Three conflicts, all in the protocol layer: the
+login parse now hands off to `authenticateAndLogin` on the dispatcher with
+the session key carried as its own argument; upstream's static
+`AddMagicEffect`/`AddDistanceShoot` (one message for every spectator) take
+the layout of the enabled listener via `ProtocolGame::setSharedModernLayout`,
+and the server refuses to start with both `game_port` and
+`game_port_modern` enabled. Verified: release build clean, blacktek_tests
+10/10, gate A (scripted 15.25 login + walk) green on the rig.
 
 **2026-08-11 — legacy 10.98 retired.** This server is 15.25-only by decision:
 `game_port`/`login_port` now support 0-to-disable (like `game_port_modern`)

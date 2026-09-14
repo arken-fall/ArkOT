@@ -185,3 +185,34 @@ position against the server's persisted one.
   richer source (wiki harvest).
 - One unexplained server segfault after ~8h under 20k-bot load
   (2026-07-20 10:00); core dumps are now enabled to catch the next one.
+
+## 2026-09-13 — merge of upstream trunk (BlackTek 2.0 + Aug 2026 master)
+
+**Why:** the fork was 37 commits behind `origin/master`; the longer the
+ItemEvents overhaul and the allocator/timer work sat unmerged, the harder
+the merge would get. **What:** `git merge origin/master` with three
+conflicts, resolved as follows.
+
+- `.gitignore`: both sides kept (our build/harness ignores + upstream's `/tmp`).
+- Login (`onRecvFirstMessage`): upstream moved the database half of login
+  onto the dispatcher as `authenticateAndLogin`. Our layout-driven parse is
+  unchanged; it now copies the credential views out of the message and
+  passes the opaque session key as a separate `sessionKey` argument, so
+  `authenticateAndLogin` picks `sessionKeyAuthentication` when it is set.
+- Effects: upstream made `AddMagicEffect`/`AddDistanceShoot`/
+  `AddCreatureHealth`/`AddTextMessage` static so `Game`/`Combat` build one
+  message and hand it to every spectator. A static helper cannot see a
+  connection's generation, so the two writers whose payload differs per
+  generation got an explicit `bool modernLayout` overload (used by the
+  per-connection `send*`), and the upstream 3-argument form forwards
+  `shared_modern_layout`, set once at startup from the listener the server
+  runs. Running both listeners is refused at startup with a clear message;
+  this is consistent with the 2026-08-11 decision that the server is
+  15.25-only.
+- `premake5.lua`, `items.cpp`, `connection.*`, `configmanager.*`,
+  `otserv.cpp`, `tools.cpp` auto-merged. Makefiles regenerated with
+  premake (upstream now builds Release with AVX2 + LTO on Windows).
+
+**Verified:** `make config=release_64` clean (GCC 14, zero warnings in the
+merge build), `blacktek_tests` 10/10, gate A green: webservice session key
+-> modern handshake -> "Tester has logged in." -> walk answered.

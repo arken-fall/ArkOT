@@ -299,7 +299,7 @@ class Creature : public SharedObject
 		bool isInvisible() const;
 	
 		ZoneType_t getZone() const {
-			return getTile()->getZone();
+			return Zones::ZoneManager::GetZoneType(getPosition());
 		}
 
 		//walk functions
@@ -417,9 +417,9 @@ class Creature : public SharedObject
 			return true;
 		}
 
-		virtual void changeHealth(int32_t healthChange, bool sendHealthChange = true);
+		virtual void changeHealth(int32_t healthChange, bool sendHealthChange = true, std::optional<std::span<const CreaturePtr>> spectators = std::nullopt);
 
-		void gainHealth(const CreaturePtr& healer, int32_t healthGain);
+		void gainHealth(const CreaturePtr& healer, int32_t healthGain, std::optional<std::span<const CreaturePtr>> spectators = std::nullopt);
 		virtual void drainHealth(const CreaturePtr& attacker, int32_t damage);
 
 		virtual bool challengeCreature(const CreaturePtr&, bool) {
@@ -580,12 +580,23 @@ class Creature : public SharedObject
 		//creature script events
 		bool registerCreatureEvent(const std::string& name);
 		bool unregisterCreatureEvent(const std::string& name);
+		void purgeCreatureEvent(CreatureEvent* event);
 
 		void setCurrentTile(const TilePtr& newTile);
 
 		const Position& getPosition() const
 		{
 			return position;
+		}
+
+		uint32_t getChunkSlot() const
+		{
+			return chunk_slot;
+		}
+
+		void setChunkSlot(uint32_t slot)
+		{
+			chunk_slot = slot;
 		}
 
 		TilePtr getTile()
@@ -646,6 +657,10 @@ class Creature : public SharedObject
 
 		Position position;
 
+		static constexpr int64_t CHASE_REPATH_FLOOR_MS = 200;
+
+		Position lastChaseTargetPos;
+
 		using CountMap = std::map<uint32_t, CountBlock_t>;
 		CountMap damageMap;
 
@@ -663,7 +678,9 @@ class Creature : public SharedObject
 		CreatureWeakPtr followCreature;
 
 		uint64_t lastStep = 0;
+		uint64_t lastChaseRepath = 0;
 		uint32_t id = 0;
+		uint32_t chunk_slot = 0;
 		uint32_t scriptEventsBitField = 0;
 		uint32_t eventWalk = 0;
 		uint32_t walkUpdateTicks = 0;

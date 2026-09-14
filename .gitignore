@@ -39,3 +39,6 @@ blacktek.log
 
 # Generated at premake time
 /src/protobuf/generated/
+
+# Tmp folder for user's private files
+/tmp

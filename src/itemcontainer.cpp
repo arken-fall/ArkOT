@@ -6,10 +6,10 @@
 #include "itemcontainer.h"
 #include "iomap.h"
 #include "game.h"
-#include "movement.h"
+#include "itemevents.h"
 
 extern Game g_game;
-extern MoveEvents* g_moveEvents;
+extern ItemEvents* g_itemEvents;
 
 using BlackTek::Containers::ContainerConfig;
 using BlackTek::Containers::ContainerProperty;
@@ -328,13 +328,21 @@ void ItemContainer::onAddContainerItem(const ItemPtr& ownerItem, ItemPtr& item)
 	SpectatorVec spectators;
 	g_game.map.getSpectators(spectators, ownerItem->getPosition(), false, true, 1, 1, 1, 1);
 
-	for (const auto& c : spectators.players())
+	onAddContainerItem(ownerItem, item, std::span<const CreaturePtr>(spectators.begin(), spectators.size()));
+}
+
+void ItemContainer::onAddContainerItem(const ItemPtr& ownerItem, ItemPtr& item, std::span<const CreaturePtr> spectators)
+{
+	if (not ownerItem)
+		return;
+
+	for (const auto& c : spectators)
 	{
 		const auto c_player = std::static_pointer_cast<Player>(c);
 		c_player->sendAddContainerItem(ownerItem->getContainer(), item);
 	}
 
-	for (const auto& c : spectators.players())
+	for (const auto& c : spectators)
 	{
 		const auto c_player = std::static_pointer_cast<Player>(c);
 		c_player->onAddContainerItem(item);
@@ -612,7 +620,7 @@ ReturnValue ItemContainer::canAddItemStandard(int32_t index, const ItemPtr& item
 		ReturnValue ret = topLocation.player->canAddItem(INDEX_ANYWHERE, item, count, flags | FLAG_CHILDISOWNER, actor);
 
 		if (ret == RETURNVALUE_NOERROR)
-			ret = g_moveEvents->onPlayerEquip(topLocation.player, item, static_cast<slots_t>(INDEX_ANYWHERE), true);
+			ret = g_itemEvents->fireEquip(topLocation.player, item, static_cast<slots_t>(INDEX_ANYWHERE), true);
 
 		return ret;
 	}
@@ -805,6 +813,28 @@ void ItemContainer::addItemAt(int32_t index, const ItemPtr& item)
 	}
 }
 
+void ItemContainer::addItemAt(int32_t index, const ItemPtr& item, std::span<const CreaturePtr> spectators)
+{
+	if (index >= static_cast<int32_t>(capacity()))
+		return /*RETURNVALUE_NOTPOSSIBLE*/;
+
+	if (item == nullptr)
+		return /*RETURNVALUE_NOTPOSSIBLE*/;
+
+	auto ownerItem = getOwner();
+	item->setContainerParent(ownerItem);
+	propagateHoldingCreatureTo(item);
+	itemlist.push_front(item);
+	updateItemWeight(ownerItem, item->getWeight());
+	ammoCount += item->getItemCount();
+
+	if (isGenuinelyPlaced(ownerItem))
+	{
+		ItemPtr addedItem = item;
+		onAddContainerItem(ownerItem, addedItem, spectators);
+	}
+}
+
 void ItemContainer::addItemBack(ItemPtr& item)
 {
 	addItem(item);
@@ -976,6 +1006,36 @@ void ItemContainer::notifyItemAdded(const ItemPtr& item, const BlackTek::ItemLoc
 	notifyItemAddedDefault(item, oldLocation, index);
 }
 
+void ItemContainer::notifyItemAdded(const ItemPtr& item, const BlackTek::ItemLocation& oldLocation, int32_t index, std::span<const CreaturePtr> spectators, NotifyLink)
+{
+	if (config.Has(ContainerProperty::NotifiesViaOwnerParent))
+	{
+		auto realParent = getOwner()->getLocation();
+		auto link = config.Has(ContainerProperty::NotifyLinkIsTopParent) ? LINK_TOPPARENT : LINK_PARENT;
+
+		if (realParent.tile)
+			realParent.tile->notifyItemAdded(item, oldLocation, index, spectators, link);
+		else if (realParent.player)
+			realParent.player->notifyItemAdded(item, oldLocation, index, link);
+
+		return;
+	}
+
+	if (config.Has(ContainerProperty::NotifiesViaParentWalk))
+	{
+		auto realParent = getParent();
+
+		if (realParent.tile)
+			realParent.tile->notifyItemAdded(item, oldLocation, index, spectators, LINK_PARENT);
+		else if (realParent.player)
+			realParent.player->notifyItemAdded(item, oldLocation, index, LINK_PARENT);
+
+		return;
+	}
+
+	notifyItemAddedDefault(item, oldLocation, index, spectators);
+}
+
 void ItemContainer::notifyItemAddedDefault(const ItemPtr& item, const BlackTek::ItemLocation& oldLocation, int32_t index)
 {
 	auto ownerItem = getOwner();
@@ -1004,6 +1064,36 @@ void ItemContainer::notifyItemAddedDefault(const ItemPtr& item, const BlackTek::
 		topLocation.player->notifyItemAdded(item, oldLocation, index, LINK_TOPPARENT);
 	else if (topLocation.tile)
 		topLocation.tile->notifyItemAdded(item, oldLocation, index, LINK_NEAR);
+}
+
+void ItemContainer::notifyItemAddedDefault(const ItemPtr& item, const BlackTek::ItemLocation& oldLocation, int32_t index, std::span<const CreaturePtr> spectators)
+{
+	auto ownerItem = getOwner();
+
+	if (not ownerItem)
+		return;
+
+	ItemPtr topContainerItem = ownerItem;
+
+	while (auto containerOwner = topContainerItem->getContainerParent())
+	{
+		topContainerItem = containerOwner;
+	}
+
+	if (topContainerItem != ownerItem)
+	{
+		if (auto outerContainer = topContainerItem->getContainer())
+			outerContainer->notifyItemAdded(item, oldLocation, index, spectators, LINK_PARENT);
+
+		return;
+	}
+
+	const auto topLocation = topContainerItem->getLocation();
+
+	if (topLocation.player)
+		topLocation.player->notifyItemAdded(item, oldLocation, index, LINK_TOPPARENT);
+	else if (topLocation.tile)
+		topLocation.tile->notifyItemAdded(item, oldLocation, index, spectators, LINK_NEAR);
 }
 
 void ItemContainer::notifyItemRemoved(const ItemPtr& item, const BlackTek::ItemLocation& newLocation, int32_t index, NotifyLink)

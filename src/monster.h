@@ -13,7 +13,6 @@
 
 class Creature;
 class Game;
-class Spawn;
 
 using CreatureHashSet = gtl::flat_hash_set<CreaturePtr>;
 using CreatureList = std::vector<CreatureWeakPtr>;
@@ -93,21 +92,22 @@ class Monster final : public Creature
 		[[nodiscard]] bool isWalkingToSpawn() const					{ return walkingToSpawn; }
 		[[nodiscard]] bool hasExtraSwing() override					{ return lastMeleeAttack == 0; }
 		[[nodiscard]] bool isFleeing() const						{ return not isSummon() and getHealth() <= mType->info.runAwayHealth and challengeFocusDuration <= 0; }
-		[[nodiscard]] bool isTargetNearby() const					{ return stepDuration >= 1; }
+		[[nodiscard]] bool isTargetNearby() const					{ return targetProximityDistance >= 0 and targetProximityDistance <= 1; }
 		[[nodiscard]] bool isIgnoringFieldDamage() const			{ return ignoreFieldDamage; }
+		[[nodiscard]] bool hasSightTo(const Position& fromPos, const Position& toPos);
 
 		void addList() override;
 		void removeList() override;
 		void setName(const std::string& name);
 
 		void onAttackedCreatureDisappear(bool isLogout) override;
-		void onCreatureAppear(const CreaturePtr& creature, bool isLogin);
+		void onCreatureAppear(const CreaturePtr& creature, bool isLogin, const std::optional<std::span<const CreaturePtr>> spectators = std::nullopt);
 		void onRemoveCreature(const CreaturePtr& creature, bool isLogout);
-		void onCreatureMove(const CreaturePtr& creature, const TilePtr& newTile, const Position& newPos, const TilePtr& oldTile, const Position& oldPos, bool teleport);
+		void onCreatureMove(const CreaturePtr& creature, const TilePtr& newTile, const Position& newPos, const TilePtr& oldTile, const Position& oldPos, bool teleport, const std::optional<std::span<const CreaturePtr>> spectators = std::nullopt);
 		void onCreatureSay(const CreaturePtr& creature, SpeakClasses type, const std::string& text) override;
 
 		void drainHealth(const CreaturePtr& attacker, int32_t damage) override;
-		void changeHealth(int32_t healthChange, bool sendHealthChange = true) override;
+		void changeHealth(int32_t healthChange, bool sendHealthChange = true, std::optional<std::span<const CreaturePtr>> spectators = std::nullopt) override;
 
 		void onWalk() override;
 		void onWalkComplete() override;
@@ -124,7 +124,7 @@ class Monster final : public Creature
 		void setNameDescription(const std::string& nameDescription) { this->nameDescription = nameDescription; };
 
 		void setMasterPos(Position pos)								{ masterPos = pos; }
-		void setSpawn(Spawn* spawn)									{ this->spawn = spawn; }
+		void setSpawn(int zoneId)										{ this->spawnZoneId = zoneId; }
 
 	private:
 
@@ -142,17 +142,18 @@ class Monster final : public Creature
 		std::string nameDescription;
 
 		MonsterType* mType;
-		Spawn* spawn = nullptr;
+		int spawnZoneId = 0;
 
 		uint64_t getLostExperience() const override { return skillLoss ? mType->info.experience : 0; }
 
 		int64_t lastMeleeAttack = 0;
+		int64_t losCacheTime = 0;
 
 		int32_t minCombatValue = 0;
 		int32_t maxCombatValue = 0;
 		int32_t targetChangeCooldown = 0;
 		int32_t challengeFocusDuration = 0;
-		int32_t stepDuration = 0;
+		int32_t targetProximityDistance = -1;
 
 		uint32_t attackTicks = 0;
 		uint32_t targetTicks = 0;
@@ -165,6 +166,8 @@ class Monster final : public Creature
 
 		uint16_t getLookCorpse() const override				{ return mType->info.lookcorpse; }
 
+		Position losCacheFromPos;
+		Position losCacheToPos;
 		Position masterPos;
 
 		CreatureHashSet friendList;
@@ -172,6 +175,7 @@ class Monster final : public Creature
 		gtl::flat_hash_set<CreaturePtr> targetSet;
 		std::bitset<mapWalkHeight * mapWalkWidth> localMapCache;
 
+		bool losCacheResult = false;
 		bool ignoreFieldDamage = false;
 		bool isIdle = true;
 		bool isMapLoaded = false;
@@ -202,7 +206,8 @@ class Monster final : public Creature
 		void removeFriend(const CreaturePtr& creature);
 		void addTarget(const CreaturePtr& creature, bool pushFront = false);
 		void removeTarget(const CreaturePtr& creature);
-		void updateTargetList();
+		void updateTargetList(const std::optional<std::span<const CreaturePtr>> spectators = std::nullopt);
+		void pruneTargetAndFriendLists();
 		void clearTargetList();
 		void clearFriendList();
 
@@ -215,6 +220,7 @@ class Monster final : public Creature
 		void updateTileCache(TilePtr tile, int32_t dx, int32_t dy);
 		void updateTileCache(const TilePtr& tile, int32_t dx, int32_t dy, const MonsterPtr& self);
 		void updateTileCache(TilePtr tile, const Position& pos);
+		void findCreaturesOnTile(const TilePtr& tile);
 
 		void onThinkTarget(uint32_t interval);
 		void onThinkYell(uint32_t interval);

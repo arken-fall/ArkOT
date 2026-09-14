@@ -5,7 +5,7 @@
 
 #include "pugicast.h"
 
-#include "actions.h"
+#include "augments.h"
 #include "storewindow.h"
 #include "configmanager.h"
 #include "console.h"
@@ -18,20 +18,19 @@
 #include "globalevent.h"
 #include "iologindata.h"
 #include "iomarket.h"
+#include "itemevents.h"
 #include "items.h"
 #include "monster.h"
-#include "movement.h"
 #include "scheduler.h"
 #include "server.h"
 #include "spells.h"
 #include "talkaction.h"
-#include "weapons.h"
 #include "script.h"
 
 #include <fmt/format.h>
 
 extern ConfigManager g_config;
-extern Actions* g_actions;
+extern ItemEvents* g_itemEvents;
 extern Chat* g_chat;
 extern TalkActions* g_talkActions;
 extern Spells* g_spells;
@@ -40,8 +39,6 @@ extern GlobalEvents* g_globalEvents;
 extern CreatureEvents* g_creatureEvents;
 extern Events* g_events;
 extern Monsters g_monsters;
-extern MoveEvents* g_moveEvents;
-extern Weapons* g_weapons;
 extern Scripts* g_scripts;
 
 using BlackTek::GameModel;
@@ -118,9 +115,15 @@ void Game::start(ServiceManager* manager)
 		g_scheduler.addEvent(createSchedulerTask(EVENT_LIGHTINTERVAL, [this]() { checkLight(); }));
 	}
 	g_scheduler.addEvent(createSchedulerTask(20, [this]() { decay_clean_cycle(); }));
-	g_scheduler.addEvent(createSchedulerTask(50, [this]() { coro_timer_cycle(); }));
+	boost::asio::co_spawn(g_scheduler.getIoContext(), BlackTek::Scheduling::RunDispatcherHeartbeat(g_scheduler, std::chrono::milliseconds(EVENT_CORO_TIMER_CYCLE), [this]() { coro_timer_cycle(); }), boost::asio::detached);
 	g_scheduler.addEvent(createSchedulerTask(100, [this]() { item_decay_cycle(); }));
 	g_scheduler.addEvent(createSchedulerTask(120, [this]() { equipment_decay_cycle(); }));
+	g_scheduler.addEvent(createSchedulerTask(150, []() { Zones::ZoneManager{}.Supervise(); }));
+}
+
+void Game::initializeSpawnPool()
+{
+	Zones::ZoneManager::SetSpawnPool(&spawn_pool);
 }
 
 GameState_t Game::getGameState() const
@@ -149,7 +152,7 @@ void Game::setGameState(GameState_t newState)
 			groups.load();
 			g_chat->load();
 
-			map.spawns.startup();
+			Zones::ZoneManager::ActivateAll();
 
 			raids.loadFromToml();
 			raids.startup();
@@ -281,7 +284,7 @@ BlackTek::ItemLocation Game::resolveItemLocation(const PlayerPtr& player, const 
 
 ItemPtr Game::filterHangableItem(const PlayerPtr& player, const TilePtr& tile, ItemPtr item) const
 {
-	if (item and player and tile->hasFlag(TILESTATE_SUPPORTS_HANGABLE))
+	if (item and player and item->isHangable() and tile->hasFlag(TILESTATE_SUPPORTS_HANGABLE))
 	{
 		if (tile->hasProperty(CONST_PROP_ISVERTICAL))
 		{
@@ -346,7 +349,10 @@ ItemPtr Game::resolveItem(const PlayerPtr& player, const Position& pos, int32_t 
 			return nullptr;
 		}
 
-		if (parentContainer->getOwner()->getID() == ITEM_BROWSEFIELD)
+		uint8_t slot = pos.z;
+		auto containerItem = parentContainer->getItemByIndex(player->getContainerIndex(fromCid) + slot);
+
+		if (containerItem and containerItem->isHangable() and parentContainer->getOwner()->getID() == ITEM_BROWSEFIELD)
 		{
 			auto tile = parentContainer->getOwner()->getTile();
 			if (tile && tile->hasFlag(TILESTATE_SUPPORTS_HANGABLE)) {
@@ -362,8 +368,7 @@ ItemPtr Game::resolveItem(const PlayerPtr& player, const Position& pos, int32_t 
 			}
 		}
 
-		uint8_t slot = pos.z;
-		return parentContainer->getItemByIndex(player->getContainerIndex(fromCid) + slot);
+		return containerItem;
 	} else if (pos.y == 0 && pos.z == 0) {
 		const ItemType& it = Item::items.getItemType(spriteId);
 		if (it.getID() == 0) {
@@ -601,6 +606,8 @@ bool Game::placeCreature(CreaturePtr creature, const Position& pos, bool extende
 	SpectatorVec spectators;
 	map.getSpectators(spectators, creature->getPosition(), true);
 
+	const std::span<const CreaturePtr> spectators_span(spectators.begin(), spectators.size());
+
 	for (const auto& c : spectators.players())
 		static_cast<Player*>(c.get())->sendCreatureAppear(creature, creature->getPosition(), magicEffect);
 
@@ -612,10 +619,10 @@ bool Game::placeCreature(CreaturePtr creature, const Position& pos, bool extende
 				static_cast<Player*>(spectator.get())->onCreatureAppear(creature, true);
 				break;
 			case CreatureSubType::Monster:
-				static_cast<Monster*>(spectator.get())->onCreatureAppear(creature, true);
+				static_cast<Monster*>(spectator.get())->onCreatureAppear(creature, true, spectators_span);
 				break;
 			case CreatureSubType::Npc:
-				static_cast<Npc*>(spectator.get())->onCreatureAppear(creature, true);
+				static_cast<Npc*>(spectator.get())->onCreatureAppear(creature, true, spectators_span);
 				break;
 			default:
 				break;
@@ -631,11 +638,15 @@ bool Game::placeCreature(CreaturePtr creature, const Position& pos, bool extende
 
 	if (const auto tile = creature->getTile())
 	{
-		tile->notifyCreatureAdded(creature, nullptr);
+		tile->notifyCreatureAdded(creature, nullptr, spectators_span);
 	}
 
 	addCreatureCheck(creature);
 	creature->onPlacedCreature();
+
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(creature->getPosition()))
+		spawnOverlay->Trigger(creature, Zones::SpawnTrigger::Enter);
+
 	return true;
 }
 
@@ -650,23 +661,42 @@ bool Game::removeCreature(CreaturePtr creature, bool isLogout/* = true*/)
 
 	SpectatorVec spectators;
 	map.getSpectators(spectators, tile->getPosition(), true);
-	for (const auto& c : spectators.players()) {
+	const std::span<const CreaturePtr> spectators_span(spectators.begin(), spectators.size());
+
+	for (const auto& c : spectators.players())
+	{
 		const auto player = std::static_pointer_cast<Player>(c);
 		oldStackPosVector.push_back(player->canSeeCreature(creature) ? tile->getClientIndexOfCreature(player, creature) : -1);
 	}
 
 	tile->removeCreature(creature);
-
 	const Position& tilePosition = tile->getPosition();
+
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(tilePosition))
+	{
+		Zones::SpawnTrigger removalTrigger = Zones::SpawnTrigger::Leave;
+
+		if (creature->getPlayer())
+		{
+			if (isLogout)
+				removalTrigger = Zones::SpawnTrigger::Logout;
+		}
+		else if (creature->getMonster())
+		{
+			removalTrigger = Zones::SpawnTrigger::Despawn;
+		}
+
+		spawnOverlay->Trigger(creature, removalTrigger);
+	}
 
 	//send to client
 	size_t i = 0;
-	for (const auto& c : spectators.players()) {
+	for (const auto& c : spectators.players())
 		static_cast<Player*>(c.get())->sendRemoveTileCreature(creature, tilePosition, oldStackPosVector[i++]);
-	}
 
 	//event method
-	for (const auto spectator : spectators) {
+	for (const auto spectator : spectators)
+	{
 		switch (spectator->getCreatureSubType())
 		{
 			case CreatureSubType::Player:
@@ -684,14 +714,12 @@ bool Game::removeCreature(CreaturePtr creature, bool isLogout/* = true*/)
 	}
 
 	const auto master = creature->getMaster();
-	if (master && !master->isRemoved()) {
+
+	if (master and not master->isRemoved())
 		creature->setMaster(nullptr);
-	}
 
 	if (const auto tile = creature->getTile())
-	{
-		tile->notifyCreatureRemoved(creature, nullptr);
-	}
+		tile->notifyCreatureRemoved(creature, nullptr, spectators_span);
 
 	creature->removeList();
 	creature->setRemoved();
@@ -699,10 +727,12 @@ bool Game::removeCreature(CreaturePtr creature, bool isLogout/* = true*/)
 
 	removeCreatureCheck(creature);
 
-	for (auto summon : creature->summons) {
+	for (auto summon : creature->summons)
+	{
 		summon->setSkillLoss(false);
 		removeCreature(summon);
 	}
+
 	return true;
 }
 
@@ -911,7 +941,7 @@ void Game::playerMoveCreature(PlayerPtr& player, CreaturePtr& movingCreature, co
 		if (toTile->hasFlag(TILESTATE_BLOCKPATH)) {
 			player->sendCancelMessage(RETURNVALUE_NOTENOUGHROOM);
 			return;
-		} else if ((movingCreature->getZone() == ZONE_PROTECTION && !toTile->hasFlag(TILESTATE_PROTECTIONZONE)) || (movingCreature->getZone() == ZONE_NOPVP && !toTile->hasFlag(TILESTATE_NOPVPZONE))) {
+		} else if ((movingCreature->getZone() == ZONE_PROTECTION && !Zones::ZoneManager::HasWorldFlag(toTile->getPosition(), Zones::ZoneFlag::Protection)) || (movingCreature->getZone() == ZONE_NOPVP && !Zones::ZoneManager::HasWorldFlag(toTile->getPosition(), Zones::ZoneFlag::NoPvp))) {
 			player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
 			return;
 		} else {
@@ -926,7 +956,7 @@ void Game::playerMoveCreature(PlayerPtr& player, CreaturePtr& movingCreature, co
 			}
 
 			const auto movingNpc = movingCreature->getNpc();
-			if (movingNpc && !Spawns::isInZone(movingNpc->getMasterPos(), movingNpc->getMasterRadius(), toPos)) {
+			if (movingNpc && !Zones::ZoneManager::IsInZone(movingNpc->getMasterPos(), movingNpc->getMasterRadius(), toPos)) {
 				player->sendCancelMessage(RETURNVALUE_NOTENOUGHROOM);
 				return;
 			}
@@ -1037,7 +1067,7 @@ ReturnValue Game::internalMoveCreature(CreaturePtr creature, TilePtr toTile, uin
 		flags = 0;
 
 		//to prevent infinite loop
-		if (++n >= MAP_MAX_LAYERS) {
+		if (++n >= BlackTek::World::MaxLayers) {
 			break;
 		}
 	}
@@ -1407,7 +1437,7 @@ ReturnValue Game::internalMoveItem(BlackTek::ItemLocation fromLocation,
 		toLocation = destination;
 
 		//to prevent infinite loop
-		if (++floorN >= MAP_MAX_LAYERS)
+		if (++floorN >= BlackTek::World::MaxLayers)
 		{
 			break;
 		}
@@ -1453,7 +1483,7 @@ ReturnValue Game::internalMoveItem(BlackTek::ItemLocation fromLocation,
 		ret = toLocation.player->canAddItem(index, item, count, flags, actor);
 		if (ret == RETURNVALUE_NOERROR)
 		{
-			ret = g_moveEvents->onPlayerEquip(toLocation.player, item, static_cast<slots_t>(index), true);
+			ret = g_itemEvents->fireEquip(toLocation.player, item, static_cast<slots_t>(index), true);
 		}
 	}
 
@@ -1486,7 +1516,7 @@ ReturnValue Game::internalMoveItem(BlackTek::ItemLocation fromLocation,
 			ret = fromLocation.player->canAddItem(fromItemIndex, toItem, toItem->getItemCount(), 0);
 			if (ret == RETURNVALUE_NOERROR)
 			{
-				ret = g_moveEvents->onPlayerEquip(fromLocation.player, toItem, static_cast<slots_t>(fromItemIndex), true);
+				ret = g_itemEvents->fireEquip(fromLocation.player, toItem, static_cast<slots_t>(fromItemIndex), true);
 			}
 		}
 
@@ -1638,7 +1668,7 @@ ReturnValue Game::internalMoveItem(BlackTek::ItemLocation fromLocation,
 					ret = toLocation.player->canAddItem(index, item, count, flags);
 					if (ret == RETURNVALUE_NOERROR)
 					{
-						ret = g_moveEvents->onPlayerEquip(toLocation.player, item, static_cast<slots_t>(index), true);
+						ret = g_itemEvents->fireEquip(toLocation.player, item, static_cast<slots_t>(index), true);
 					}
 				}
 
@@ -2019,7 +2049,7 @@ ReturnValue Game::internalAddItem(BlackTek::ItemLocation toLocation, ItemPtr ite
 		ret = toLocation.player->canAddItem(index, item, item->getItemCount(), flags);
 		if (ret == RETURNVALUE_NOERROR)
 		{
-			ret = g_moveEvents->onPlayerEquip(toLocation.player, item, static_cast<slots_t>(index), true);
+			ret = g_itemEvents->fireEquip(toLocation.player, item, static_cast<slots_t>(index), true);
 		}
 	}
 
@@ -2089,13 +2119,19 @@ ReturnValue Game::internalAddItem(BlackTek::ItemLocation toLocation, ItemPtr ite
 			}
 			else
 			{
+				SpectatorVec spectators;
+				std::span<const CreaturePtr> spectators_span;
+
 				if (toContainer)
 				{
-					toContainer->addItemAt(index, item);
+					map.getSpectators(spectators, toLocation.containerItem->getPosition(), true, true);
+					spectators_span = { spectators.begin(), spectators.size() };
+					toContainer->addItemAt(index, item, spectators_span);
 				}
 				else if (toLocation.tile)
 				{
-					toLocation.tile->addItem(item);
+					spectators = toLocation.tile->addItem(item);
+					spectators_span = { spectators.begin(), spectators.size() };
 				}
 				else
 				{
@@ -2120,11 +2156,11 @@ ReturnValue Game::internalAddItem(BlackTek::ItemLocation toLocation, ItemPtr ite
 				{
 					if (toContainer)
 					{
-						toContainer->notifyItemAdded(item, {}, itemIndex);
+						toContainer->notifyItemAdded(item, {}, itemIndex, spectators_span);
 					}
 					else if (toLocation.tile)
 					{
-						toLocation.tile->notifyItemAdded(item, {}, itemIndex);
+						toLocation.tile->notifyItemAdded(item, {}, itemIndex, spectators_span);
 					}
 					else
 					{
@@ -2172,13 +2208,19 @@ ReturnValue Game::internalAddItem(BlackTek::ItemLocation toLocation, ItemPtr ite
 	}
 	else
 	{
+		SpectatorVec spectators;
+		std::span<const CreaturePtr> spectators_span;
+
 		if (toContainer)
 		{
-			toContainer->addItemAt(index, item);
+			map.getSpectators(spectators, toLocation.containerItem->getPosition(), true, true);
+			spectators_span = { spectators.begin(), spectators.size() };
+			toContainer->addItemAt(index, item, spectators_span);
 		}
 		else if (toLocation.tile)
 		{
-			toLocation.tile->addItem(item);
+			spectators = toLocation.tile->addItem(item);
+			spectators_span = { spectators.begin(), spectators.size() };
 		}
 		else
 		{
@@ -2203,11 +2245,11 @@ ReturnValue Game::internalAddItem(BlackTek::ItemLocation toLocation, ItemPtr ite
 		{
 			if (toContainer)
 			{
-				toContainer->notifyItemAdded(item, {}, itemIndex);
+				toContainer->notifyItemAdded(item, {}, itemIndex, spectators_span);
 			}
 			else if (toLocation.tile)
 			{
-				toLocation.tile->notifyItemAdded(item, {}, itemIndex);
+				toLocation.tile->notifyItemAdded(item, {}, itemIndex, spectators_span);
 			}
 			else
 			{
@@ -2321,6 +2363,12 @@ ReturnValue Game::internalRemoveItem(ItemPtr item, int32_t count /*= -1*/, bool 
 
 		if (item->isRemoved())
 		{
+			if (location.player)
+			{
+				if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(location.player->getPosition()))
+					spawnOverlay->Trigger(location.player, Zones::SpawnTrigger::Remove);
+			}
+
 			item->onRemoved();
 			if (item->canDecay())
 			{
@@ -2681,6 +2729,12 @@ ItemPtr Game::transformItem(const ItemPtr& item, const uint16_t newId, const int
 	if (newType.getID() == 0)
 	{
 		return item;
+	}
+
+	if (auto holder = item->getHoldingPlayer())
+	{
+		if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(holder->getPosition()))
+			spawnOverlay->Trigger(holder, Zones::SpawnTrigger::Transform);
 	}
 
 	const ItemType& curType = Item::items[item->getID()];
@@ -3308,16 +3362,16 @@ void Game::playerUseItemEx(const uint32_t playerId, const Position& fromPos, con
 		return;
 	}
 
-	if (not item->isUseable() or item->getID() != fromSpriteId)
+	if (item->getID() != fromSpriteId)
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}
 
 	Position walkToPos = fromPos;
-	ReturnValue ret = g_actions->canUse(player, fromPos);
+	ReturnValue ret = g_itemEvents->canUse(player, fromPos);
 	if (ret == RETURNVALUE_NOERROR) {
-		ret = g_actions->canUse(player, toPos, item);
+		ret = g_itemEvents->canUse(player, toPos, item);
 		if (ret == RETURNVALUE_TOOFARAWAY) {
 			walkToPos = toPos;
 		}
@@ -3377,7 +3431,10 @@ void Game::playerUseItemEx(const uint32_t playerId, const Position& fromPos, con
 	player->resetIdleTime();
 	player->setNextActionTask(nullptr);
 
-	g_actions->useItemEx(player, fromPos, toPos, toStackPos, item, isHotkey);
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(player->getPosition()))
+		spawnOverlay->Trigger(player, Zones::SpawnTrigger::Use);
+
+	g_itemEvents->useItemEx(player, fromPos, toPos, toStackPos, item, isHotkey);
 }
 
 void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uint8_t stackPos,
@@ -3400,13 +3457,13 @@ void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uin
 		return;
 	}
 
-	if (item->isUseable() or item->getID() != spriteId)
+	if (item->getID() != spriteId)
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}
 
-	if (ReturnValue ret = g_actions->canUse(player, pos); ret != RETURNVALUE_NOERROR) {
+	if (ReturnValue ret = g_itemEvents->canUse(player, pos); ret != RETURNVALUE_NOERROR) {
 		if (ret == RETURNVALUE_TOOFARAWAY) {
 			if (std::vector<Direction> listDir; player->getPathTo(pos, listDir, 0, 1, true, true)) {
 				playerAutoWalk(player->getID(), listDir);
@@ -3432,7 +3489,10 @@ void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uin
 	player->resetIdleTime();
 	player->setNextActionTask(nullptr);
 
-	g_actions->useItem(player, pos, index, item, isHotkey);
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(player->getPosition()))
+		spawnOverlay->Trigger(player, Zones::SpawnTrigger::Use);
+
+	g_itemEvents->useItem(player, pos, index, item, isHotkey);
 }
 
 void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPos, const uint8_t fromStackPos, const uint32_t creatureId, const uint16_t spriteId)
@@ -3465,7 +3525,7 @@ void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPo
 		return;
 	}
 
-	if (not item->isUseable() or item->getID() != spriteId)
+	if (item->getID() != spriteId)
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
@@ -3473,9 +3533,9 @@ void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPo
 
 	const Position toPos = creature->getPosition();
 	Position walkToPos = fromPos;
-	ReturnValue ret = g_actions->canUse(player, fromPos);
+	ReturnValue ret = g_itemEvents->canUse(player, fromPos);
 	if (ret == RETURNVALUE_NOERROR) {
-		ret = g_actions->canUse(player, toPos, item);
+		ret = g_itemEvents->canUse(player, toPos, item);
 		if (ret == RETURNVALUE_TOOFARAWAY) {
 			walkToPos = toPos;
 		}
@@ -3525,7 +3585,7 @@ void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPo
 	player->resetIdleTime();
 	player->setNextActionTask(nullptr);
 
-	g_actions->useItemEx(player, fromPos, creature->getPosition(), creature->getTile()->getCreatureStackIndex(creature), item, isHotkey, creature);
+	g_itemEvents->useItemEx(player, fromPos, creature->getPosition(), creature->getTile()->getCreatureStackIndex(creature), item, isHotkey, creature);
 }
 
 void Game::playerCloseContainer(const uint32_t playerId, const uint8_t cid)
@@ -3829,11 +3889,24 @@ void Game::playerRequestTrade(const uint32_t playerId, const Position& pos, uint
 		return;
 	}
 
+	if (Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::NoTrading))
+	{
+		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
+		return;
+	}
+
 	const auto tradePartner = getPlayerByID(tradePlayerId);
 	if (!tradePartner || tradePartner == player) {
 		player->sendCancelMessage("Select a player to trade with.");
 		return;
 	}
+
+	if (Zones::ZoneManager::HasWorldFlag(tradePartner->getPosition(), Zones::ZoneFlag::NoTrading))
+	{
+		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
+		return;
+	}
+
 	if (!Position::areInRange<2, 2, 0>(tradePartner->getPosition(), player->getPosition())) {
 		player->sendCancelMessage(RETURNVALUE_DESTINATIONOUTOFREACH);
 		return;
@@ -4368,6 +4441,9 @@ void Game::playerLookAt(const uint32_t playerId, const Position& pos, uint8_t st
 	} else {
 		lookDistance = -1;
 	}
+
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(playerPos))
+		spawnOverlay->Trigger(player, Zones::SpawnTrigger::Look);
 
 	g_events->eventPlayerOnLook(player, pos, resolution, stackPos, lookDistance);
 }
@@ -6030,6 +6106,9 @@ bool Game::internalCreatureSay(const CreaturePtr& creature, const SpeakClasses t
 		pos = &creature->getPosition();
 	}
 
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(*pos))
+		spawnOverlay->Trigger(creature, Zones::SpawnTrigger::Speak);
+
 	SpectatorVec spectators;
 
 	if (!spectatorsPtr || spectatorsPtr->empty()) {
@@ -6142,7 +6221,7 @@ void Game::playerParryCounter(const uint32_t playerId, const uint32_t attackerId
 	const int32_t shieldDefense = std::max<int32_t>(0, shield->getDefense());
 	const float attackFactor    = player->getAttackFactor();
 	const int32_t maxDmg = static_cast<int32_t>(
-		Weapons::getMaxWeaponDamage(player->getLevel(), shieldSkill, shieldDefense, attackFactor)
+		ItemEvents::getMaxWeaponDamage(player->getLevel(), shieldSkill, shieldDefense, attackFactor)
 		* voc->dualWield.parry_counter_multiplier
 	);
 
@@ -6279,21 +6358,52 @@ void Game::addCreatureHealth(const CreatureConstPtr& target)
 	addCreatureHealth(spectators, target);
 }
 
-void Game::addCreatureHealth(const SpectatorVec& spectators, const CreatureConstPtr& target)
+void Game::addCreatureHealth(const CreatureConstPtr& target, std::span<const CreaturePtr> spectators)
 {
-	for (const auto& c : spectators.players())
+	if (spectators.empty())
+		return;
+
+	NetworkMessage msg;
+	ProtocolGame::AddCreatureHealth(msg, target);
+
+	for (const auto& c : spectators)
 	{
 		auto* player = static_cast<Player*>(c.get());
-		player->sendCreatureHealth(target);
+		player->writeToOutputBuffer(msg);
+	}
+}
+
+void Game::addCreatureHealth(const SpectatorVec& spectators, const CreatureConstPtr& target)
+{
+	const auto players = spectators.players();
+
+	if (players.empty())
+		return;
+
+	NetworkMessage msg;
+	ProtocolGame::AddCreatureHealth(msg, target);
+
+	for (const auto& c : players)
+	{
+		auto* player = static_cast<Player*>(c.get());
+		player->writeToOutputBuffer(msg);
 	}
 }
 
 void Game::addMagicEffect(const Position& position, const uint8_t effect, std::span<const CreaturePtr> spectators)
 {
+	if (spectators.empty())
+		return;
+
+	NetworkMessage msg;
+	ProtocolGame::AddMagicEffect(msg, position, effect);
+
 	for (const auto& c : spectators)
 	{
 		auto* player = static_cast<Player*>(c.get());
-		player->sendMagicEffect(position, effect);
+
+		if (player->canSee(position))
+			player->writeToOutputBuffer(msg);
 	}
 }
 
@@ -6306,10 +6416,20 @@ void Game::addMagicEffect(const Position& position, const uint8_t effect)
 
 void Game::addMagicEffect(const SpectatorVec& spectators, const Position& position, const uint8_t effect)
 {
-	for (const auto& c : spectators.players())
+	const auto players = spectators.players();
+
+	if (players.empty())
+		return;
+
+	NetworkMessage msg;
+	ProtocolGame::AddMagicEffect(msg, position, effect);
+
+	for (const auto& c : players)
 	{
 		auto* player = static_cast<Player*>(c.get());
-		player->sendMagicEffect(position, effect);
+
+		if (player->canSee(position))
+			player->writeToOutputBuffer(msg);
 	}
 }
 
@@ -6323,12 +6443,35 @@ void Game::addDistanceEffect(const Position& fromPos, const Position& toPos, con
 	addDistanceEffect(spectators, fromPos, toPos, effect);
 }
 
-void Game::addDistanceEffect(const SpectatorVec& spectators, const Position& fromPos, const Position& toPos, uint8_t effect)
+void Game::addDistanceEffect(std::span<const CreaturePtr> spectators, const Position& fromPos, const Position& toPos, uint8_t effect)
 {
-	for (const auto& c : spectators.players())
+	if (spectators.empty())
+		return;
+
+	NetworkMessage msg;
+	ProtocolGame::AddDistanceShoot(msg, fromPos, toPos, effect);
+
+	for (const auto& c : spectators)
 	{
 		auto* player = static_cast<Player*>(c.get());
-		player->sendDistanceShoot(fromPos, toPos, effect);
+		player->writeToOutputBuffer(msg);
+	}
+}
+
+void Game::addDistanceEffect(const SpectatorVec& spectators, const Position& fromPos, const Position& toPos, uint8_t effect)
+{
+	const auto players = spectators.players();
+
+	if (players.empty())
+		return;
+
+	NetworkMessage msg;
+	ProtocolGame::AddDistanceShoot(msg, fromPos, toPos, effect);
+
+	for (const auto& c : players)
+	{
+		auto* player = static_cast<Player*>(c.get());
+		player->writeToOutputBuffer(msg);
 	}
 }
 
@@ -6589,7 +6732,7 @@ void Game::shutdown()
 	g_databaseTasks.shutdown();
 	g_dispatcher.shutdown();
 	g_utility_boss.shutdown();
-	map.spawns.clear();
+	Zones::ZoneManager::Clear();
 	raids.clear();
 
 	decay_clean_cycle();
@@ -6607,11 +6750,10 @@ void Game::shutdown()
 
 void Game::coro_timer_cycle()
 {
-	static auto next_tick = std::chrono::steady_clock::now();
-	g_scheduler.addEvent(createSchedulerTask(BlackTek::NextResyncDelay(next_tick, EVENT_CORO_TIMER_CYCLE), [this]() { coro_timer_cycle(); }));
-
-    creature_think_cycle();
+	creature_think_cycle();
 	g_timer_queue.tick();
+
+	Zones::ZoneManager::DrainGraveyard();
 }
 
 void Game::decay_clean_cycle()
@@ -6809,6 +6951,8 @@ void Game::playerInviteToParty(const uint32_t playerId, const uint32_t invitedId
 	if (not player)
 		return;
 
+	if (Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::NoParty))
+		return;
 
 	auto invitedPlayer = getPlayerByID(invitedId);
 
@@ -6848,6 +6992,9 @@ void Game::playerJoinParty(const uint32_t playerId, const uint32_t leaderId)
 	if (!player) {
 		return;
 	}
+
+	if (Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::NoParty))
+		return;
 
 	const auto leader = getPlayerByID(leaderId);
 	if (!leader || !leader->isInviting(player)) {
@@ -7174,6 +7321,9 @@ void Game::playerCreateMarketOffer(const uint32_t playerId, uint8_t type, const 
 		return;
 	}
 
+	if (Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::NoTransaction))
+		return;
+
 	if (g_config.GetBoolean(ConfigManager::MARKET_PREMIUM) && !player->isPremium()) {
 		player->sendMarketLeave();
 		return;
@@ -7337,6 +7487,9 @@ void Game::playerAcceptMarketOffer(const uint32_t playerId, const uint32_t times
 	if (!player->isInMarket()) {
 		return;
 	}
+
+	if (Zones::ZoneManager::HasWorldFlag(player->getPosition(), Zones::ZoneFlag::NoTransaction))
+		return;
 
 	MarketOfferEx offer = IOMarket::getOfferByCounter(timestamp, counter);
 	if (offer.id == 0) {
@@ -7738,111 +7891,105 @@ void Game::removeUniqueItem(const uint16_t uniqueId)
 
 bool Game::reload(const ReloadTypes_t reloadType)
 {
-	switch (reloadType) {
-		case RELOAD_TYPE_ACTIONS: return g_actions->reload();
-		case RELOAD_TYPE_CHAT: return g_chat->load();
-		case RELOAD_TYPE_CONFIG: return g_config.Reload();
-		case RELOAD_TYPE_CREATURESCRIPTS: {
-			g_creatureEvents->reload();
-			g_creatureEvents->removeInvalidEvents();
-			return true;
-		}
-		case RELOAD_TYPE_EVENTS: return g_events->load();
-		case RELOAD_TYPE_GLOBALEVENTS: return g_globalEvents->reload();
-		case RELOAD_TYPE_ITEMS: return Item::items.reload();
-		case RELOAD_TYPE_MONSTERS: return g_monsters.reload();
-		case RELOAD_TYPE_MOUNTS: return mounts.reload();
-		case RELOAD_TYPE_MOVEMENTS: return g_moveEvents->reload();
-		case RELOAD_TYPE_NPCS: {
-			Npcs::reload();
-			return true;
-		}
+    switch (reloadType)
+    {
+        case RELOAD_TYPE_AUGMENTS:
+            BlackTek::Augments::reload();
+            return true;
 
-		case RELOAD_TYPE_QUESTS: return quests.reload();
-		case RELOAD_TYPE_RAIDS: return raids.reload() && raids.startup();
+        case RELOAD_TYPE_CHAT:
+            return g_chat->load();
 
-		case RELOAD_TYPE_SPELLS: {
-			if (!g_spells->reload()) {
-				std::cout << "[Error - Game::reload] Failed to reload spells." << std::endl;
-				std::terminate();
-			} else if (!g_monsters.reload()) {
-				std::cout << "[Error - Game::reload] Failed to reload monsters." << std::endl;
-				std::terminate();
-			}
-			return true;
-		}
+        case RELOAD_TYPE_CONFIG:
+            return g_config.Reload();
 
-		case RELOAD_TYPE_TALKACTIONS: return g_talkActions->reload();
+        case RELOAD_TYPE_EVENTS:
+            return g_events->load();
 
-		case RELOAD_TYPE_WEAPONS: {
-			bool results = g_weapons->reload();
-			g_weapons->loadDefaults();
-			return results;
-		}
+        case RELOAD_TYPE_ITEMS:
+            return Item::items.reload();
 
-		case RELOAD_TYPE_SCRIPTS: {
-			// commented out stuff is TODO, once we approach further in revscriptsys
-			g_actions->clear(true);
-			g_creatureEvents->clear(true);
-			g_moveEvents->clear(true);
-			g_talkActions->clear(true);
-			g_globalEvents->clear(true);
-			g_weapons->clear(true);
-			g_weapons->loadDefaults();
-			g_spells->clear(true);
-			g_scripts->loadScripts("scripts", false, true);
-			g_creatureEvents->removeInvalidEvents();
-			/*
-			Npcs::reload();
-			raids.reload() && raids.startup();
-			Item::items.reload();
-			quests.reload();
-			mounts.reload();
-			g_config.Reload();
-			g_events->load();
-			g_chat->load();
-			*/
-			return true;
-		}
+        case RELOAD_TYPE_MONSTERS:
+            return g_monsters.reload();
 
-		default: {
-			if (!g_spells->reload()) {
-				std::cout << "[Error - Game::reload] Failed to reload spells." << std::endl;
-				std::terminate();
-			} else if (!g_monsters.reload()) {
-				std::cout << "[Error - Game::reload] Failed to reload monsters." << std::endl;
-				std::terminate();
-			}
+        case RELOAD_TYPE_MOUNTS:
+            return mounts.reload();
 
-			g_actions->reload();
-			g_config.Reload();
-			g_creatureEvents->reload();
-			g_monsters.reload();
-			g_moveEvents->reload();
-			Npcs::reload();
-			raids.reload() && raids.startup();
-			g_talkActions->reload();
-			Item::items.reload();
-			g_weapons->reload();
-			g_weapons->clear(true);
-			g_weapons->loadDefaults();
-			quests.reload();
-			mounts.reload();
-			g_globalEvents->reload();
-			g_events->load();
-			g_chat->load();
-			g_actions->clear(true);
-			g_creatureEvents->clear(true);
-			g_moveEvents->clear(true);
-			g_talkActions->clear(true);
-			g_globalEvents->clear(true);
-			g_spells->clear(true);
-			g_scripts->loadScripts("scripts", false, true);
-			g_creatureEvents->removeInvalidEvents();
-			return true;
-		}
-	}
-	return true;
+        case RELOAD_TYPE_NPCS:
+            Npcs::reload();
+            return true;
+
+        case RELOAD_TYPE_QUESTS:
+            return quests.reload();
+
+        case RELOAD_TYPE_RAIDS:
+            return raids.reload() and raids.startup();
+
+        case RELOAD_TYPE_ZONES:
+            Zones::ZoneManager::Reload();
+            return true;
+
+        case RELOAD_TYPE_ALL:
+        {
+            g_config.Reload();
+            Npcs::reload();
+            raids.reload() and raids.startup();
+            Item::items.reload();
+            quests.reload();
+            mounts.reload();
+            g_events->load();
+            g_chat->load();
+            BlackTek::Augments::reload();
+            Zones::ZoneManager::Reload();
+            [[fallthrough]];
+        }
+
+        case RELOAD_TYPE_ACTIONS:
+        case RELOAD_TYPE_MOVEMENTS:
+        case RELOAD_TYPE_SCRIPTS:
+        case RELOAD_TYPE_WEAPONS:
+        case RELOAD_TYPE_SPELLS:
+        case RELOAD_TYPE_TALKACTIONS:
+        case RELOAD_TYPE_CREATURESCRIPTS:
+        case RELOAD_TYPE_GLOBALEVENTS:
+        {
+            g_itemEvents->clear(true);
+            g_creatureEvents->clear(true);
+            g_talkActions->clear(true);
+            g_globalEvents->clear(true);
+            g_spells->clear(true);
+            g_storeManager.clear();
+            g_scripts->loadScripts("scripts", false, true);
+
+            for (CreatureEvent* invalidEvent : g_creatureEvents->getInvalidEvents())
+            {
+                for (const auto& player : players | std::views::values)
+                {
+                    player->purgeCreatureEvent(invalidEvent);
+                }
+                for (const auto& monster : monsters | std::views::values)
+                {
+                    monster->purgeCreatureEvent(invalidEvent);
+                }
+                for (const auto& npc : npcs | std::views::values)
+                {
+                    npc->purgeCreatureEvent(invalidEvent);
+                }
+            }
+            g_creatureEvents->removeInvalidEvents();
+
+            if (not g_monsters.reload())
+            {
+                BlackTek::Console::Error("Game::reload ~ Failed to reload monsters.");
+                std::terminate();
+            }
+            return true;
+        }
+
+        default:
+            BlackTek::Console::Warn("Game::reload ~ Unknown reload type: {}", static_cast<int>(reloadType));
+            return false;
+    }
 }
 
 void Game::resetDamageTracking(const uint32_t monsterId)

@@ -11,9 +11,8 @@
 #include "game.h"
 #include "iologindata.h"
 #include "monster.h"
-#include "movement.h"
+#include "itemevents.h"
 #include "scheduler.h"
-#include "weapons.h"
 #include "player.h"
 #include "spells.h"
 #include "accountmanager.h"
@@ -23,8 +22,7 @@ extern ConfigManager g_config;
 extern Game g_game;
 extern Chat* g_chat;
 extern Vocations g_vocations;
-extern MoveEvents* g_moveEvents;
-extern Weapons* g_weapons;
+extern ItemEvents* g_itemEvents;
 extern CreatureEvents* g_creatureEvents;
 extern Events* g_events;
 
@@ -863,6 +861,15 @@ ItemPtr Player::getInventoryItem(const uint32_t slot) const
 	return inventory[slot];
 }
 
+const ItemPtr& Player::getInventoryItemRef(const slots_t slot) const noexcept
+{
+	static const ItemPtr empty;
+	if (slot < CONST_SLOT_FIRST or slot > CONST_SLOT_LAST)
+		return empty;
+
+	return inventory[slot];
+}
+
 bool Player::isInventorySlot(const slots_t slot)
 {
 	return slot >= CONST_SLOT_FIRST && slot <= CONST_SLOT_LAST;
@@ -906,8 +913,7 @@ ItemPtr Player::getWeapon(const slots_t slot, const bool ignoreAmmo) const
 				for (ContainerIterator containerItem = quiver->iterator(); containerItem.hasNext();
 					containerItem.advance()) {
 					if (itemType.ammoType == (*containerItem)->getAmmoType()) {
-						const auto& weapon = g_weapons->getWeapon(*containerItem);
-						if (weapon && weapon->ammoCheck(this->getPlayer())) {
+						if (g_itemEvents->hasWeaponBehavior(*containerItem) and g_itemEvents->ammoCheck(*containerItem, this->getPlayer())) {
 							return *containerItem;
 						}
 					}
@@ -1104,7 +1110,8 @@ uint16_t Player::getClientIcons() const
 		icons |= ICON_REDSWORDS;
 	}
 
-	if (tile.lock() && tile.lock()->hasFlag(TILESTATE_PROTECTIONZONE)) {
+	if (tile.lock() and Zones::ZoneManager::HasWorldFlag(tile.lock()->getPosition(), Zones::ZoneFlag::Protection))
+	{
 		icons |= ICON_PIGEON;
 
 		// Don't show ICON_SWORDS if player is in protection zone.
@@ -1506,9 +1513,8 @@ bool Player::canWalkthrough(const CreatureConstPtr& creature) const
 	}
 
 	const auto& playerTile = player->getTile();
-	if (!playerTile || (!playerTile->hasFlag(TILESTATE_PROTECTIONZONE) && player->getLevel() > static_cast<uint32_t>(g_config.GetNumber(ConfigManager::PROTECTION_LEVEL)))) {
+	if (not playerTile or (not Zones::ZoneManager::HasWorldFlag(playerTile->getPosition(), Zones::ZoneFlag::Protection) && player->getLevel() > static_cast<uint32_t>(g_config.GetNumber(ConfigManager::PROTECTION_LEVEL))))
 		return false;
-	}
 
 	const auto& playerTileGround = playerTile->getGround();
 	if (!playerTileGround || !playerTileGround->hasWalkStack()) {
@@ -1542,7 +1548,7 @@ bool Player::canWalkthroughEx(const CreatureConstPtr& creature) const
 	}
 
 	const auto& playerTile = player->getTile();
-	return playerTile && (playerTile->hasFlag(TILESTATE_PROTECTIONZONE) || player->getLevel() <= static_cast<uint32_t>(g_config.GetNumber(ConfigManager::PROTECTION_LEVEL)));
+	return playerTile and (Zones::ZoneManager::HasWorldFlag(playerTile->getPosition(), Zones::ZoneFlag::Protection) or player->getLevel() <= static_cast<uint32_t>(g_config.GetNumber(ConfigManager::PROTECTION_LEVEL)));
 }
 
 void Player::onReceiveMail() const
@@ -1664,37 +1670,39 @@ void Player::sendPing()
 	int64_t timeNow = OTSYS_TIME();
 
 	bool hasLostConnection = false;
-	if ((timeNow - lastPing) >= 5000) {
+
+	if ((timeNow - lastPing) >= 5000)
+	{
 		lastPing = timeNow;
-		if (client) {
+
+		if (client)
 			client->sendPing();
-		} else {
+
+		else
 			hasLostConnection = true;
-		}
 	}
 
 	int64_t noPongTime = timeNow - lastPong;
-	if ((hasLostConnection || noPongTime >= 7000) && getAttackedCreature() && getAttackedCreature()->getPlayer()) {
+
+	if ((hasLostConnection or noPongTime >= 7000) and getAttackedCreature() and getAttackedCreature()->getPlayer())
 		setAttackedCreature(nullptr);
-	}
 
 	int32_t noPongKickTime = vocation->getNoPongKickTime();
-	if (pzLocked && noPongKickTime < 60000) {
+
+	if (pzLocked and noPongKickTime < 60000)
 		noPongKickTime = 60000;
-	}
 
-	if (noPongTime >= noPongKickTime) {
-		if (isConnecting || getTile()->hasFlag(TILESTATE_NOLOGOUT)) {
+	if (noPongTime >= noPongKickTime) 
+	{
+		if (isConnecting or Zones::ZoneManager::HasWorldFlag(getPosition(), Zones::ZoneFlag::NoLogout))
 			return;
-		}
 
-		if (!g_creatureEvents->playerLogout(this->getPlayer())) {
+		if (not g_creatureEvents->playerLogout(this->getPlayer()))
 			return;
-		}
 
-		if (client) {
+		if (client)
 			client->logout(true, true);
-		}
+
 		g_game.removeCreature(this->getPlayer(), true);
 	}
 }
@@ -1889,7 +1897,8 @@ void Player::onCreatureAppear(const CreaturePtr& creature, bool isLogin)
 			for (int32_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; ++slot) {
 				if (const auto& item = inventory[slot]) {
 					item->startDecaying();
-					g_moveEvents->onPlayerEquip(this->getPlayer(), item, static_cast<slots_t>(slot), false);
+					g_itemEvents->fireEquip(this->getPlayer(), item, static_cast<slots_t>(slot), false);
+					setSlotCombatHookMask(static_cast<slots_t>(slot), g_itemEvents->getCombatHookMask(item));
 				}
 			}
 
@@ -2004,7 +2013,8 @@ void Player::onRemoveCreature(const CreaturePtr& creature, bool isLogout)
 	if (creature == getCreature()) {
 		for (int32_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; ++slot) {
 			if (const auto& item = inventory[slot]) {
-				g_moveEvents->onPlayerDeEquip(this->getPlayer(), item, static_cast<slots_t>(slot));
+				g_itemEvents->fireDeEquip(this->getPlayer(), item, static_cast<slots_t>(slot));
+				clearSlotCombatHookMask(static_cast<slots_t>(slot));
 			}
 		}
 		if (isLogout) {
@@ -2291,6 +2301,8 @@ void Player::setNextWalkActionTask(SchedulerTask* task)
 
 void Player::setNextActionTask(SchedulerTask* task, bool resetIdleTime /*= true */)
 {
+	++attack_schedule_generation;
+
 	if (actionTaskEvent != 0)
 	{
 		g_scheduler.stopEvent(actionTaskEvent);
@@ -2340,7 +2352,7 @@ void Player::onThink(const uint32_t interval)
 		addMessageBuffer();
 	}
 
-	if (not getTile()->hasFlag(TILESTATE_NOLOGOUT) and not isAccessPlayer())
+	if (not Zones::ZoneManager::HasWorldFlag(getPosition(), Zones::ZoneFlag::NoLogout) and not isAccessPlayer())
 	{
 		idleTime += interval;
 		const int32_t kickAfterMinutes = g_config.GetNumber(ConfigManager::KICK_AFTER_MINUTES);
@@ -2885,7 +2897,7 @@ void Player::death(const CreaturePtr& lastHitCreature)
 			sumMana += vocation->getReqMana(i);
 		}
 
-		double deathLossPercent = getLostPercent() * (unfairFightReduction / 100.);
+		double deathLossPercent = Zones::ZoneManager::HasWorldFlag(getPosition(), Zones::ZoneFlag::NoDeathPenalty) ? 0.0 : getLostPercent() * (unfairFightReduction / 100.);
 		removeManaSpent(static_cast<uint64_t>((sumMana + manaSpent) * deathLossPercent), false);
 
 		//Skill loss
@@ -2958,6 +2970,7 @@ void Player::death(const CreaturePtr& lastHitCreature)
 		while (it != end) {
 			if ((*it)->isPersistent()) {
 				ConditionHandle cond = std::move(*it);
+				cond->markRemoved();
 				it = conditions.erase(it);
 				cond->endCondition(this->getPlayer());
 				onEndCondition(cond->getType());
@@ -2972,6 +2985,7 @@ void Player::death(const CreaturePtr& lastHitCreature)
 		while (it != end) {
 			if ((*it)->isPersistent()) {
 				ConditionHandle cond = std::move(*it);
+				cond->markRemoved();
 				it = conditions.erase(it);
 				cond->endCondition(this->getPlayer());
 				onEndCondition(cond->getType());
@@ -3034,6 +3048,9 @@ void Player::addInFightTicks(const bool pzlock /*= false*/)
 
 	if (pzlock) {
 		pzLocked = true;
+
+		if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+			spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::GainPzLock);
 	}
 
 	auto condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_INFIGHT, g_config.GetNumber(ConfigManager::PZ_LOCKED), 0);
@@ -3459,7 +3476,7 @@ BlackTek::ItemLocation Player::resolveItemDestination(int32_t& index, const Item
 		ReturnValue ret = canAddItem(slotIndex, candidateItem, candidateItem->getItemCount(), candidateFlags);
 
 		if (ret == RETURNVALUE_NOERROR)
-			ret = g_moveEvents->onPlayerEquip(getPlayer(), candidateItem, static_cast<slots_t>(slotIndex), true);
+			ret = g_itemEvents->fireEquip(getPlayer(), candidateItem, static_cast<slots_t>(slotIndex), true);
 
 		return ret;
 	};
@@ -3794,11 +3811,17 @@ void Player::notifyItemAdded(const ItemPtr& item, const BlackTek::ItemLocation& 
 	if (link == LINK_OWNER)
 	{
 		//calling movement scripts
-		g_moveEvents->onPlayerEquip(this->getPlayer(), item, static_cast<slots_t>(index), false);
+		g_itemEvents->fireEquip(this->getPlayer(), item, static_cast<slots_t>(index), false);
 		g_events->eventPlayerOnInventoryUpdate(this->getPlayer(), item, static_cast<slots_t>(index), true);
 
 		if (isInventorySlot(static_cast<slots_t>(index)))
 		{
+			if (item)
+				setSlotCombatHookMask(static_cast<slots_t>(index), g_itemEvents->getCombatHookMask(item));
+
+			if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+				spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::Equip);
+
 			if (item and item->isAugmented())
 			{
 				attack_modifier_count += item->getAttackModifierCount();
@@ -3863,11 +3886,16 @@ void Player::notifyItemRemoved(const ItemPtr& item, const BlackTek::ItemLocation
 	if (link == LINK_OWNER)
 	{
 		//calling movement scripts
-		g_moveEvents->onPlayerDeEquip(this->getPlayer(), item, static_cast<slots_t>(index));
+		g_itemEvents->fireDeEquip(this->getPlayer(), item, static_cast<slots_t>(index));
 		g_events->eventPlayerOnInventoryUpdate(this->getPlayer(), item, static_cast<slots_t>(index), false);
 
 		if (isInventorySlot(static_cast<slots_t>(index)))
 		{
+			clearSlotCombatHookMask(static_cast<slots_t>(index));
+
+			if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+				spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::DeEquip);
+
 			if (item and item->isAugmented())
 			{
 				attack_modifier_count -= item->getAttackModifierCount();
@@ -4149,9 +4177,9 @@ void Player::doSecondaryAttack(const CreaturePtr& target)
 	m_is_secondary_attack = true;
 	setDualWieldMultiplier(voc->dualWield.secondaryMultiplier);
 
-	if (const auto& weapon = g_weapons->getWeapon(secondaryTool))
+	if (g_itemEvents->hasWeaponBehavior(secondaryTool))
 	{
-		weapon->useWeapon(getPlayer(), secondaryTool, target);
+		g_itemEvents->useAsWeapon(getPlayer(), secondaryTool, target);
 	}
 	else
 	{
@@ -4164,7 +4192,7 @@ void Player::doSecondaryAttack(const CreaturePtr& target)
 				const int32_t attackValue = std::max<int32_t>(0, secondaryTool->getAttack());
 				const float attackFactor = getAttackFactor();
 				const int32_t maxDmg = static_cast<int32_t>(
-					Weapons::getMaxWeaponDamage(getLevel(), attackSkill, attackValue, attackFactor)
+					ItemEvents::getMaxWeaponDamage(getLevel(), attackSkill, attackValue, attackFactor)
 					* voc->meleeDamageMultiplier
 					* getDualWieldMultiplier()
 				);
@@ -4202,7 +4230,7 @@ void Player::doSecondaryAttack(const CreaturePtr& target)
 				const int32_t attackValue = std::max<int32_t>(0, secondaryTool->getAttack());
 				const float attackFactor  = getAttackFactor();
 				const int32_t maxDmg = static_cast<int32_t>(
-					Weapons::getMaxWeaponDamage(getLevel(), attackSkill, attackValue, attackFactor)
+					ItemEvents::getMaxWeaponDamage(getLevel(), attackSkill, attackValue, attackFactor)
 					* voc->distDamageMultiplier
 					* getDualWieldMultiplier()
 				);
@@ -4279,28 +4307,34 @@ void Player::doAttacking(uint32_t)
 			tool = getWeapon();
 		}
 
-		const auto& weapon = g_weapons->getWeapon(tool);
+		if (g_itemEvents->hasWeaponBehavior(tool))
+		{
+			if (not ItemEvents::interruptSwing(tool))
+				result = g_itemEvents->useAsWeapon(this->getPlayer(), tool, getAttackedCreature());
 
-		if (weapon) {
-			if (!weapon->interruptSwing()) {
-				result = weapon->useWeapon(this->getPlayer(), tool, getAttackedCreature());
-			} else if (!classicSpeed && !canDoAction()) {
+			else if (not classicSpeed and not canDoAction())
 				delay = getNextActionTime();
-			} else {
-				result = weapon->useWeapon(this->getPlayer(), tool, getAttackedCreature());
-			}
-		} else {
-			result = Weapon::useFist(this->getPlayer(), getAttackedCreature());
+
+			else
+				result = g_itemEvents->useAsWeapon(this->getPlayer(), tool, getAttackedCreature());
+		} 
+		else 
+		{
+			result = ItemEvents::useFist(this->getPlayer(), getAttackedCreature());
 		}
 
 		setDualWieldMultiplier(1.0f);
 
-		SchedulerTask* task = createSchedulerTask(std::max<uint32_t>(SCHEDULER_MINTICKS, delay), [id = getID()]() { g_game.checkCreatureAttack(id); });
-		if (!classicSpeed) {
-			setNextActionTask(task, false);
-		} else {
-			g_scheduler.stopEvent(classicAttackEvent);
-			classicAttackEvent = g_scheduler.addEvent(task);
+		const uint32_t armDelay = std::max<uint32_t>(SCHEDULER_MINTICKS, delay);
+		if (not classicSpeed)
+		{
+			++attack_schedule_generation;
+			armNextAttackCheck(armDelay, attack_schedule_generation, false);
+		}
+		else
+		{
+			++classic_attack_schedule_generation;
+			armNextAttackCheck(armDelay, classic_attack_schedule_generation, true);
 		}
 
 		if (result)
@@ -4322,6 +4356,16 @@ void Player::doAttacking(uint32_t)
 			}
 		}
 	}
+}
+
+CoroTask Player::armNextAttackCheck(uint32_t delay, uint32_t generation, bool useClassicSchedule) noexcept
+{
+	const uint32_t id = getID();
+	co_await SleepFor{delay, [id]() { return static_cast<bool>(g_game.getPlayerByID(id)); }};
+
+	const uint32_t currentGeneration = useClassicSchedule ? classic_attack_schedule_generation : attack_schedule_generation;
+	if (generation == currentGeneration)
+		g_game.checkCreatureAttack(id);
 }
 
 uint64_t Player::getGainedExperience(const CreaturePtr& attacker) const
@@ -4470,6 +4514,9 @@ void Player::onEndCondition(const ConditionType_t type)
 		pzLocked = false;
 		clearAttacked();
 
+		if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+			spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::LosePzLock);
+
 		if (getSkull() != SKULL_RED && getSkull() != SKULL_BLACK) {
 			setSkull(SKULL_NONE);
 		}
@@ -4530,6 +4577,9 @@ void Player::onAttackedCreature(const CreaturePtr& target, bool addFightTicks /*
 		if (!pzLocked && g_game.getWorldType() == WORLD_TYPE_PVP_ENFORCED) {
 			pzLocked = true;
 			sendIcons();
+
+			if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+				spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::GainPzLock);
 		}
 
 		targetPlayer->addInFightTicks();
@@ -4541,6 +4591,9 @@ void Player::onAttackedCreature(const CreaturePtr& target, bool addFightTicks /*
 			if (!pzLocked) {
 				pzLocked = true;
 				sendIcons();
+
+				if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+					spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::GainPzLock);
 			}
 
 			//if (!Combat::isInPvpZone(this->getPlayer(), targetPlayer) && !isInWar(targetPlayer)) {
@@ -4677,6 +4730,9 @@ void Player::gainExperience(uint64_t gainExp, const CreaturePtr& source)
 		return;
 	}
 
+	if (Zones::ZoneManager::HasWorldFlag(getPosition(), Zones::ZoneFlag::NoExperience))
+		return;
+
 	addExperience(source, gainExp, true);
 }
 
@@ -4736,9 +4792,9 @@ bool Player::lastHitIsPlayer(const CreaturePtr& lastHitCreature)
 	return lastHitMaster && lastHitMaster->getPlayer();
 }
 
-void Player::changeHealth(int32_t healthChange, bool sendHealthChange/* = true*/)
+void Player::changeHealth(int32_t healthChange, bool sendHealthChange/* = true*/, std::optional<std::span<const CreaturePtr>> spectators/* = std::nullopt*/)
 {
-	Creature::changeHealth(healthChange, sendHealthChange);
+	Creature::changeHealth(healthChange, sendHealthChange, spectators);
 	sendStats();
 }
 
@@ -4750,6 +4806,9 @@ void Player::changeMana(int32_t manaChange)
 		} else {
 			mana = std::max<int32_t>(0, mana + manaChange);
 		}
+
+		if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+			spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::ManaChange);
 	}
 
 	sendStats();
@@ -4763,6 +4822,9 @@ void Player::changeSoul(int32_t soulChange)
 		soul = std::max<int32_t>(0, soul + soulChange);
 	}
 
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+		spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::SoulChange);
+
 	sendStats();
 }
 
@@ -4771,6 +4833,9 @@ void Player::addSoul(uint8_t gain)
 {
 	if (gain > 0) {
 		soul += gain;
+
+		if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+			spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::SoulChange);
 	}
 	sendStats();
 }
@@ -4779,6 +4844,9 @@ void Player::addStamina(uint16_t gain)
 {
 	if (gain > 0) {
 		staminaMinutes += gain;
+
+		if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+			spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::StaminaChange);
 	}
 	sendStats();
 }
@@ -4790,6 +4858,9 @@ void Player::changeStamina(int32_t amount)
 	} else {
 		staminaMinutes = std::max<int32_t>(0, staminaMinutes + amount);
 	}
+
+	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(getPosition()))
+		spawnOverlay->Trigger(getPlayer(), Zones::SpawnTrigger::StaminaChange);
 }
 
 bool Player::canWear(uint32_t lookType, uint8_t addons) const
@@ -5331,7 +5402,8 @@ bool Player::toggleMount(const bool mount)
 			return false;
 		}
 
-		if (!group->access && tile.lock()->hasFlag(TILESTATE_PROTECTIONZONE)) {
+		if (not group->access and Zones::ZoneManager::HasWorldFlag(getPosition(), Zones::ZoneFlag::Protection))
+		{
 			sendCancelMessage(RETURNVALUE_ACTIONNOTPERMITTEDINPROTECTIONZONE);
 			return false;
 		}
@@ -5707,6 +5779,26 @@ size_t Player::getMaxDepotItems() const
 	}
 
 	return g_config.GetNumber(isPremium() ? ConfigManager::DEPOT_PREMIUM_LIMIT : ConfigManager::DEPOT_FREE_LIMIT);
+}
+
+void Player::setSlotCombatHookMask(slots_t slot, uint16_t mask) noexcept
+{
+	combatHookMasks[slot] = mask;
+	combatHookMask |= mask;
+}
+
+void Player::clearSlotCombatHookMask(slots_t slot) noexcept
+{
+	if (combatHookMasks[slot] == 0)
+		return;
+
+	combatHookMasks[slot] = 0;
+
+	uint16_t recomputed = 0;
+	for (const auto slotMask : combatHookMasks)
+		recomputed |= slotMask;
+
+	combatHookMask = recomputed;
 }
 
 void Player::cacheModifier(const BlackTek::DamageModifier& modifier) noexcept
@@ -6160,13 +6252,12 @@ void Player::getOpenPositionsInRadius(int radius, std::vector<Position>& out) co
 
 			auto tile = g_game.map.getTile(pos);
 			const bool isValid = tile
-			&& g_game.canThrowObjectTo(center, pos)
-			&& !tile->getZone() == ZONE_PROTECTION
-			&& !tile->hasFlag(TILESTATE_PROTECTIONZONE
-				| TILESTATE_FLOORCHANGE
+			and g_game.canThrowObjectTo(center, pos)
+			and not Zones::ZoneManager::HasWorldFlag(pos, Zones::ZoneFlag::Protection)
+			and not Zones::ZoneManager::HasWorldFlag(pos, Zones::ZoneFlag::NoPvp)
+			and not tile->hasFlag(TILESTATE_FLOORCHANGE
 				| TILESTATE_TELEPORT
 				| TILESTATE_IMMOVABLEBLOCKSOLID
-				| TILESTATE_NOPVPZONE
 				| TILESTATE_IMMOVABLEBLOCKPATH
 				| TILESTATE_IMMOVABLENOFIELDBLOCKPATH);
 
@@ -6240,13 +6331,12 @@ Position Player::generateAttackPosition(std::optional<CreaturePtr> attacker, Pos
 
 		const auto& tile = g_game.map.getTile(targetLocation);
 		const bool isValid = tile
-			&& g_game.canThrowObjectTo(defensePosition, targetLocation)
-			&& !tile->getZone() == ZONE_PROTECTION
-			&& !tile->hasFlag(TILESTATE_PROTECTIONZONE
-				| TILESTATE_FLOORCHANGE
+			and g_game.canThrowObjectTo(defensePosition, targetLocation)
+			and not Zones::ZoneManager::HasWorldFlag(targetLocation, Zones::ZoneFlag::Protection)
+			and not Zones::ZoneManager::HasWorldFlag(targetLocation, Zones::ZoneFlag::NoPvp)
+			and not tile->hasFlag(TILESTATE_FLOORCHANGE
 				| TILESTATE_TELEPORT
 				| TILESTATE_IMMOVABLEBLOCKSOLID
-				| TILESTATE_NOPVPZONE
 				| TILESTATE_IMMOVABLEBLOCKPATH
 				| TILESTATE_IMMOVABLENOFIELDBLOCKPATH);
 

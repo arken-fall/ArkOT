@@ -9,6 +9,7 @@
 #include "creature.h"
 #include "tasks.h"
 #include "storewindow.h"
+#include "knowncreaturecache.h"
 
 class NetworkMessage;
 class Player;
@@ -95,6 +96,19 @@ class ProtocolGame : public Protocol
 			return protocol_profile and protocol_profile->hasFeature(feature);
 		}
 
+		// Shared spectator payloads are written once and handed to every
+		// client, so they take the layout of the listener this server runs
+		// (see setSharedModernLayout); the per-connection writers below
+		// branch on usesModernLayout() instead.
+		static void AddCreatureHealth(NetworkMessage& msg, const CreatureConstPtr& creature);
+		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type);
+		static void AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type);
+		static void AddTextMessage(NetworkMessage& msg, const TextMessage& message);
+
+		static void setSharedModernLayout(bool modern) {
+			shared_modern_layout = modern;
+		}
+
 	private:
 		ProtocolGame_ptr getThis() {
 			return std::static_pointer_cast<ProtocolGame>(shared_from_this());
@@ -102,6 +116,11 @@ class ProtocolGame : public Protocol
 		void connect(uint32_t playerId, OperatingSystem_t operatingSystem);
 		void disconnectClient(const std::string& message) const;
 		void writeToOutputBuffer(const NetworkMessage& msg);
+
+		void authenticateAndLogin(std::string accountName, std::string password, std::string characterName, std::string token, uint32_t tokenTime, OperatingSystem_t operatingSystem, std::string sessionKey);
+
+		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type, bool modernLayout);
+		static void AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type, bool modernLayout);
 
 		void release() override;
 
@@ -425,7 +444,7 @@ class ProtocolGame : public Protocol
 			g_dispatcher.addTask(createTask(delay, std::forward<Callable>(function)));
 		}
 
-		std::unordered_set<uint32_t> knownCreatureSet;
+		BlackTek::Net::KnownCreatureCache<1300, 2048> knownCreatureSet;
 		ShopInfoList shopItemList;
 		PlayerPtr player = nullptr;
 		std::string account_name{};
@@ -458,6 +477,10 @@ class ProtocolGame : public Protocol
 		// Full build number from the login packet's u32 (e.g. 13400604);
 		// `version` above stays the u16 protocol version (e.g. 1340).
 		uint32_t client_version = 0;
+
+		// layout of the shared spectator payloads; set once at startup from
+		// the listener the server runs, since one message serves all clients
+		static bool shared_modern_layout;
 };
 
 // Same gameworld protocol, listening on the modern port. The server talks

@@ -11,6 +11,7 @@
 #include "declarations.h"
 #include "gamemodel.h"
 #include "itemlocation.h"
+#include "chunk.h"
 
 #include <optional>
 
@@ -24,10 +25,6 @@ enum tileflags_t : uint32_t {
 	TILESTATE_FLOORCHANGE_WEST = 1 << 4,
 	TILESTATE_FLOORCHANGE_SOUTH_ALT = 1 << 5,
 	TILESTATE_FLOORCHANGE_EAST_ALT = 1 << 6,
-	TILESTATE_PROTECTIONZONE = 1 << 7,
-	TILESTATE_NOPVPZONE = 1 << 8,
-	TILESTATE_NOLOGOUT = 1 << 9,
-	TILESTATE_PVPZONE = 1 << 10,
 	TILESTATE_TELEPORT = 1 << 11,
 	TILESTATE_MAGICFIELD = 1 << 12,
 	TILESTATE_MAILBOX = 1 << 13,
@@ -235,20 +232,6 @@ class Tile : public SharedObject
 			this->flags &= ~flag;
 		}
 
-		ZoneType_t getZone() const {
-			if (hasFlag(TILESTATE_PROTECTIONZONE)) {
-				return ZONE_PROTECTION;
-			} else if (hasFlag(TILESTATE_NOPVPZONE)) {
-				return ZONE_NOPVP;
-			} else if (hasFlag(TILESTATE_PVPZONE)) {
-				return ZONE_PVP;
-			} else if (hasFlag(TILESTATE_NOLOGOUT)) {
-				return ZONE_NOLOGOUT;
-			} else {
-				return ZONE_NORMAL;
-			}
-		}
-
 		bool hasHeight(uint32_t n) const;
 
 		std::string getDescription(int32_t lookDistance);
@@ -274,7 +257,7 @@ class Tile : public SharedObject
 		ReturnValue canEnter(MonsterPtr monster, uint32_t flags);
 		ReturnValue canEnter(NpcPtr npc, uint32_t flags);
 
-		void addItem(const ItemPtr& item);
+		SpectatorVec addItem(const ItemPtr& item);
 		void addItemSilently(const ItemPtr& item);
 
 		void updateItem(const ItemPtr& item, uint16_t itemId, uint32_t count);
@@ -288,18 +271,31 @@ class Tile : public SharedObject
 		int32_t getCreatureStackIndex(const CreatureConstPtr& creature) const;
 		uint32_t getItemTypeCount(uint16_t itemId, int32_t subType = -1) const;
 		BlackTek::GameModel getGameModelAt(size_t index);
+		[[nodiscard]] std::optional<uint16_t> getItemIdAt(size_t index) const noexcept;
 
 		void notifyItemAdded(const ItemPtr& item, const BlackTek::ItemLocation& oldLocation, int32_t index, NotifyLink link = LINK_OWNER);
+		void notifyItemAdded(const ItemPtr& item, const BlackTek::ItemLocation& oldLocation, int32_t index, std::span<const CreaturePtr> spectators, NotifyLink link = LINK_OWNER);
 		void notifyItemRemoved(const ItemPtr& item, const BlackTek::ItemLocation& newLocation, int32_t index, NotifyLink link = LINK_OWNER);
+		void notifyItemRemoved(const ItemPtr& item, const BlackTek::ItemLocation& newLocation, int32_t index, std::span<const CreaturePtr> spectators, NotifyLink link = LINK_OWNER);
 
 		void notifyCreatureAdded(const CreaturePtr& creature, const TilePtr& oldTile);
-		void notifyCreatureAdded(const CreaturePtr& creature, const TilePtr& oldTile, const SpectatorVec& spectators);
+		void notifyCreatureAdded(const CreaturePtr& creature, const TilePtr& oldTile, std::span<const CreaturePtr> spectators);
 		void notifyCreatureRemoved(const CreaturePtr& creature, const TilePtr& newTile);
-		void notifyCreatureRemoved(const CreaturePtr& creature, const TilePtr& newTile, const SpectatorVec& spectators);
+		void notifyCreatureRemoved(const CreaturePtr& creature, const TilePtr& newTile, std::span<const CreaturePtr> spectators);
 
 		const Position& getPosition() const
 		{
 			return tilePos;
+		}
+
+		BlackTek::World::ChunkHandle getOwningChunk() const
+		{
+			return owning_chunk;
+		}
+
+		void setOwningChunk(BlackTek::World::ChunkHandle chunk)
+		{
+			owning_chunk = chunk;
 		}
 
 		bool isRemoved() const
@@ -336,18 +332,21 @@ class Tile : public SharedObject
 	private:
         TilePtr resolveFloorChangeDestination(uint32_t& flags);
 
-		void onAddTileItem(const ItemPtr& item);
-		void onUpdateTileItem(const ItemPtr& oldItem, const ItemType& oldType, const ItemPtr& newItem, const ItemType& newType);
-		void onRemoveTileItem(const SpectatorVec& spectators, const std::vector<int32_t>& oldStackPosVector, const ItemPtr& item);
-		void onUpdateTile(const SpectatorVec& spectators);
+		void onAddTileItem(const ItemPtr& item, std::span<const CreaturePtr> spectators);
+		void onUpdateTileItem(const ItemPtr& oldItem, const ItemType& oldType, const ItemPtr& newItem, const ItemType& newType, std::span<const CreaturePtr> spectators);
+		void onRemoveTileItem(std::span<const CreaturePtr> spectators, const std::vector<int32_t>& oldStackPosVector, const ItemPtr& item);
+		void onUpdateTile(std::span<const CreaturePtr> spectators);
+		void removeItem(const ItemPtr& item, uint32_t count, std::span<const CreaturePtr> spectators);
 		void applyItemProperties(const ItemConstPtr& item);
 		void recalculateItemProperties();
 		void setTileFlags(const ItemConstPtr& item);
 		void resetTileFlags(const ItemPtr& item);
+		void syncChunkFlags();
 
 		House* house = nullptr;
 		ItemPtr ground = nullptr;
 		Position tilePos;
+		BlackTek::World::ChunkHandle owning_chunk;
 		uint32_t flags = 0;
 		uint32_t itemProperties = 0;
 		TileItemsPtr items;

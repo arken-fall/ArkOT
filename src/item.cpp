@@ -10,9 +10,9 @@
 #include "game.h"
 #include "scheduler.h"
 #include "iologindata.h"
-#include "actions.h"
 #include "spells.h"
 #include "events.h"
+#include "itemevents.h"
 
 #include <fmt/format.h>
 #include <cassert>
@@ -20,7 +20,7 @@
 extern Game g_game;
 extern Spells* g_spells;
 extern Vocations g_vocations;
-extern Events* g_events;
+extern ItemEvents* g_itemEvents;
 
 Items Item::items;
 
@@ -177,7 +177,12 @@ ItemPtr Item::CreateItem(PropStream& propStream)
 			break;
 	}
 
-	return Item::CreateItem(id, 0);
+	auto item = Item::CreateItem(id, 0);
+
+	if (item)
+		++s_loadedItemCount;
+
+	return item;
 }
 
 Item::Item(const uint16_t type, uint16_t count /*= 0*/) :
@@ -2363,6 +2368,7 @@ void ItemAttributes::setStrAttr(itemAttrTypes type, std::string_view value)
 	}
 
 	if (value.empty()) {
+		removeAttribute(type);
 		return;
 	}
 
@@ -2550,7 +2556,7 @@ const bool Item::addAugment(const std::shared_ptr<BlackTek::Augment>& augment)
 		race_modifiers_count += augment->race_triggers();
 		named_modifiers_count += augment->name_count();
 		augments->push_back(augment);
-		//g_events->eventItemOnAugment(getItem(), augment);
+		g_itemEvents->fireAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
 		return true;
 	}
 
@@ -2572,7 +2578,7 @@ const bool Item::addAugment(const std::shared_ptr<BlackTek::Augment>& augment)
 	race_modifiers_count += augment->race_triggers();
 	named_modifiers_count += augment->name_count();
 	augments->push_back(augment);
-    //g_events->eventItemOnAugment(getItem(), augment);
+    g_itemEvents->fireAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
     return true;
 }
 
@@ -2598,7 +2604,7 @@ const bool Item::addAugment(std::string_view augmentName)
 		creature_modifiers_count += augment->creature_triggers();
 		race_modifiers_count += augment->race_triggers();
 		named_modifiers_count += augment->name_count();
-		//g_events->eventItemOnAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
+		g_itemEvents->fireAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
 		return true;
 	}
 	return false;
@@ -2623,7 +2629,7 @@ const bool Item::removeAugment(std::shared_ptr<BlackTek::Augment>& augment)
 		creature_modifiers_count -= augment->creature_triggers();
 		race_modifiers_count -= augment->race_triggers();
 		named_modifiers_count -= augment->name_count();
-		g_events->eventItemOnRemoveAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
+		g_itemEvents->fireRemoveAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
 	}
 	return removed;
 }
@@ -2652,7 +2658,7 @@ const bool Item::removeAugment(std::string_view name)
 			creature_modifiers_count -= augment->creature_triggers();
 			race_modifiers_count -= augment->race_triggers();
 			named_modifiers_count -= augment->name_count();
-	        g_events->eventItemOnRemoveAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
+	        g_itemEvents->fireRemoveAugment(std::static_pointer_cast<Item>(shared_from_this()), augment);
         }
         return match;
     });

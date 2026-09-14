@@ -26,12 +26,12 @@
 
 class House;
 class NetworkMessage;
-class Weapon;
 class ProtocolGame;
 class Npc;
 class SchedulerTask;
 class Bed;
 class Guild;
+struct CoroTask;
 
 constexpr uint16_t MaximumStamina = 2520;
 
@@ -179,6 +179,7 @@ class Player final : public Creature
 		ContainerPtr		getContainerByID(uint8_t cid);
 		ItemPtr				getInventoryItem(slots_t slot) const;
 		ItemPtr				getInventoryItem(uint32_t slot) const;
+		[[nodiscard]] const ItemPtr& getInventoryItemRef(slots_t slot) const noexcept;
 		ContainerPtr		getDepotChest(uint32_t depotId, bool autoCreate);
 		ContainerPtr&		getDepotLocker();
 		ContainerPtr&		getRewardChest();
@@ -519,6 +520,8 @@ class Player final : public Creature
 		[[nodiscard]] bool	hasConversionModifiers() const noexcept		{ return conversion_modifier_count > 0; }
 		[[nodiscard]] bool	hasReformModifiers() const noexcept			{ return reform_modifier_count > 0;		}
 		[[nodiscard]] bool	hasHealingModifiers() const noexcept		{ return healing_modifier_count > 0;	}
+		[[nodiscard]] uint16_t	getCombatHookMask() const noexcept			{ return combatHookMask; }
+		[[nodiscard]] uint16_t	getSlotCombatHookMask(slots_t slot) const noexcept	{ return combatHookMasks[slot]; }
 		[[nodiscard]] bool	hasFilteredAttackMods()	const noexcept		{ return m_modifier_cache and not m_modifier_cache->during_filtered_attack.empty();	}
 		[[nodiscard]] bool	hasFilteredAttackPostMods()	const noexcept	{ return m_modifier_cache and not m_modifier_cache->post_filtered_attack.empty();	}
 		[[nodiscard]] bool	hasFilteredDefenseMods() const noexcept		{ return m_modifier_cache and not m_modifier_cache->filted_defense.empty();			}
@@ -569,7 +572,7 @@ class Player final : public Creature
 		void onWalkAborted() override;
 		void onWalkComplete() override;
 		void stopWalk();
-		void changeHealth(int32_t healthChange, bool sendHealthChange = true) override;
+		void changeHealth(int32_t healthChange, bool sendHealthChange = true, std::optional<std::span<const CreaturePtr>> spectators = std::nullopt) override;
 		void changeMana(int32_t manaChange);
 		void changeSoul(int32_t soulChange);
 		void addSoul(uint8_t soulChange);
@@ -811,6 +814,7 @@ class Player final : public Creature
 		void sendChangeSpeed(const CreatureConstPtr& creature, uint32_t newSpeed) const				{ if (client) client->sendChangeSpeed(creature, newSpeed); }
 		void sendCreatureHealth(const CreatureConstPtr& creature) const								{ if (client) client->sendCreatureHealth(creature); }
 		void sendDistanceShoot(const Position& from, const Position& to, unsigned char type) const	{ if (client) client->sendDistanceShoot(from, to, type); }
+		void writeToOutputBuffer(const NetworkMessage& msg) const										{ if (client) client->writeToOutputBuffer(msg); }
 		void sendAccountManagerTextWindow(uint32_t id, const std::string& text) const				{ if (client) client->sendAccountManagerTextBox(id, text); }
 		void sendCreatePrivateChannel(uint16_t channelId, const std::string& channelName) const		{ if (client) client->sendCreatePrivateChannel(channelId, channelName); }
 		void sendIcons() const																		{ if (client) client->sendIcons(getClientIcons()); }
@@ -963,7 +967,8 @@ class Player final : public Creature
 		uint32_t magLevel = 0;
 		uint32_t actionTaskEvent = 0;
 		uint32_t walkTaskEvent = 0;
-		uint32_t classicAttackEvent = 0;
+		uint32_t attack_schedule_generation = 0;
+		uint32_t classic_attack_schedule_generation = 0;
 		uint32_t MessageBufferTicks = 0;
 		uint32_t lastIP = 0;
 		uint32_t accountNumber = 0;
@@ -1034,6 +1039,8 @@ class Player final : public Creature
 		int32_t varStats[STAT_LAST + 1] = {};
 		std::bitset<6> blessings;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
+		uint16_t combatHookMasks[CONST_SLOT_LAST + 1] = {};
+		uint16_t combatHookMask = 0;
 
 		std::forward_list<Condition*>		getMuteConditions() const;
 		gtl::btree_map<uint32_t, uint32_t>&	getAllItemTypeCount(gtl::btree_map<uint32_t, uint32_t>& countMap) const;
@@ -1102,9 +1109,12 @@ class Player final : public Creature
 		void updateInventoryWeight();
 		void setNextWalkActionTask(SchedulerTask* task);
 		void setNextActionTask(SchedulerTask* task, bool resetIdleTime = true);
+		CoroTask armNextAttackCheck(uint32_t delay, uint32_t generation, bool useClassicSchedule) noexcept;
 		void death(const CreaturePtr& lastHitCreature) override;
 		void cacheModifier(const BlackTek::DamageModifier& mod) noexcept;
 		void uncacheModifier(const BlackTek::DamageModifier& mod) noexcept;
+		void setSlotCombatHookMask(slots_t slot, uint16_t mask) noexcept;
+		void clearSlotCombatHookMask(slots_t slot) noexcept;
 		void updateItemsLight(bool internal = false);
 		void updateBaseSpeed();
 		void getPathSearchParams(const CreatureConstPtr& creature, FindPathParams& fpp) const override;
@@ -1119,7 +1129,7 @@ class Player final : public Creature
 		friend class Npc;
 		friend class LuaScriptInterface;
 		friend class Map;
-		friend class Actions;
+		friend class ItemEvents;
 		friend class IOLoginData;
 		friend class ProtocolGame;
 		friend class ItemContainer;
