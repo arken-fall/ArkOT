@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hydra"
 monster.description = "a hydra"
+
+monster.raceId = 121
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Northern Hydra Mountain in east Tiquanda, southern Hydra Mountain, Hydra Egg Quest in Tiquanda north-east of the Elephant Tusk Quest, Forbidden Lands hydra cave, Deeper Banuta, Talahu surface, Ferumbras Citadel, Yalahar Arena and Zoo Quarter, Yalahar Foreigner Quarter (Crystal Lake), Oramond Hydra/Bog Raider Cave.",
+}
 monster.experience = 2100
 monster.race = "blood"
 monster.maxHealth = 2350

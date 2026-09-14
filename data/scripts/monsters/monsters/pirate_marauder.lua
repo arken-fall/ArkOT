@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Pirate Marauder"
 monster.description = "a pirate marauder"
+
+monster.raceId = 247
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Nargor, Tyrsung, Yalahar, Krailos Steppe, The Cave.",
+}
 monster.experience = 125
 monster.race = "blood"
 monster.maxHealth = 210

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Toad"
 monster.description = "a toad"
+
+monster.raceId = 262
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "The Laguna Islands, Arena and Zoo Quarter, TiquandaTarantula Caves, Shadowthorn Bog God Temple, Northern Zao Plantations, Northern Brimstone Bug CavesBrimstone Bug Cave, Tainted Caves.",
+}
 monster.experience = 60
 monster.race = "blood"
 monster.maxHealth = 135

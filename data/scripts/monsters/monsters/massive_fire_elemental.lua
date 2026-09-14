@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Massive Fire Elemental"
 monster.description = "a massive fire elemental"
+
+monster.raceId = 313
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Demon Forge, Deeper Banuta, Hero Cave, Hot Spot, Fury Dungeon.",
+}
 monster.experience = 1400
 monster.race = "fire"
 monster.maxHealth = 1200

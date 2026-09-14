@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Troll Guard"
 monster.description = "a troll guard"
+
+monster.raceId = 745
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 5,
+	firstUnlock = 1,
+	secondUnlock = 3,
+	charmPoints = 30,
+	stars = 2,
+	occurrence = 3,
+	locations = "Rookgaard and in Thais during raids",
+}
 monster.experience = 25
 monster.race = "blood"
 monster.maxHealth = 60

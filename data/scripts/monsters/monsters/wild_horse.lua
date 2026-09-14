@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wild Horse"
 monster.description = "a wild horse"
+
+monster.raceId = 730
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 10,
+	stars = 1,
+	occurrence = 3,
+	locations = "Near the Thais Troll Cave entrance during the Horse Station World Change.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 75

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Acid Blob"
 monster.description = "an acid blob"
+
+monster.raceId = 513
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Alchemist Quarter, Deeper Banuta.",
+}
 monster.experience = 250
 monster.race = "venom"
 monster.maxHealth = 250

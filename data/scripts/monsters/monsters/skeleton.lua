@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Skeleton"
 monster.description = "a skeleton"
+
+monster.raceId = 33
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "In many dungeons around Tibia, like the Ancient Temple and Ghostlands. Also found in Rookgaard tombs and north east of Port Hope, in the jungle of Tiquanda, beneath Fenrock and in the desert Tombs, Vengoth Castle.",
+}
 monster.experience = 35
 monster.race = "undead"
 monster.maxHealth = 50

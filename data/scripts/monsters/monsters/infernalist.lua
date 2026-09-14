@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Infernalist"
 monster.description = "an infernalist"
+
+monster.raceId = 529
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Magician Quarter, Hero Cave, Demona, Fury Dungeon.",
+}
 monster.experience = 4000
 monster.race = "blood"
 monster.maxHealth = 3650

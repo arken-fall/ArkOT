@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Pirate Ghost"
 monster.description = "a pirate ghost"
+
+monster.raceId = 257
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Drefia, Goroma, Nargor Undead Cave, hidden caves under Treasure Island, single spawn at Liberty Bay ruins, Chyllfroest (unreachable).",
+}
 monster.experience = 250
 monster.race = "undead"
 monster.maxHealth = 275

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Death Priest"
 monster.description = "a death priest"
+
+monster.raceId = 710
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Horestis Tomb.",
+}
 monster.experience = 750
 monster.race = "undead"
 monster.maxHealth = 800

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Bane Bringer"
 monster.description = "a bane bringer"
+
+monster.raceId = 679
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Green Claw Swamp underground, near the big witches' cauldron.",
+}
 monster.experience = 400
 monster.race = "undead"
 monster.maxHealth = 2500

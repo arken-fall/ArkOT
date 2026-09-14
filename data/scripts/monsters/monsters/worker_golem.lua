@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Worker Golem"
 monster.description = "a worker golem"
+
+monster.raceId = 503
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Factory Quarter.",
+}
 monster.experience = 1250
 monster.race = "energy"
 monster.maxHealth = 1470

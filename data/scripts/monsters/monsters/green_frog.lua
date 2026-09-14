@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Green Frog"
 monster.description = "a green frog"
+
+monster.raceId = 267
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Meriana and other Shattered Isles, Port Hope caves, The Witches Cliff (only accessible during a quest).",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 25

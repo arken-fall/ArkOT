@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Terror Bird"
 monster.description = "a terror bird"
+
+monster.raceId = 218
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Around Port Hope, Arena and Zoo Quarter in Yalahar, few on Zao steppes.",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 300

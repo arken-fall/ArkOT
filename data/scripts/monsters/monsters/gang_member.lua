@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gang Member"
 monster.description = "a gang member"
+
+monster.raceId = 526
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Throughout the Foreigner, Factory, and Trade Quarters in Yalahar.",
+}
 monster.experience = 70
 monster.race = "blood"
 monster.maxHealth = 295

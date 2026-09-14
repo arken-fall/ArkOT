@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Enlightened of the Cult"
 monster.description = "an enlightened of the cult"
+
+monster.raceId = 252
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Goroma, Formorgar Mines, Magician Quarter, Forbidden Temple.",
+}
 monster.experience = 500
 monster.race = "blood"
 monster.maxHealth = 700

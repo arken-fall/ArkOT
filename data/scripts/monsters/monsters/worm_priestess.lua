@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Worm Priestess"
 monster.description = "a worm priestess"
+
+monster.raceId = 1053
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Oramond/Southern Plains, Minotaur Hills, Oramond Dungeon (depending on Magistrate votes), Underground Glooth Factory, Oramond Fury Dungeon.",
+}
 monster.experience = 1500
 monster.race = "blood"
 monster.maxHealth = 1100

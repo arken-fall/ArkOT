@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc Shaman"
 monster.description = "an orc shaman"
+
+monster.raceId = 6
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Edron Orc Cave, Temple of Xayepocax, below Point of No Return in Outlaw Camp, Venore Orc Cave, Maze of Lost Souls, Orc Fort, north west of Thais, Elvenbane, Plains Of Havoc, Foreigner Quarter, Zao Orc Land.",
+}
 monster.experience = 110
 monster.race = "blood"
 monster.maxHealth = 115

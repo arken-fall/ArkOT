@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Massive Water Elemental"
 monster.description = "a massive water elemental"
+
+monster.raceId = 279
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Calassa, Frozen Trench, Water Elemental Dungeon through the water channels, before Zugurosh in The Inquisition Quest.",
+}
 monster.experience = 1100
 monster.race = "undead"
 monster.maxHealth = 1250

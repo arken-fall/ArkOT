@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Barbarian Bloodwalker"
 monster.description = "a barbarian bloodwalker"
+
+monster.raceId = 323
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Krimhorn, Bittermor, Ragnir, Arena and Zoo Quarter inside the Arena.",
+}
 monster.experience = 195
 monster.race = "blood"
 monster.maxHealth = 305

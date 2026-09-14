@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Midnight Spawn"
 monster.description = "a midnight spawn"
+
+monster.raceId = 584
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Forbidden Lands around the Lightbringers basin.",
+}
 monster.experience = 900
 monster.race = "undead"
 monster.maxHealth = 1000

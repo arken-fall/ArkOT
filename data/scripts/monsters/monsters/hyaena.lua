@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hyaena"
 monster.description = "a hyaena"
+
+monster.raceId = 94
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Desert areas like those around Ankrahmun and Darashia.",
+}
 monster.experience = 20
 monster.race = "blood"
 monster.maxHealth = 60

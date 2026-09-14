@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Quara Predator"
 monster.description = "a quara predator"
+
+monster.raceId = 237
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Calassa, Frozen Trench, Sunken Quarter, Alchemist Quarter (unreachable), The Inquisition Quest, Seacrest Grounds.",
+}
 monster.experience = 1600
 monster.race = "blood"
 monster.maxHealth = 2200

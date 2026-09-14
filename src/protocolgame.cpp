@@ -17,6 +17,7 @@
 #include "configmanager.h"
 #include "console.h"
 #include "appearances.h"
+#include "bestiary.h"
 #include "game.h"
 #include "iologindata.h"
 #include "iomarket.h"
@@ -810,9 +811,9 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::PreyAction: parsePreyAction(msg); break;
 		case ClientCode::BestiaryRaces: addGameTask([player_id]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryRaces(); }); break;
 		case ClientCode::BestiaryCreatures: parseBestiaryOverview(msg); break;
-		case ClientCode::BestiaryMonsterData: msg.skipBytes(2); break; // race id; there are no races yet
+		case ClientCode::BestiaryMonsterData: parseBestiaryMonsterData(msg); break;
 		case ClientCode::BuyCharmRune: parseBuyCharmRune(msg); break;
-		case ClientCode::CyclopediaMonsterTracker: msg.skipBytes(3); break; // race id + status; no tracker yet
+		case ClientCode::CyclopediaMonsterTracker: parseBestiaryTracker(msg); break;
 		case ClientCode::InspectionObject: parseInspectionObject(msg); break;
 		case ClientCode::InspectPlayer: parseInspectPlayer(msg); break;
 		case ClientCode::EquipObject: parseEquipObject(msg); break;
@@ -1420,24 +1421,51 @@ void ProtocolGame::parsePreyAction(NetworkMessage& msg)
 
 void ProtocolGame::parseBestiaryOverview(NetworkMessage& msg)
 {
+	const auto& bestiary = BlackTek::Bestiary::Registry::getInstance();
 	std::string raceName;
+	std::vector<const MonsterType*> monsters;
 	if (msg.getByte() != 0)
 	{
-		// a search by race ids
+		// a search: the client lists the race ids it wants, we answer with
+		// the ones the character has met
 		const uint16_t count = msg.get<uint16_t>();
-		msg.skipBytes(count * 2);
+		for (uint16_t i = 0; i < count; ++i)
+		{
+			const uint16_t raceId = msg.get<uint16_t>();
+			if (const MonsterType* monsterType = bestiary.getMonster(raceId); monsterType and player->getBestiaryKills(raceId) > 0)
+			{
+				monsters.push_back(monsterType);
+			}
+		}
 	}
 	else
 	{
 		raceName = msg.getString();
+		const auto race = BlackTek::Bestiary::ParseRace(raceName);
+		monsters = race != BlackTek::Bestiary::Race::None ? bestiary.getRaceMembers(race) : bestiary.findByName(raceName);
 	}
-	addGameTask([player_id = player->getID(), raceName]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryOverview(raceName); });
+	addGameTask([player_id = player->getID(), raceName, monsters]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryOverview(raceName, monsters); });
+}
+
+void ProtocolGame::parseBestiaryMonsterData(NetworkMessage& msg)
+{
+	uint16_t raceId = msg.get<uint16_t>();
+	addGameTask([=, player_id = player->getID()]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryMonsterData(raceId); });
+}
+
+void ProtocolGame::parseBestiaryTracker(NetworkMessage& msg)
+{
+	uint16_t raceId = msg.get<uint16_t>();
+	bool tracking = msg.getByte() != 0;
+	addGameTask([=, player_id = player->getID()]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->setBestiaryTracking(raceId, tracking); });
 }
 
 void ProtocolGame::parseBuyCharmRune(NetworkMessage& msg)
 {
-	msg.skipBytes(4); // rune, action, race id; charms are not for sale yet
-	addGameTask([player_id = player->getID()]() { if (const auto& p = g_game.getPlayerByID(player_id)) p->sendBestiaryCharms(); });
+	uint8_t charmId = msg.getByte();
+	uint8_t action = msg.getByte();
+	uint16_t raceId = msg.get<uint16_t>();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerCharmAction(playerID, charmId, action, raceId); });
 }
 
 void ProtocolGame::parseInspectionObject(NetworkMessage& msg)
@@ -2290,7 +2318,19 @@ void ProtocolGame::sendResourceBalance(ResourceType type, uint64_t value)
 	NetworkMessage msg;
 	msg.add(ServerCode::ResourceBalance);
 	msg.add(type);
-	msg.add<uint64_t>(value);
+	switch (type)
+	{
+		// the charm balances are the one u32 family in this opcode
+		case ResourceType::CharmPoints:
+		case ResourceType::MinorCharmEchoes:
+		case ResourceType::MaxCharmPoints:
+		case ResourceType::MaxMinorCharmEchoes:
+			msg.add<uint32_t>(std::min<uint64_t>(value, std::numeric_limits<uint32_t>::max()));
+			break;
+		default:
+			msg.add<uint64_t>(value);
+			break;
+	}
 	writeToOutputBuffer(msg);
 }
 
@@ -2899,29 +2939,271 @@ void ProtocolGame::sendPreySlots()
 
 void ProtocolGame::sendBestiaryRaces()
 {
+	using BlackTek::Bestiary::Race;
+	const auto& bestiary = BlackTek::Bestiary::Registry::getInstance();
+
 	NetworkMessage msg;
 	msg.add(ServerCode::BestiaryRaces);
-	msg.add<SpecialCode>(SpecialCode::Zero); // races
+	msg.add<uint16_t>(static_cast<uint16_t>(Race::Last));
+	for (auto race = static_cast<uint8_t>(Race::First); race <= static_cast<uint8_t>(Race::Last); ++race)
+	{
+		const auto& members = bestiary.getRaceMembers(static_cast<Race>(race));
+		uint16_t met = 0;
+		for (const MonsterType* monsterType : members)
+		{
+			if (player->getBestiaryKills(monsterType->info.bestiary.race_id) > 0)
+			{
+				++met;
+			}
+		}
+
+		msg.addString(std::string(BlackTek::Bestiary::RaceName(static_cast<Race>(race))));
+		msg.add<uint16_t>(members.size());
+		msg.add<uint16_t>(met);
+	}
 	writeToOutputBuffer(msg);
+
+	sendBestiaryCharms();
 }
 
-void ProtocolGame::sendBestiaryOverview(const std::string& raceName)
+void ProtocolGame::sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters)
 {
+	using BlackTek::Bestiary::Registry;
+	using BlackTek::Bestiary::Stage;
+
 	NetworkMessage msg;
 	msg.add(ServerCode::BestiaryOverview);
 	msg.addString(raceName);
-	msg.add<SpecialCode>(SpecialCode::Zero); // creatures
+	msg.add<uint16_t>(monsters.size());
+	for (const MonsterType* monsterType : monsters)
+	{
+		const auto& entry = monsterType->info.bestiary;
+		const Stage stage = Registry::getStage(*monsterType, player->getBestiaryKills(entry.race_id));
+		msg.add<uint16_t>(entry.race_id);
+		msg.add(stage);
+		if (stage != Stage::Unknown)
+		{
+			msg.addByte(entry.occurrence);
+		}
+		msg.add<SpecialCode>(SpecialCode::Zero); // animus mastery bonus (13.40+)
+	}
+	msg.add<SpecialCode>(SpecialCode::Zero); // animus mastery points (13.40+)
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendBestiaryMonsterData(uint16_t raceId)
+{
+	using BlackTek::Bestiary::Registry;
+	using BlackTek::Bestiary::Stage;
+
+	const MonsterType* monsterType = Registry::getInstance().getMonster(raceId);
+	if (not monsterType)
+	{
+		return;
+	}
+
+	const auto& entry = monsterType->info.bestiary;
+	const uint32_t kills = player->getBestiaryKills(raceId);
+	const Stage stage = Registry::getStage(*monsterType, kills);
+
+	NetworkMessage msg;
+	msg.add(ServerCode::BestiaryMonsterData);
+	msg.add<uint16_t>(raceId);
+	msg.addString(entry.class_name);
+	msg.add(stage);
+	msg.add<SpecialCode>(SpecialCode::Zero); // animus mastery bonus (13.40+)
+	msg.add<SpecialCode>(SpecialCode::Zero); // animus mastery points (13.40+)
+	msg.add<uint32_t>(kills);
+	msg.add<uint16_t>(entry.first_unlock);
+	msg.add<uint16_t>(entry.second_unlock);
+	msg.add<uint16_t>(entry.to_kill);
+	msg.addByte(entry.stars);
+	msg.addByte(entry.occurrence);
+
+	// loot rows: the rarer the drop, the later the stage that reveals it
+	const auto& lootItems = monsterType->info.lootItems;
+	msg.addByte(std::min<size_t>(lootItems.size(), std::numeric_limits<uint8_t>::max()));
+	uint8_t written = 0;
+	for (const LootBlock& loot : lootItems)
+	{
+		if (written++ == std::numeric_limits<uint8_t>::max())
+		{
+			break;
+		}
+
+		const uint8_t difficulty = Registry::getLootDifficulty(loot.chance);
+		const bool revealed = stage == Stage::Complete
+			or (stage == Stage::Known and difficulty < 3)
+			or (stage == Stage::Familiar and difficulty < 2);
+		if (revealed)
+		{
+			addItemId(msg, loot.id);
+		}
+		else
+		{
+			msg.add<SpecialCode>(SpecialCode::Zero);
+		}
+		msg.addByte(difficulty);
+		msg.add(CommonCode::Zero); // event loot
+		if (revealed)
+		{
+			msg.addString(Item::items[loot.id].name);
+			msg.add(loot.countmax > 1 ? CommonCode::True : CommonCode::False);
+		}
+	}
+
+	if (stage >= Stage::Familiar)
+	{
+		msg.add<uint16_t>(entry.charm_points);
+		uint8_t attackMode = 0; // melee
+		if (not monsterType->info.isHostile)
+		{
+			attackMode = 2; // does not attack
+		}
+		else if (monsterType->info.targetDistance > 1)
+		{
+			attackMode = 1; // ranged
+		}
+		msg.addByte(attackMode);
+		msg.addByte(2); // cast mode, always shown as "casts spells"
+		msg.add<uint32_t>(std::max<int32_t>(monsterType->info.healthMax, 0));
+		msg.add<uint32_t>(monsterType->info.experience);
+		msg.add<uint16_t>(monsterType->info.baseSpeed);
+		msg.add<uint16_t>(std::max<int32_t>(monsterType->info.armor, 0));
+		msg.addDouble(0.0, 2); // mitigation
+	}
+
+	if (stage >= Stage::Known)
+	{
+		// resistances as the client shows them: 100% is neutral, less is
+		// resistant, more is weak
+		static constexpr std::array<std::pair<CombatType_t, CyclopediaElement>, 8> elements { {
+			{ COMBAT_PHYSICALDAMAGE, CyclopediaElement::Physical },
+			{ COMBAT_FIREDAMAGE, CyclopediaElement::Fire },
+			{ COMBAT_EARTHDAMAGE, CyclopediaElement::Earth },
+			{ COMBAT_ENERGYDAMAGE, CyclopediaElement::Energy },
+			{ COMBAT_ICEDAMAGE, CyclopediaElement::Ice },
+			{ COMBAT_HOLYDAMAGE, CyclopediaElement::Holy },
+			{ COMBAT_DEATHDAMAGE, CyclopediaElement::Death },
+			{ COMBAT_HEALING, CyclopediaElement::Healing },
+		} };
+		msg.addByte(elements.size());
+		for (const auto& [combatType, element] : elements)
+		{
+			int32_t percent = 100;
+			if (auto it = monsterType->info.elementMap.find(combatType); it != monsterType->info.elementMap.end())
+			{
+				percent -= it->second;
+			}
+			msg.add(element);
+			msg.add<uint16_t>(std::clamp(percent, 0, std::numeric_limits<uint16_t>::max() + 0));
+		}
+
+		msg.add<uint16_t>(1); // location entries
+		msg.addString(entry.locations);
+	}
 	writeToOutputBuffer(msg);
 }
 
 void ProtocolGame::sendBestiaryCharms()
 {
+	using BlackTek::Bestiary::Registry;
+	using BlackTek::Bestiary::Stage;
+	const auto& bestiary = Registry::getInstance();
+	const auto& self = player;
+
 	NetworkMessage msg;
 	msg.add(ServerCode::BestiaryCharms);
-	msg.add<uint64_t>(0); // reset all charms cost (14.10+)
-	msg.add(CommonCode::Zero); // charms
-	msg.add(CommonCode::Zero); // available charm slots
-	msg.add<SpecialCode>(SpecialCode::Zero); // finished monsters
+	msg.add<uint64_t>(Registry::getResetCost(self));
+
+	const auto charms = bestiary.getCharms();
+	msg.addByte(charms.size());
+	uint8_t assigned = 0;
+	for (const auto& charm : charms)
+	{
+		const auto& slot = self->getCharmSlot(charm.id);
+		msg.addByte(charm.id);
+		if (slot.tier == 0)
+		{
+			msg.add(CommonCode::Zero); // tier: locked
+			msg.add(CommonCode::False); // not assigned
+			continue;
+		}
+
+		msg.addByte(slot.tier);
+		if (slot.race_id != 0)
+		{
+			++assigned;
+			msg.add(CommonCode::True);
+			msg.add<uint16_t>(slot.race_id);
+			msg.add<uint32_t>(Registry::getUnassignCost(self));
+		}
+		else
+		{
+			msg.add(CommonCode::False);
+		}
+	}
+
+	// premium characters carry six runes at once, others two
+	const uint8_t totalSlots = self->isPremium() ? 6 : 2;
+	msg.addByte(totalSlots > assigned ? totalSlots - assigned : 0);
+
+	// creatures whose entry is complete and still has room for a rune
+	std::vector<uint16_t> finished;
+	for (const auto& [raceId, kills] : self->getBestiaryKillMap())
+	{
+		const MonsterType* monsterType = bestiary.getMonster(raceId);
+		if (monsterType and Registry::getStage(*monsterType, kills) == Stage::Complete)
+		{
+			finished.push_back(raceId);
+		}
+	}
+	msg.add<uint16_t>(finished.size());
+	for (uint16_t raceId : finished)
+	{
+		msg.add<uint32_t>(raceId);
+	}
+	writeToOutputBuffer(msg);
+
+	sendCharmBalance();
+}
+
+void ProtocolGame::sendCharmBalance()
+{
+	sendResourceBalance(ResourceType::CharmPoints, player->getCharmPoints());
+	sendResourceBalance(ResourceType::MinorCharmEchoes, 0);
+	sendResourceBalance(ResourceType::MaxCharmPoints, std::numeric_limits<uint32_t>::max());
+	sendResourceBalance(ResourceType::MaxMinorCharmEchoes, std::numeric_limits<uint32_t>::max());
+}
+
+void ProtocolGame::sendBestiaryTracker()
+{
+	using BlackTek::Bestiary::Registry;
+	using BlackTek::Bestiary::Stage;
+	const auto& bestiary = Registry::getInstance();
+
+	NetworkMessage msg;
+	msg.add(ServerCode::BestiaryTracker);
+	msg.add(CommonCode::Zero); // creatures, not bosses (13.20+)
+	const auto& tracked = player->getBestiaryTracker();
+	msg.addByte(std::min<size_t>(tracked.size(), std::numeric_limits<uint8_t>::max()));
+	for (uint16_t raceId : tracked)
+	{
+		const MonsterType* monsterType = bestiary.getMonster(raceId);
+		if (not monsterType)
+		{
+			continue;
+		}
+
+		const auto& entry = monsterType->info.bestiary;
+		const uint32_t kills = player->getBestiaryKills(raceId);
+		msg.add<uint16_t>(raceId);
+		msg.add<uint32_t>(kills);
+		msg.add<uint16_t>(entry.first_unlock);
+		msg.add<uint16_t>(entry.second_unlock);
+		msg.add<uint16_t>(entry.to_kill);
+		msg.add(Registry::getStage(*monsterType, kills) == Stage::Complete ? Stage::Complete : Stage::Unknown);
+	}
 	writeToOutputBuffer(msg);
 }
 

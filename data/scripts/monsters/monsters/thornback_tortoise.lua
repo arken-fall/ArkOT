@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Thornback Tortoise"
 monster.description = "a thornback tortoise"
+
+monster.raceId = 259
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Laguna Islands, Meriana Gargoyle Cave and one on Nargor.",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 300

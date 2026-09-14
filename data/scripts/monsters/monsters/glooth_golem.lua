@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Glooth Golem"
 monster.description = "a glooth golem"
+
+monster.raceId = 1038
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Glooth Factory, Underground Glooth Factory, Rathleton Sewers, Jaccus Maxxens Dungeon, Oramond Dungeon (depending on Magistrate votes).",
+}
 monster.experience = 2200
 monster.race = "venom"
 monster.maxHealth = 2700

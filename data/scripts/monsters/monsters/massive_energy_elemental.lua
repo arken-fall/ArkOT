@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Massive Energy Elemental"
 monster.description = "a massive energy elemental"
+
+monster.raceId = 456
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "North west of Ankrahmun, you must Levitate to hunt. Two can also be found in the Asura Palace.",
+}
 monster.experience = 950
 monster.race = "energy"
 monster.maxHealth = 1100

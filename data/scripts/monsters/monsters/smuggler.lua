@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Smuggler"
 monster.description = "a smuggler"
+
+monster.raceId = 222
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Around Dark Cathedral, Tiquanda Bandit Caves, the Outlaw Camp, Tyrsung, Yalahar and Nargor.",
+}
 monster.experience = 48
 monster.race = "blood"
 monster.maxHealth = 130

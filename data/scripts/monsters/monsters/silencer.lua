@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Silencer"
 monster.description = "a silencer"
+
+monster.raceId = 1014
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "All over the Roshamuul surface and Nightmare Isles.",
+}
 monster.experience = 5100
 monster.race = "blood"
 monster.maxHealth = 5400

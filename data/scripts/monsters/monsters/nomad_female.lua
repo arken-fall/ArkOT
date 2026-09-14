@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Nomad"
 monster.description = "a nomad"
+
+monster.raceId = 310
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "Ankrahmun Pharaoh Tombs, Deeper Drefia, Kha'zeel Mountains, Northern Darama Desert, Southern Darama Desert, Yalahar Foreigner Quarter, Yalahar Trade Quarter.",
+}
 monster.experience = 60
 monster.race = "blood"
 monster.maxHealth = 160

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Roaring Lion"
 monster.description = "a roaring lion"
+
+monster.raceId = 981
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Lion's Rock a few floors down.",
+}
 monster.experience = 800
 monster.race = "blood"
 monster.maxHealth = 1000

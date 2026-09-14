@@ -17,10 +17,12 @@
 #include "town.h"
 #include "mounts.h"
 #include "augments.h"
+#include "bestiary.h"
 #include "accountmanager.h"
 
 #include <array>
 #include <bitset>
+#include <set>
 #include <optional>
 #include <gtl/phmap.hpp>
 #include <gtl/btree.hpp>
@@ -151,6 +153,14 @@ namespace BlackTek
 class Player final : public Creature
 {
 	public:
+		// one charm rune as the character holds it: 0 = not unlocked, else
+		// its tier, and the race it is assigned to (0 = unassigned)
+		struct CharmSlot
+		{
+			uint8_t tier = 0;
+			uint16_t race_id = 0;
+		};
+
 		// the blessings the bitset below tracks, in bit order; the names are
 		// the ones the datapack's blessing scripts already use
 		struct Blessings
@@ -855,8 +865,25 @@ class Player final : public Creature
 		void sendBlessStatus() const																{ if (client) client->sendBlessStatus(); }
 		void sendPreySlots() const																	{ if (client) client->sendPreySlots(); }
 		void sendBestiaryRaces() const																{ if (client) client->sendBestiaryRaces(); }
-		void sendBestiaryOverview(const std::string& raceName) const								{ if (client) client->sendBestiaryOverview(raceName); }
+		void sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters) const { if (client) client->sendBestiaryOverview(raceName, monsters); }
+		void sendBestiaryMonsterData(uint16_t raceId) const										{ if (client) client->sendBestiaryMonsterData(raceId); }
 		void sendBestiaryCharms() const																{ if (client) client->sendBestiaryCharms(); }
+		void sendBestiaryTracker() const															{ if (client) client->sendBestiaryTracker(); }
+
+		[[nodiscard]] uint32_t getBestiaryKills(uint16_t raceId) const {
+			auto it = bestiary_kills.find(raceId);
+			return it != bestiary_kills.end() ? it->second : 0;
+		}
+		void addBestiaryKills(uint16_t raceId, uint32_t amount)										{ bestiary_kills[raceId] += amount; }
+		[[nodiscard]] const std::map<uint16_t, uint32_t>& getBestiaryKillMap() const noexcept			{ return bestiary_kills; }
+		[[nodiscard]] bool isTrackingBestiary(uint16_t raceId) const									{ return bestiary_tracker.contains(raceId); }
+		void setBestiaryTracking(uint16_t raceId, bool tracking);
+		[[nodiscard]] const std::set<uint16_t>& getBestiaryTracker() const noexcept					{ return bestiary_tracker; }
+		[[nodiscard]] uint32_t getCharmPoints() const noexcept										{ return charm_points; }
+		void addCharmPoints(uint32_t amount)															{ charm_points += amount; }
+		void removeCharmPoints(uint32_t amount)														{ charm_points -= std::min(amount, charm_points); }
+		[[nodiscard]] CharmSlot& getCharmSlot(uint8_t charmId)											{ return charm_slots[charmId]; }
+		[[nodiscard]] const CharmSlot& getCharmSlot(uint8_t charmId) const								{ return charm_slots[charmId]; }
 		void sendItemInspection(const ItemPtr& item, bool cyclopedia) const						{ if (client) client->sendItemInspection(item, cyclopedia); }
 		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType) const					{ if (client) client->sendItemTypeInspection(itemId, inspectionType); }
 		void sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia) const			{ if (client) client->sendCharacterInspection(target, cyclopedia); }
@@ -961,6 +988,13 @@ class Player final : public Creature
 		uint64_t manaSpent = 0;
 		uint64_t lastAttack = 0;
 		uint64_t bankBalance = 0;
+
+		// bestiary progress: kills per race id, charm points, and the charm
+		// slots (tier and the creature each rune is assigned to)
+		std::map<uint16_t, uint32_t> bestiary_kills;
+		std::set<uint16_t> bestiary_tracker;
+		std::array<CharmSlot, BlackTek::Bestiary::Registry::MaxCharms> charm_slots {};
+		uint32_t charm_points = 0;
 		uint64_t lastQuestlogUpdate = 0;
 
 		uint64_t getLostExperience() const override { return skillLoss ? static_cast<uint64_t>(experience * getLostPercent()) : 0; }

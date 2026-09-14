@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elf Scout"
 monster.description = "an elf scout"
+
+monster.raceId = 64
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Yalahar Foreigner Quarter, Shadowthorn, northwest of Ab'Dendriel, north and west of Mount Sternum, Hellgate, Maze of Lost Souls, near Knightwatch Tower in the Plains of Havoc. Two may also spawn when a Desperate White Deer or an Enraged White Deer is killed.",
+}
 monster.experience = 75
 monster.race = "blood"
 monster.maxHealth = 160

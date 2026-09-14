@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Shock Head"
 monster.description = "a shock head"
+
+monster.raceId = 1004
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Sparsely in eastern Lower Roshamuu and southern Guzzlemaw Valley.",
+}
 monster.experience = 2300
 monster.race = "blood"
 monster.maxHealth = 4200

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Filth Toad"
 monster.description = "a filth toad"
+
+monster.raceId = 735
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "Tiquanda, around Lake Equivocolao.",
+}
 monster.experience = 90
 monster.race = "blood"
 monster.maxHealth = 185

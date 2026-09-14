@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Pirate Skeleton"
 monster.description = "a pirate skeleton"
+
+monster.raceId = 256
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Nargor Undead Cave, Goroma, Treasure Island, Drefia, The Cave, Chyllfroest.",
+}
 monster.experience = 85
 monster.race = "undead"
 monster.maxHealth = 190

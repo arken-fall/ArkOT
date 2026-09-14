@@ -3,6 +3,8 @@
 
 #include "otpch.h"
 
+#include "bestiary.h"
+
 #include "pugicast.h"
 
 #include "augments.h"
@@ -4738,6 +4740,37 @@ void Game::playerInspectCharacter(const uint32_t playerId, const uint32_t creatu
 	}
 
 	player->sendCharacterInspection(target, cyclopedia);
+}
+
+void Game::playerCharmAction(const uint32_t playerId, const uint8_t charmId, const uint8_t action, const uint16_t raceId)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player)
+	{
+		return;
+	}
+
+	auto& bestiary = BlackTek::Bestiary::Registry::getInstance();
+	switch (static_cast<BlackTek::Network::CharmActionCode>(action))
+	{
+		case BlackTek::Network::CharmActionCode::Unlock: bestiary.buyCharm(player, charmId); break;
+		case BlackTek::Network::CharmActionCode::Assign: bestiary.assignCharm(player, charmId, raceId); break;
+		case BlackTek::Network::CharmActionCode::Unassign: bestiary.unassignCharm(player, charmId); break;
+		case BlackTek::Network::CharmActionCode::ResetAll:
+		{
+			for (const auto& charm : bestiary.getCharms())
+			{
+				if (player->getCharmSlot(charm.id).race_id != 0)
+				{
+					bestiary.unassignCharm(player, charm.id);
+				}
+			}
+			break;
+		}
+		default: break;
+	}
+
+	player->sendBestiaryCharms();
 }
 
 void Game::playerRequestBlessingsDialog(const uint32_t playerId)

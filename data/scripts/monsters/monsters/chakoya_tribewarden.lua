@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Chakoya Tribewarden"
 monster.description = "a chakoya tribewarden"
+
+monster.raceId = 319
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Inukaya, Chyllfroest, Chakoya Iceberg, Nibelor (during a quest).",
+}
 monster.experience = 40
 monster.race = "blood"
 monster.maxHealth = 68

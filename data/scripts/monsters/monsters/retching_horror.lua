@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Retching Horror"
 monster.description = "a retching horror"
+
+monster.raceId = 1018
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "All over the surface of Upper Roshamuul and Nightmare Isles.",
+}
 monster.experience = 4100
 monster.race = "fire"
 monster.maxHealth = 5300

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Troll"
 monster.description = "a troll"
+
+monster.raceId = 15
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In many dungeons around Tibia like the troll cave in Thais, south of Carlin (out the east exit and down the hole), Island of Destiny, Edron Troll Cave, and in Ab'Dendriel. Also found in Rookgaard.",
+}
 monster.experience = 20
 monster.race = "blood"
 monster.maxHealth = 50

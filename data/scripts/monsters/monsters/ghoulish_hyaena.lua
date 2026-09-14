@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ghoulish Hyaena"
 monster.description = "a ghoulish hyaena"
+
+monster.raceId = 704
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Horestis Tomb.",
+}
 monster.experience = 195
 monster.race = "blood"
 monster.maxHealth = 400

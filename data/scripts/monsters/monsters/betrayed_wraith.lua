@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Betrayed Wraith"
 monster.description = "a betrayed wraith"
+
+monster.raceId = 284
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Pits of Inferno, Helheim, The Inquisition Quest, Roshamuul Prison, Oramond Fury Dungeon",
+}
 monster.experience = 3500
 monster.race = "undead"
 monster.maxHealth = 4200

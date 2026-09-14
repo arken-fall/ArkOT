@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Drillworm"
 monster.description = "a drillworm"
+
+monster.raceId = 878
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Drillworm Caves, Lower Spike, Lost Dwarf version of the Forsaken Mine, Oramond Factory Raids and Warzone 4.",
+}
 monster.experience = 858
 monster.race = "blood"
 monster.maxHealth = 1500

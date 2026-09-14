@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Son of Verminor"
 monster.description = "Son of Verminor"
+
+monster.raceId = 265
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Deep in the Pits of Inferno, in Verminor's throne room. Also in the Demon Forge (The Vats and The Hive).",
+}
 monster.experience = 5900
 monster.race = "venom"
 monster.maxHealth = 8500

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ghoul"
 monster.description = "a ghoul"
+
+monster.raceId = 18
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ancient Temple in the Skeleton area, way to Mintwallin, Old Mintwallin Quest, Alatar Lake, Magician Tower, Mount Sternum Undead Cave, Ghostlands, Hellgate, Maze of Lost Souls, below Point of No Return in Outlaw Camp, Plains of Havoc in Necromant House, Drefia and Drefia's underground caves, Edron ghoul hill, Venore Amazon Camp underground, Venore Swamp Troll cave, Ghostship between Venore and Darashia, Triangle Tower, Dark Cathedral, Ankrahmun tombs, Isle of the Kings, Treasure Island, Nargor Undead Cave, Helheim, Lion's Rock, The Witches' Cliff (only accessible during a quest) and a cave northeast of Ab'Dendriel. Also found behind a wall in both Rookgaard and Paradox Tower, although they cannot be reached.",
+}
 monster.experience = 85
 monster.race = "blood"
 monster.maxHealth = 100

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Askarak Lord"
 monster.description = "an askarak lord"
+
+monster.raceId = 728
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Demonwar Crypt.",
+}
 monster.experience = 1200
 monster.race = "venom"
 monster.maxHealth = 2100

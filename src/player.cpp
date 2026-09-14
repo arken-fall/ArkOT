@@ -4698,6 +4698,11 @@ bool Player::onKilledCreature(const CreaturePtr& target, bool lastHit/* = true*/
 
 	Creature::onKilledCreature(target, lastHit);
 
+	if (const auto& monster = target->getMonster(); monster and lastHit)
+	{
+		BlackTek::Bestiary::Registry::getInstance().addKill(getPlayer(), *monster->getMonsterType());
+	}
+
 	PlayerPtr targetPlayer = target->getPlayer();
 	if (!targetPlayer) {
 		return false;
@@ -4722,6 +4727,21 @@ bool Player::onKilledCreature(const CreaturePtr& target, bool lastHit/* = true*/
 	}
 
 	return unjustified;
+}
+
+// the client tracks up to a handful of creatures at a time; the list is
+// per session, so it lives in memory only
+void Player::setBestiaryTracking(uint16_t raceId, bool tracking)
+{
+	if (tracking)
+	{
+		bestiary_tracker.insert(raceId);
+	}
+	else
+	{
+		bestiary_tracker.erase(raceId);
+	}
+	sendBestiaryTracker();
 }
 
 void Player::gainExperience(uint64_t gainExp, const CreaturePtr& source)

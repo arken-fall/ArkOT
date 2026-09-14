@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Earth Elemental"
 monster.description = "an earth elemental"
+
+monster.raceId = 458
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Edron Earth Elemental Cave, Vandura Mountain, Deeper Banuta, Vengoth Castle, Robson Isle, Drillworm Caves, Crystal Grounds, Middle Spike.",
+}
 monster.experience = 450
 monster.race = "undead"
 monster.maxHealth = 650

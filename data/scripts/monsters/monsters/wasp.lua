@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wasp"
 monster.description = "a wasp"
+
+monster.raceId = 44
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "South of Thais, west of Ab'Dendriel, northeastern Cormaya, Green Claw Swamp between Kazordoon and Venore, Wasp Tower in Rookgaard, Wasp Towers in Darashia, all over Tiquanda, and all over Vandura, roaming around Marapur.",
+}
 monster.experience = 24
 monster.race = "venom"
 monster.maxHealth = 35

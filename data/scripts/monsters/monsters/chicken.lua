@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Chicken")
+monster.raceId = 111
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Sabrehaven, Rookgaard, The McRonalds Farm in Thais, Northport, Fibula, Carlin (killable but unreachable), Greenshore, Krimhorn, Orc Fortress, Factory Quarter, also theres one in the farm near Edron.",
+}
 local monster = {}
 
 monster.name = "Chicken"

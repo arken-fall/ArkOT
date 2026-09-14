@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gnarlhound"
 monster.description = "a gnarlhound"
+
+monster.raceId = 630
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Zao Steppe, Raging Mage Tower, Gnarlhound Caves. Four inaccessible ones can be seen in Telas's basement.",
+}
 monster.experience = 60
 monster.race = "blood"
 monster.maxHealth = 198

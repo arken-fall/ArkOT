@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Insectoid Scout"
 monster.description = "an insectoid scout"
+
+monster.raceId = 732
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "West and south of Greenshore.",
+}
 monster.experience = 150
 monster.race = "venom"
 monster.maxHealth = 230

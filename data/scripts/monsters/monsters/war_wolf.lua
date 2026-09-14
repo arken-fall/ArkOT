@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "War Wolf"
 monster.description = "a war wolf"
+
+monster.raceId = 3
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Orc Fort, the Orc Peninsula, Magician Tower and northwest tower or south underground of Thais, Zao steppe encaged, Vengoth.",
+}
 monster.experience = 55
 monster.race = "blood"
 monster.maxHealth = 140

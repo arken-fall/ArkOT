@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Diabolic Imp"
 monster.description = "a diabolic imp"
+
+monster.raceId = 288
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Inquisition, Pits of Inferno, Fenrock, Fury Dungeon and inside the Hellgore volcano on Goroma during the Fire from the Earth Mini World Change.",
+}
 monster.experience = 2900
 monster.race = "fire"
 monster.maxHealth = 1950

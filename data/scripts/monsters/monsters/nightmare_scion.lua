@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Nightmare Scion"
 monster.description = "a nightmare scion"
+
+monster.raceId = 518
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cemetery Quarter, Alchemist Quarter and in the Arena and Zoo Quarter (unreachable), Vengoth Castle, Formorgar Mines, Lower Spike, Robson Isle (single respawn), Krailos Ruins.",
+}
 monster.experience = 1350
 monster.race = "blood"
 monster.maxHealth = 1400

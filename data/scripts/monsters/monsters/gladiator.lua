@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gladiator"
 monster.description = "a gladiator"
+
+monster.raceId = 527
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Trade Quarter, Arena and Zoo Quarter.",
+}
 monster.experience = 90
 monster.race = "blood"
 monster.maxHealth = 185

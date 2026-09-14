@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Zombie"
 monster.description = "a zombie"
+
+monster.raceId = 512
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cemetery Quarter, Drefia, Vampire Castle, Treasure Island, Isle of Evil, Upper Spike.",
+}
 monster.experience = 280
 monster.race = "blood"
 monster.maxHealth = 500

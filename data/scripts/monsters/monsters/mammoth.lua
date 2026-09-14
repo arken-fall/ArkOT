@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mammoth"
 monster.description = "a mammoth"
+
+monster.raceId = 260
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Formorgar Glacier, Tyrsung, around the Barbarian Settlements, Mammoth Shearing Factory, Chyllfroest.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 320

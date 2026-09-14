@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Draptor"
 monster.description = "a draptor"
+
+monster.raceId = 695
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Zao, north east of Dragonblaze Peaks during raid. There are up to 10 draptors per raid, while 6 of them may also appear in mission 8 of Wrath of the Emperor Quest.",
+}
 monster.experience = 2400
 monster.race = "blood"
 monster.maxHealth = 3000

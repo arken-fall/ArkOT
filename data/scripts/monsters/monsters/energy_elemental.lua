@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Energy Elemental"
 monster.description = "an energy elemental"
+
+monster.raceId = 457
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Khazeel, Energy Elemental Lair, Vandura Mountain, Vengoths mountain.",
+}
 monster.experience = 550
 monster.race = "energy"
 monster.maxHealth = 500

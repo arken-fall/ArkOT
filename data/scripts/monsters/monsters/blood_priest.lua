@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Blood Priest"
 monster.description = "a blood priest"
+
+monster.raceId = 961
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Drefia and Old Fortress.",
+}
 monster.experience = 900
 monster.race = "blood"
 monster.maxHealth = 820

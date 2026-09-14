@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Acolyte of the Cult"
 monster.description = "an acolyte of the cult"
+
+monster.raceId = 253
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Goroma, Deeper Cult Cave, Formorgar Mines, Magician Quarter, Forbidden Temple.",
+}
 monster.experience = 300
 monster.race = "blood"
 monster.maxHealth = 390

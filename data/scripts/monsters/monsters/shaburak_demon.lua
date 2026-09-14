@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Shaburak Demon"
 monster.description = "a shaburak demon"
+
+monster.raceId = 724
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Demonwar Crypt.",
+}
 monster.experience = 900
 monster.race = "fire"
 monster.maxHealth = 1500

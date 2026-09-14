@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Minotaur Guard"
 monster.description = "a minotaur guard"
+
+monster.raceId = 29
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ancient Temple, Mintwallin, Minotaur Pyramid, Maze of Lost Souls, Folda, Cyclopolis, Deeper Fibula Dungeon (level 50+ to open the door), Hero Cave, underground of Elvenbane, Plains of Havoc, Kazordoon Minotaur Cave, Foreigner Quarter.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 185

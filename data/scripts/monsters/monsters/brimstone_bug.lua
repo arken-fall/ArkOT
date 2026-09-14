@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Brimstone Bug")
+monster.raceId = 674
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Beneath Razachai, Northern Zao Plantations, Brimstone Bug Cave, Chyllfroest, Krailos Spider Lair",
+}
 local monster = {}
 
 monster.name = "Brimstone Bug"

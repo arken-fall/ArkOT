@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Death Blob"
 monster.description = "a death blob"
+
+monster.raceId = 514
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Alchemist Quarter, Drefia, Razzachai, Souleater Mountains, Northern Zao Plantations and Raging Mage tower.",
+}
 monster.experience = 300
 monster.race = "undead"
 monster.maxHealth = 320

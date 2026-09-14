@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Destroyer"
 monster.description = "a destroyer"
+
+monster.raceId = 287
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Pits of Inferno, Formorgar Mines, Alchemist Quarter, Oramond Dungeon and Grounds of Destruction.",
+}
 monster.experience = 2500
 monster.race = "blood"
 monster.maxHealth = 3700

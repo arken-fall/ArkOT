@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Feverish Citizen"
 monster.description = "a feverish citizen"
+
+monster.raceId = 719
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "Venore.",
+}
 monster.experience = 30
 monster.race = "blood"
 monster.maxHealth = 125

@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Badger")
+monster.raceId = 105
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Hrodmir, southern Tiquanda, unannounced raid in Ab'Dendriel and Edron.",
+}
 local monster = {}
 
 monster.name = "Badger"

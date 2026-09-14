@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Kongra"
 monster.description = "a kongra"
+
+monster.raceId = 116
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "In Banuta, northeast of Port Hope, Arena and Zoo Quarter.",
+}
 monster.experience = 115
 monster.race = "blood"
 monster.maxHealth = 340

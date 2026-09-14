@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elder Bonelord"
 monster.description = "an elder bonelord"
+
+monster.raceId = 108
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Hellgate, near the Hellgate Library, Deeper Banuta, behind piano in Cult Cave to the northeast of Liberty Bay, Vandura Bonelord Cave, Goroma, Helheim, underground of Fenrock (on the way to Beregar), Vengoth.",
+}
 monster.experience = 280
 monster.race = "blood"
 monster.maxHealth = 500

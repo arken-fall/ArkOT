@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wild Warrior"
 monster.description = "a wild warrior"
+
+monster.raceId = 47
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Dark Cathedral, Outlaw Camp, North of Thais, Cyclopolis, in Edron Hero Cave and around it, the small camp near Femor Hills, in Ghostlands disguised as a statue.",
+}
 monster.experience = 60
 monster.race = "blood"
 monster.maxHealth = 135

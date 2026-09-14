@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Banshee"
 monster.description = "a banshee"
+
+monster.raceId = 78
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Single one under the White Flower Temple in Thais (respawn takes about 20-25 minutes), Banshee Quest area in Ghostlands (also accesible by Isle of the Kings), Demon Quest Room, Drefia, Ancient Ruins Tomb, Desert Dungeon (unreachable), Pits of Inferno in Tafariel's Throne room, Cemetery Quarter in Yalahar, Vengoth Castle, one in Robson Isle.",
+}
 monster.experience = 900
 monster.race = "undead"
 monster.maxHealth = 1000

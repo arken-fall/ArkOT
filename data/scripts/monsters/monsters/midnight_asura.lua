@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Midnight Asura"
 monster.description = "a midnight asura"
+
+monster.raceId = 1135
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Asura Palace.",
+}
 monster.experience = 4100
 monster.race = "blood"
 monster.maxHealth = 3100

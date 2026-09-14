@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Renegade Knight"
 monster.description = "a renegade knight"
+
+monster.raceId = 1146
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Old Fortress (north of Edron), Old Masonry, Forbidden Temple (Carlin).",
+}
 monster.experience = 1200
 monster.race = "blood"
 monster.maxHealth = 1450

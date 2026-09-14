@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elephant"
 monster.description = "an elephant"
+
+monster.raceId = 211
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "East of Port Hope close to Grizzly Adams, deep in the jungle, Arena and Zoo Quarter, Mammoth Shearing Factory.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 320

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dromedary"
 monster.description = "a dromedary"
+
+monster.raceId = 733
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Ankrahmun near the way to Darashia, Ankrahmun near sea, around Darashia, Issavi.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 45

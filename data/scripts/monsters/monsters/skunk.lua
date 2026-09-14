@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Skunk"
 monster.description = "a skunk"
+
+monster.raceId = 106
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Unannounced raid in Edron outside the depot, Tiquanda, Shattered Isles, Liberty Bay, south gate of Thais.",
+}
 monster.experience = 3
 monster.race = "blood"
 monster.maxHealth = 20

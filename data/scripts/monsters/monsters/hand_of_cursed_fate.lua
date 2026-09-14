@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hand Of Cursed Fate"
 monster.description = "a hand of cursed fate"
+
+monster.raceId = 281
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno, The Battlefield, The Arcanum, The Blood Halls and The Crystal Caves.",
+}
 monster.experience = 5000
 monster.race = "blood"
 monster.maxHealth = 7500

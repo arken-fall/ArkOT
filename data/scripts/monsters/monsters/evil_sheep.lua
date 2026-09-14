@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Evil Sheep"
 monster.description = "an evil sheep"
+
+monster.raceId = 555
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Isle of Evil.",
+}
 monster.experience = 240
 monster.race = "blood"
 monster.maxHealth = 350

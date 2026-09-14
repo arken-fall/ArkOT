@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lost Soul"
 monster.description = "a lost soul"
+
+monster.raceId = 283
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Pits of Inferno, Formorgar Mines, Helheim, Roshamuul Prison and in The Arcanum Part of the Inquisition quest, Oramond Fury Dungeon",
+}
 monster.experience = 4000
 monster.race = "undead"
 monster.maxHealth = 5800

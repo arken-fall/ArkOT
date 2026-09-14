@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Terramite"
 monster.description = "a terramite"
+
+monster.raceId = 631
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Steppe of Zao, Lion's Rock, Zao Terramite Caves, Darama Terramite Cave, Terramite Breeding Tunnels. Also raids desert north of Ankrahmun.",
+}
 monster.experience = 160
 monster.race = "venom"
 monster.maxHealth = 365

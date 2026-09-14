@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Swampling"
 monster.description = "a swampling"
+
+monster.raceId = 919
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Venore swamp area, Venore Salamander Cave, Tiquanda Laboratory.",
+}
 monster.experience = 45
 monster.race = "venom"
 monster.maxHealth = 80

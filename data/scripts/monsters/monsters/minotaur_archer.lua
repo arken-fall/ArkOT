@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Minotaur Archer"
 monster.description = "a minotaur archer"
+
+monster.raceId = 24
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ancient Temple, way to Mintwallin, Folda Underground Cave, Outlaw Camp, Plains of Havoc, Kazordoon Minotaur Tower, Daramian Minotaur Pyramid, Deeper Fibula Dungeon (level 50+ to open the door), Hero Cave, Foreigner Quarter and Elvenbane.",
+}
 monster.experience = 65
 monster.race = "blood"
 monster.maxHealth = 100

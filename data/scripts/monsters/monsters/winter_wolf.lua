@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Winter Wolf"
 monster.description = "a winter wolf"
+
+monster.raceId = 52
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Ice Islands.",
+}
 monster.experience = 20
 monster.race = "blood"
 monster.maxHealth = 30

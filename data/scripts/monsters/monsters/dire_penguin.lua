@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dire Penguin"
 monster.description = "a dire penguin"
+
+monster.raceId = 335
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 5,
+	firstUnlock = 1,
+	secondUnlock = 3,
+	charmPoints = 30,
+	stars = 2,
+	occurrence = 3,
+	locations = "Any place with penguins like, Formorgar Glacier, Helheim, Tyrsung or Svargrond. Known spawn locations: west of Svargrond, up the Formorgar Glacier.",
+}
 monster.experience = 119
 monster.race = "blood"
 monster.maxHealth = 173

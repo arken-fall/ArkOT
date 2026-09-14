@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Bug")
+monster.raceId = 45
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In many parts around Tibia, including Rookgaard.",
+}
 local monster = {}
 
 monster.name = "Bug"

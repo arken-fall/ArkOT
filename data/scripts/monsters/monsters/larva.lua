@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Larva"
 monster.description = "a larva"
+
+monster.raceId = 82
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Larva Caves, Ankrahmun Tombs, Lions Rock, Gardens of Night (unreachable)",
+}
 monster.experience = 44
 monster.race = "venom"
 monster.maxHealth = 70

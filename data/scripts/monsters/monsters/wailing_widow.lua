@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wailing Widow"
 monster.description = "a wailing widow"
+
+monster.raceId = 632
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Zao Wailing Widow Cave, Northern Zao Plantations, Northern Brimstone Bug Cave, Razzachai, Chyllfroest, Krailos Spider Lair.",
+}
 monster.experience = 450
 monster.race = "venom"
 monster.maxHealth = 850

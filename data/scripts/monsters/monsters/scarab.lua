@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Scarab"
 monster.description = "a scarab"
+
+monster.raceId = 83
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ankrahmun Tombs, the sand around Ankrahmun (use a shovel), deep in Larva caves, the path leading to Chor, beneath Fenrock, Lion's Rock.",
+}
 monster.experience = 120
 monster.race = "venom"
 monster.maxHealth = 320

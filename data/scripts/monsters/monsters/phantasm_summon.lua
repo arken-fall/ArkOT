@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Phantasm"
 monster.description = "a phantasm"
+
+monster.raceId = 292
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno, The Inquisition Quest, Deeper Banuta.",
+}
 monster.experience = 1
 monster.race = "undead"
 monster.maxHealth = 65

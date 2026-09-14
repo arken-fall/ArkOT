@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Shark"
 monster.description = "a shark"
+
+monster.raceId = 782
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Fiehonja, Seacrest Grounds, Krailos Steppe underwater cave.",
+}
 monster.experience = 700
 monster.race = "blood"
 monster.maxHealth = 1200

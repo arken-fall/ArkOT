@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Polar Bear"
 monster.description = "a polar bear"
+
+monster.raceId = 42
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ice Islands.",
+}
 monster.experience = 28
 monster.race = "blood"
 monster.maxHealth = 85

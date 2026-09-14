@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Demon Outcast"
 monster.description = "a demon outcast"
+
+monster.raceId = 1019
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Roshamuul Prison.",
+}
 monster.experience = 6200
 monster.race = "fire"
 monster.maxHealth = 6900

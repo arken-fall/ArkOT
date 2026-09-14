@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Blood Beast"
 monster.description = "a blood beast"
+
+monster.raceId = 1040
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Oramond/Southern Plains, Lower Rathleton, Oramond/Western Plains, Underground Glooth Factory, Jaccus Maxxen's Dungeon.",
+}
 monster.experience = 1000
 monster.race = "venom"
 monster.maxHealth = 1600

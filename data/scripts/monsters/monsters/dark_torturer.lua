@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dark Torturer"
 monster.description = "a dark torturer"
+
+monster.raceId = 285
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno, Vengoth, The Inquisition Quest's Blood Halls, Oramond Dungeon, Oramond Fury Dungeon, Roshamuul Prison, Grounds of Damnation and Halls of Ascension.",
+}
 monster.experience = 4650
 monster.race = "blood"
 monster.maxHealth = 7350

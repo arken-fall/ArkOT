@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Priestess"
 monster.description = "a priestess"
+
+monster.raceId = 58
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Hero Cave, Drefia ruins, Lich Hell, Tombs, Magician Quarter in Yalahar, Vengoth Castle.",
+}
 monster.experience = 420
 monster.race = "blood"
 monster.maxHealth = 390

@@ -340,3 +340,42 @@ honest empties, shaped exactly as the client reads them, until they do.
 prices, bestiary races, character inspection (1 worn item), item detail
 ("wooden floor"), plus every cyclopedia page again; zero protocol
 exceptions. Unit tests 10/10.
+
+## 2026-09-14 — Bestiary: a real system, not an empty page
+
+**Why:** the bestiary underpins prey (race ids) and charms, and it is the
+first side system players expect to *progress*. Canary was the behaviour
+reference (stages, loot bands, charm prices, packet shapes); the design is
+BlackTek's: a `BlackTek::Bestiary` namespace, TOML for the charm table,
+augments for charm effects, and the player's own persistence style.
+**What:**
+
+- `src/bestiary.h/.cpp`: `Race` (client values), `Stage`, `Charm`
+  (definition + `makeAugment`), `Registry` singleton (race id -> monster,
+  members per race, name search, charm table, kill bookkeeping, charm
+  actions, `applyCharmAugments`). Charm effects are `DamageModifier`s built
+  from the rune's `modifiers` list with the target creature's name as the
+  filter, so the existing combat pipeline applies them with no new hooks.
+- `MonsterType::MonsterInfo::BestiaryInfo` + Lua `monsterType:raceId()` /
+  `monsterType:bestiary({...})` and the matching `registerMonsterType`
+  parsers; `Monster::getMonsterType()`.
+- `Player`: `bestiary_kills`, `bestiary_tracker` (session only),
+  `charm_slots` (`Player::CharmSlot`), `charm_points`; kill hook in
+  `Player::onKilledCreature` (last hit only).
+- Persistence: `player_bestiary`, `player_charms`, `players.charm_points`;
+  `data/migrations/2.lua` creates them (3.lua is the new sentinel);
+  `IOLoginData` loads/saves them and rebuilds the charm augments after the
+  stored augments load.
+- Protocol: 0xD5 races, 0xD6 overview (race name or id search), 0xD7
+  creature page (loot by rarity band and stage, stats from Familiar,
+  resistances and locations from Known), 0xD8 charms (+ the four u32 charm
+  resource balances), 0xB9 tracker; `Game::playerCharmAction` for
+  unlock/assign/unassign/reset-all.
+- `config/charms.toml`: the 25 runes with prices, chances and the augment
+  modifiers that carry their effect (charms without a matching modifier
+  are listed and unlockable; their effect lands with its system).
+- `harness/build_bestiary_data.py`: fills `monster.raceId`/`monster.bestiary`
+  from a Canary checkout by creature name (456 written, 284 unmatched).
+
+**Verified:** real client — races/overview/creature page/tracker/charm
+purchase and assignment, kill counted and saved. Unit tests 10/10.

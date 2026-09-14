@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Undead Gladiator"
 monster.description = "an undead gladiator"
+
+monster.raceId = 508
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Arena and Zoo Quarter, Krailos.",
+}
 monster.experience = 800
 monster.race = "undead"
 monster.maxHealth = 1000

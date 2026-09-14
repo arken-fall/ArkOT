@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Forest Fury"
 monster.description = "a forest fury"
+
+monster.raceId = 980
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Forest Fury Camp and in the Forest Fury version of the Forsaken Mine.",
+}
 monster.experience = 235
 monster.race = "blood"
 monster.maxHealth = 480

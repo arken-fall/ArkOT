@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sandstone Scorpion"
 monster.description = "a sandstone scorpion"
+
+monster.raceId = 705
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Horestis Tomb.",
+}
 monster.experience = 680
 monster.race = "undead"
 monster.maxHealth = 900

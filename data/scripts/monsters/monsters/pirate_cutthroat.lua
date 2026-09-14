@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Pirate Cutthroat"
 monster.description = "a pirate cutthroat"
+
+monster.raceId = 248
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Nargor, Tyrsung on the ship, Yalahar, Krailos Steppe and The Cave.",
+}
 monster.experience = 175
 monster.race = "blood"
 monster.maxHealth = 325

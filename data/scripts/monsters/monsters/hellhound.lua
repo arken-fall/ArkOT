@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hellhound"
 monster.description = "a hellhound"
+
+monster.raceId = 294
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno (Infernatil's Throneroom), The Inquisition Quest Area, Hellgorge, Roshamuul Prison, Chyllfroest, Oramond Dungeon, The Extension Site and Asura Vaults.",
+}
 monster.experience = 5440
 monster.race = "blood"
 monster.maxHealth = 7500

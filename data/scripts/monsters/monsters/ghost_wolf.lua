@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ghost Wolf"
 monster.description = "a ghost wolf"
+
+monster.raceId = 1148
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "Poacher Caves/Gloomy.",
+}
 monster.experience = 65
 monster.race = "undead"
 monster.maxHealth = 160

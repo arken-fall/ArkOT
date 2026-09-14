@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Corym Charlatan"
 monster.description = "a corym charlatan"
+
+monster.raceId = 916
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Venore Corym Cave, Tiquanda Corym Cave, Corym Black Market, Carlin Corym Cave/Dwarf Mines Diggers Depths Mine, Upper Spike.",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 250

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Feversleep"
 monster.description = "a feversleep"
+
+monster.raceId = 1021
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Roshamuul Mines, Roshamuul Cistern.",
+}
 monster.experience = 4400
 monster.race = "blood"
 monster.maxHealth = 5900

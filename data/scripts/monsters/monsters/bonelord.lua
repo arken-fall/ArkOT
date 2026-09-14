@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Bonelord"
 monster.description = "a bonelord"
+
+monster.raceId = 17
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ancient Temple, Alatar Lake, Mount Sternum Undead Cave, Desert Dungeon, Hellgate, Helheim, Fibula Dungeon, Villa Scapula, Hero Cave before Dragons, Eastern Drefia, Folda hidden cave, Maze of Lost Souls, way to Mintwallin, before Kazordoon city entrance, abandoned building east of Venore, Green Claw Swamp, north of the Venore Amazon Camp, Below Point of No Return in Outlaw Camp, Vandura Bonelord Cave, Triangle Tower, Hidden cave north of Port Hope, Deeper Banuta, Dark Cathedral, Shadow Tomb, Ancient Ruins Tomb, Tarpit Tomb, Mountain Tomb, Peninsula Tomb, Oasis Tomb and beneath Fenrock.",
+}
 monster.experience = 170
 monster.race = "venom"
 monster.maxHealth = 260

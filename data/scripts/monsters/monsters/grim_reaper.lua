@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Grim Reaper"
 monster.description = "a grim reaper"
+
+monster.raceId = 465
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Drefia Grim Reaper Dungeons, deep in Drefia Wyrm Lair (after the Medusa Shield Quest), Edron (Hero Cave), Yalahar (Cemetery Quarter), Oramond Dungeon, Abandoned Sewers and optionally in the Demon Oak Quest.",
+}
 monster.experience = 5500
 monster.race = "undead"
 monster.maxHealth = 3900

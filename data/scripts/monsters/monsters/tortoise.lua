@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Tortoise"
 monster.description = "a tortoise"
+
+monster.raceId = 258
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Laguna Islands, Fenrock, Port Hope and also can be found behind a wall below the center of Liberty Bay. These cannot be reached.",
+}
 monster.experience = 90
 monster.race = "blood"
 monster.maxHealth = 185

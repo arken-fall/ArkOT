@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wolf"
 monster.description = "a wolf"
+
+monster.raceId = 27
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In almost all grass areas in Tibia, also found in Rookgaard and Dawnport.",
+}
 monster.experience = 18
 monster.race = "blood"
 monster.maxHealth = 25

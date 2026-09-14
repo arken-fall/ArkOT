@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mutated Tiger"
 monster.description = "a mutated tiger"
+
+monster.raceId = 516
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Alchemist Quarter, Arena and Zoo Quarter (Inside with other mutated creatures), Muggy Plains, Souleater Mountains and Northern Zao Plantations.",
+}
 monster.experience = 750
 monster.race = "blood"
 monster.maxHealth = 1100

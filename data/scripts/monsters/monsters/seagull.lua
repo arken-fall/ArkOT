@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Seagull"
 monster.description = "a seagull"
+
+monster.raceId = 264
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Various locations, sighted in the Shattered Isles, Venore, Thais, Femor Hills, Cormaya, Edron Troll-Goblin Peninsula, Liberty Bay, Port Hope, Fibula, Drefia, Factory Quarter, bordering Orc Fort, Rookgaard Premium Zone (not reachable), AbDendriel elf caves, Northern coast of Tibia between Dalbrect and Northport.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 25

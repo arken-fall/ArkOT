@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Scorpion"
 monster.description = "a scorpion"
+
+monster.raceId = 43
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Near Thais Troll Cave, Plague Spike, Drefia, Jakundaf Desert, Green Claw Swamp, beneath Folda, Maze of Lost Souls, Plains of Havoc, Venore and Ankrahmun Dragon Lairs, beneath Edron Graveyard, Ancient Temple, Hellgate, Mad Mage Room, Ankrahmun Tombs, Treasure Island, Mal'ouquah, Ramoa, Cyclopolis, Ghostlands, Vengoth, Lion's Rock.",
+}
 monster.experience = 45
 monster.race = "venom"
 monster.maxHealth = 45

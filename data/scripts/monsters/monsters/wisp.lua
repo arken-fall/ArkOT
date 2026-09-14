@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wisp"
 monster.description = "a wisp"
+
+monster.raceId = 462
+monster.bestiary = {
+	race = "Fey",
+	class = "Fey",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "All around Tiquanda and Feyrist. Several groups of Wisps can be found in and around the forests north of Edron. West of Hardek. Inside the Cyclops Camp. North of the triple Wyvern spawn outside Kazordoon. West of Ab'Dendriel. West of Venore Amazon Camp. A few spawns around Venore, 2 spawn on the Formorgar Glacier, and on Krimhorn.",
+}
 monster.experience = 0
 monster.race = "undead"
 monster.maxHealth = 115

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Chosen"
 monster.description = "a lizard chosen"
+
+monster.raceId = 620
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Temple of Equilibrium (Zao) Hidden stairs, Fire Dragon Dojo, Corruption Hole, Razzachai.",
+}
 monster.experience = 2200
 monster.race = "blood"
 monster.maxHealth = 3050

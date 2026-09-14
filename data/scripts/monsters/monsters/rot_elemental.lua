@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Rot Elemental"
 monster.description = "a rot elemental"
+
+monster.raceId = 1055
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Rathleton Sewers, Glooth Factory, Lower Rathleton, Oramond/Western Plains, Jaccus Maxxen's Dungeon.",
+}
 monster.experience = 750
 monster.race = "venom"
 monster.maxHealth = 850

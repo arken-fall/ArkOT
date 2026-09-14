@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Draken Spellweaver"
 monster.description = "a draken spellweaver"
+
+monster.raceId = 618
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Zao Palace, Razachai, and Zzaion.",
+}
 monster.experience = 3100
 monster.race = "blood"
 monster.maxHealth = 5000

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Draken Abomination"
 monster.description = "a draken abomination"
+
+monster.raceId = 673
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Razachai including the Inner Sanctum.",
+}
 monster.experience = 3800
 monster.race = "venom"
 monster.maxHealth = 6250

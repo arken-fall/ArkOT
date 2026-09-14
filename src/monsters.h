@@ -160,6 +160,21 @@ class MonsterType
 		bool canWalkOnPoison = true;
 
 		MonstersEvent_t eventType = MONSTERS_EVENT_NONE;
+
+		// bestiary entry; a race id of 0 keeps the creature out of the bestiary
+		struct BestiaryInfo
+		{
+			std::string class_name;
+			std::string locations;
+			uint16_t race_id = 0;
+			uint16_t to_kill = 0;
+			uint16_t first_unlock = 0;
+			uint16_t second_unlock = 0;
+			uint16_t charm_points = 0;
+			uint8_t race = 0; // BlackTek::Bestiary::Race
+			uint8_t stars = 0;
+			uint8_t occurrence = 0;
+		} bestiary;
 	};
 
 	public:

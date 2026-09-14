@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Boar"
 monster.description = "a boar"
+
+monster.raceId = 693
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Forest around Outlaw Camp.",
+}
 monster.experience = 60
 monster.race = "blood"
 monster.maxHealth = 198

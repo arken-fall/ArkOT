@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Eternal Guardian"
 monster.description = "an eternal guardian"
+
+monster.raceId = 615
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "North-east Muggy Plains, Deeper Banuta.",
+}
 monster.experience = 1800
 monster.race = "undead"
 monster.maxHealth = 2500

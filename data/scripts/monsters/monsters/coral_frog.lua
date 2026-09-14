@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Coral Frog")
+monster.raceId = 269
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Meriana, Laguna Islands, and other Shattered Isles.",
+}
 local monster = {}
 
 monster.name = "Coral Frog"

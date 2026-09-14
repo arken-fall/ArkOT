@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elf Overseer"
 monster.description = "an elf overseer"
+
+monster.raceId = 741
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Shadowthorn",
+}
 monster.experience = 290
 monster.race = "blood"
 monster.maxHealth = 500

@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Wiggler")
+monster.raceId = 899
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Can be found in Truffels Garden as well as the Mushroom Gardens.",
+}
 local monster = {}
 
 monster.name = "Wiggler"

@@ -50,6 +50,7 @@ class Monster final : public Creature
 		CreatureType_t		getType(CreaturePtr caller = nullptr) const override;
 		BlockType_t			blockHit(const CreaturePtr& attacker, CombatType_t combatType, int32_t& damage, bool checkDefense = false, bool checkArmor = false, bool field = false, bool ignoreResistances = false) override;
 		RaceType_t			getRace() const override			{ return mType->info.race; }
+		MonsterType*		getMonsterType() const				{ return mType; }
 
 		int32_t				getWalkCache(const Position& pos) const;
 		int32_t				getArmor() const override			{ return mType->info.armor; }

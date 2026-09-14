@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Bat")
+monster.raceId = 122
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Dark Cathedral, Tiquanda, Drefia, Mount Sternum, Folda, Ghostlands, Kazordoon, Femor Hills, Thais Bat Dungeon, Thais Bandit Cave and in many other caves.",
+}
 local monster = {}
 
 monster.name = "Bat"

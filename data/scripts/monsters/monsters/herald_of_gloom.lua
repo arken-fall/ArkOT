@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Herald of Gloom"
 monster.description = "a herald of gloom"
+
+monster.raceId = 586
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Edron Hero Cave around the Lightbringers basin.",
+}
 monster.experience = 450
 monster.race = "undead"
 monster.maxHealth = 350

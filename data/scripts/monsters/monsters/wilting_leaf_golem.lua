@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wilting Leaf Golem"
 monster.description = "a wilting leaf golem"
+
+monster.raceId = 982
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Forest Fury Camp, Lair of the Treeling Witch and in the Forest Fury version of the Forsaken Mine.",
+}
 monster.experience = 145
 monster.race = "blood"
 monster.maxHealth = 380

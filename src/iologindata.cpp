@@ -546,7 +546,7 @@ bool IOLoginData::preloadPlayer(const PlayerPtr& player)
 bool IOLoginData::loadPlayerById(const PlayerPtr& player, uint32_t id, std::vector<ConditionHandle>* outConditions)
 {
 	Database& db = Database::getInstance();
-	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction` FROM `players` WHERE `id` = {:d}", id)), outConditions);
+	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction`, `charm_points` FROM `players` WHERE `id` = {:d}", id)), outConditions);
 }
 
 bool IOLoginData::loadPlayerByName(const PlayerPtr& player, const std::string& name)
@@ -582,6 +582,7 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 	player->setGroup(group);
 
 	player->bankBalance = result->getNumber<uint64_t>("balance");
+	player->charm_points = result->getNumber<uint32_t>("charm_points");
 
 	player->setSex(static_cast<PlayerSex_t>(result->getNumber<uint16_t>("sex")));
 	player->level = std::max<uint32_t>(1, result->getNumber<uint32_t>("level"));
@@ -931,6 +932,25 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 			std::cout << "ERROR: Failed to process loaded augments: " << e.what() << std::endl;
 		}
 	}
+
+	//load bestiary kills and charms; the charm augments are rebuilt from the slots
+	if ((result = db.storeQuery(fmt::format("SELECT `race_id`, `kills` FROM `player_bestiary` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			player->addBestiaryKills(result->getNumber<uint16_t>("race_id"), result->getNumber<uint32_t>("kills"));
+		} while (result->next());
+	}
+
+	if ((result = db.storeQuery(fmt::format("SELECT `charm_id`, `tier`, `race_id` FROM `player_charms` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			const uint8_t charmId = result->getNumber<uint8_t>("charm_id");
+			if (charmId < BlackTek::Bestiary::Registry::MaxCharms) {
+				auto& slot = player->getCharmSlot(charmId);
+				slot.tier = result->getNumber<uint8_t>("tier");
+				slot.race_id = result->getNumber<uint16_t>("race_id");
+			}
+		} while (result->next());
+	}
+	BlackTek::Bestiary::Registry::getInstance().applyCharmAugments(player);
 
 	// I used a lambda with immediate execution in order to be able to return early in case of corrupt data or failed loading
 	[&]() -> void 
@@ -1414,6 +1434,7 @@ bool IOLoginData::savePlayer(const PlayerPtr& player)
 
 	query << "`lastlogout` = " << player->getLastLogout() << ',';
 	query << "`balance` = " << player->bankBalance << ',';
+	query << "`charm_points` = " << player->charm_points << ',';
 	query << "`offlinetraining_time` = " << player->getOfflineTrainingTime() / 1000 << ',';
 	query << "`offlinetraining_skill` = " << player->getOfflineTrainingSkill() << ',';
 	query << "`stamina` = " << player->getStaminaMinutes() << ',';
@@ -1582,6 +1603,41 @@ bool IOLoginData::savePlayer(const PlayerPtr& player)
 		return false;
 	}
 
+
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_bestiary` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
+
+	DBInsert bestiaryQuery("INSERT INTO `player_bestiary` (`player_id`, `race_id`, `kills`) VALUES ");
+	for (const auto& [raceId, kills] : player->getBestiaryKillMap()) {
+		if (!bestiaryQuery.addRow(fmt::format("{:d}, {:d}, {:d}", player->getGUID(), raceId, kills))) {
+			return false;
+		}
+	}
+
+	if (!bestiaryQuery.execute()) {
+		return false;
+	}
+
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_charms` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
+
+	DBInsert charmsQuery("INSERT INTO `player_charms` (`player_id`, `charm_id`, `tier`, `race_id`) VALUES ");
+	for (uint8_t charmId = 0; charmId < BlackTek::Bestiary::Registry::MaxCharms; ++charmId) {
+		const auto& slot = player->getCharmSlot(charmId);
+		if (slot.tier == 0) {
+			continue;
+		}
+
+		if (!charmsQuery.addRow(fmt::format("{:d}, {:d}, {:d}, {:d}", player->getGUID(), charmId, slot.tier, slot.race_id))) {
+			return false;
+		}
+	}
+
+	if (!charmsQuery.execute()) {
+		return false;
+	}
 
 	if (!db.executeQuery(fmt::format("DELETE FROM `player_custom_skills` WHERE `player_id` = {:d}", player->getGUID()))) {
 		return false;

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dragon Lord"
 monster.description = "a dragon lord"
+
+monster.raceId = 39
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Ankrahmun Dragon Lairs, Banshee Quest final room (level 60+ to open the door), Deeper Cyclopolis past the Dragon Spawn (level 30+ to open the door), Draconia, Edron Dragon Lair, Fibula Dungeon (level 50+ to open the door), Maze of Lost Souls (level 30+ to open the door), Pits of Inferno Dragon Lair, Dragon Lord hole in Plains of Havoc, Carlin Dragon Lair, Thais Dragon Lair, Goroma Dragon Lairs, Hot Spot, Venore Dragon Lair, Arena and Zoo Quarter(Yalahar), beneath Fenrock, Darashia Dragon Lair, Razachai, Dragonblaze Peaks, Ferumbras Citadel, Fury Dungeon, Lower Spike, Krailos Steppe.",
+}
 monster.experience = 2100
 monster.race = "blood"
 monster.maxHealth = 1900

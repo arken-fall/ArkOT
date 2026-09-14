@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Goblin"
 monster.description = "a goblin"
+
+monster.raceId = 61
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Femor Hills, north east of Carlin, Edron Goblin Cave, Rookgaard (Premium Area), Maze of Lost Souls and Fenrock.",
+}
 monster.experience = 25
 monster.race = "blood"
 monster.maxHealth = 50

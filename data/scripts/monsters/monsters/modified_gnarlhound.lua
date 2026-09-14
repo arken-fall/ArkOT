@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Modified Gnarlhound"
 monster.description = "a modified gnarlhound"
+
+monster.raceId = 877
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 25,
+	firstUnlock = 5,
+	secondUnlock = 10,
+	charmPoints = 1,
+	stars = 0,
+	occurrence = 1,
+	locations = "South of Stonehome, deep under Telas's house.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 1500

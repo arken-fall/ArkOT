@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dragon"
 monster.description = "a dragon"
+
+monster.raceId = 34
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Thais Ancient Temple, Darashia Dragon Lair, Mount Sternum Dragon Cave, Mintwallin, deep in Fibula Dungeon, Kazordoon Dragon Lair (near Dwarf Bridge), Plains of Havoc, Elven Bane castle, Maze of Lost Souls, southern cave and dragon tower in Shadowthorn, Orc Fortress, Venore Dragon Lair, Pits of Inferno, Behemoth Quest room in Edron, Hero Cave, deep Cyclopolis, Edron Dragon Lair, Goroma, Ankrahmun Dragon Lairs, Draconia, Dragonblaze Peaks, some Ankrahmun Tombs, underground of Fenrock (on the way to Beregar), Krailos Steppe and Crystal Lakes.",
+}
 monster.experience = 700
 monster.race = "blood"
 monster.maxHealth = 1000

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Templar"
 monster.description = "a lizard templar"
+
+monster.raceId = 113
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Chor, the lizard city south-east from Port Hope. They can also be found in Yalahar's Foreigner Quarter and in Zzaion.",
+}
 monster.experience = 155
 monster.race = "blood"
 monster.maxHealth = 410

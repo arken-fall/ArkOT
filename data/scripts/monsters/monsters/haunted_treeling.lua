@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Haunted Treeling"
 monster.description = "a haunted treeling"
+
+monster.raceId = 511
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Vengoth surface, Vengoth Castle (Boreth's tower), Northern Zao Plantations, Tiquanda Laboratory, Dryad Gardens.",
+}
 monster.experience = 310
 monster.race = "undead"
 monster.maxHealth = 450

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Amazon"
 monster.description = "an amazon"
+
+monster.raceId = 77
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Venore Amazon Camp, Carlin Amazon Camp, Amazon Tower, east of Carlin, underneath the Fields of Glory, west of Venore, Oasis Tomb, on the smallest of the Laguna Islands, Foreigner Quarter and Trade Quarter.",
+}
 monster.experience = 60
 monster.race = "blood"
 monster.maxHealth = 110

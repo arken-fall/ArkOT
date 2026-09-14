@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Spidris"
 monster.description = "Spidris"
+
+monster.raceId = 787
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Hive, Hive Outpost.",
+}
 monster.experience = 2600
 monster.race = "venom"
 monster.maxHealth = 3700

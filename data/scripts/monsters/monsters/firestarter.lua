@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Firestarter"
 monster.description = "a firestarter"
+
+monster.raceId = 737
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "Shadowthorn, during the Thornfire World Change.",
+}
 monster.experience = 80
 monster.race = "blood"
 monster.maxHealth = 180

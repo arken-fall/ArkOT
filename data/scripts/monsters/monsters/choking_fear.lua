@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Choking Fear"
 monster.description = "a choking fear"
+
+monster.raceId = 1015
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "All over the surface of Upper Roshamuul and Nightmare Isles.",
+}
 monster.experience = 4700
 monster.race = "undead"
 monster.maxHealth = 5800

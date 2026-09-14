@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Fury"
 monster.description = "a fury"
+
+monster.raceId = 291
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno (Apocalypse's Throne Room), The Inquisition Quest (The Shadow Nexus, Battlefield), Vengoth, Fury Dungeon, Oramond Fury Dungeon, The Extension Site, Grounds of Destruction and Halls of Ascension.",
+}
 monster.experience = 4500
 monster.race = "blood"
 monster.maxHealth = 4100

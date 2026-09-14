@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vampire"
 monster.description = "a vampire"
+
+monster.raceId = 68
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Drefia, Ghost Ship between Venore and Darashia, some Ankrahmun Tombs, Lich Hell, Serpentine Tower (unreachable), Ghostlands (unreachable). House between Plains of Havoc and Dark Cathedral, Hellgate (only during Zevelon Duskbringer raid), Edron Undead Cave, Vengoth Castle (and mountains before door), Edron Vampire Crypt.",
+}
 monster.experience = 305
 monster.race = "undead"
 monster.maxHealth = 475

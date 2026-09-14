@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Zaogun"
 monster.description = "a lizard zaogun"
+
+monster.raceId = 616
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Zzaion, Zao Palace, Muggy Plains, Zao Orc Land (in fort), Razzachai, Temple of Equilibrium.",
+}
 monster.experience = 1700
 monster.race = "blood"
 monster.maxHealth = 2955

@@ -376,7 +376,7 @@ namespace BlackTek {
             BestiaryOverview = 0xD6,
             BestiaryMonsterData = 0xD7,
             BestiaryCharms = 0xD8,
-            BestiaryTracker = 0xD9,
+            BestiaryTracker = 0xB9,
             PreyTimeLeft = 0xE7,
             PreyData = 0xE8,
             PreyPrices = 0xE9,
@@ -462,6 +462,36 @@ namespace BlackTek {
         {
             Bank = 0x00,
             Inventory = 0x01,
+            // 14.10+ charm balances; these four are u32 on the wire
+            CharmPoints = 0x1E,
+            MinorCharmEchoes = 0x1F,
+            MaxCharmPoints = 0x20,
+            MaxMinorCharmEchoes = 0x21,
+        };
+
+        // element ids the cyclopedia uses for creature resistances
+        enum class CyclopediaElement : uint8_t
+        {
+            Physical = 0x00,
+            Fire = 0x01,
+            Earth = 0x02,
+            Energy = 0x03,
+            Ice = 0x04,
+            Holy = 0x05,
+            Death = 0x06,
+            Healing = 0x07,
+            Drown = 0x08,
+            LifeDrain = 0x09,
+            ManaDrain = 0x0A,
+        };
+
+        // what the client asks for with BuyCharmRune
+        enum class CharmActionCode : uint8_t
+        {
+            Unlock = 0x00,
+            Assign = 0x01,
+            Unassign = 0x02,
+            ResetAll = 0x03,
         };
 
         enum class SpecialCode : uint16_t 

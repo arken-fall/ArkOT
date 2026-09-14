@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Golden Servant"
 monster.description = "a golden servant"
+
+monster.raceId = 701
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Edron.",
+}
 monster.experience = 450
 monster.race = "energy"
 monster.maxHealth = 550

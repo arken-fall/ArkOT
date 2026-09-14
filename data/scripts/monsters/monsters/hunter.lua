@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hunter"
 monster.description = "a hunter"
+
+monster.raceId = 11
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "North of Mount Sternum, Plains of Havoc, Outlaw Camp, Dark Cathedral, Femor Hills, Maze of Lost Souls, north of the Amazon Camp, at the entrance and in the Hero Cave, a castle tower at Elvenbane, Trade Quarter, Smuggler camp on Tyrsung, Formorgar Mines.",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 150

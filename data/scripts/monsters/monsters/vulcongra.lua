@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vulcongra"
 monster.description = "Vulcongra"
+
+monster.raceId = 898
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Hot Spot (in Gnomebase Alpha) and Lower Spike.",
+}
 monster.experience = 1100
 monster.race = "fire"
 monster.maxHealth = 1600

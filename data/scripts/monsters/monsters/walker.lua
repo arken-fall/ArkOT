@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Walker"
 monster.description = "a walker"
+
+monster.raceId = 1043
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "A few spawns in the Underground Glooth Factory, Glooth Factory, and Rathleton Sewers.",
+}
 monster.experience = 2200
 monster.race = "venom"
 monster.maxHealth = 3000

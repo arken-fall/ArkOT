@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Undead Dragon"
 monster.description = "an undead dragon"
+
+monster.raceId = 282
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Helheim (single, isolated spawn), Pits of Inferno (Ashfalor's throneroom), Demon Forge (The Shadow Nexus and The Arcanum), under Razachai (including the Inner Sanctum), Chyllfroest, Oramond Fury Dungeon.",
+}
 monster.experience = 7200
 monster.race = "undead"
 monster.maxHealth = 8350

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Rat"
 monster.description = "a rat"
+
+monster.raceId = 21
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Rookgaard and Mainland, in most sewers and caves near towns. They can be found almost everywhere in Tibia.",
+}
 monster.experience = 5
 monster.race = "blood"
 monster.maxHealth = 20

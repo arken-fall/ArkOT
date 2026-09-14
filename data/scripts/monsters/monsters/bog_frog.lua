@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Bog Frog")
+monster.raceId = 738
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Shadowthorn in the bog god's temple, Drefia, around Lake Equivocolao when it's dirty.",
+}
 local monster = {}
 
 monster.name = "Bog Frog"

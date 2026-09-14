@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Quara Constrictor"
 monster.description = "a quara constrictor"
+
+monster.raceId = 239
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Calassa, Frozen Trench underwater sites, Yalahar (Sunken Quarter).",
+}
 monster.experience = 250
 monster.race = "blood"
 monster.maxHealth = 450

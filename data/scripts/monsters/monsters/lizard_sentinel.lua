@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Sentinel"
 monster.description = "a lizard sentinel"
+
+monster.raceId = 114
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Chor, Zzaion and Foreigner Quarter.",
+}
 monster.experience = 110
 monster.race = "blood"
 monster.maxHealth = 265

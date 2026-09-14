@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Tarantula"
 monster.description = "a tarantula"
+
+monster.raceId = 219
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Tiquanda Tarantula Caves, Spider Caves, Trapwood ground level and underground, in 2 small caves South of Thais, Dark Cathedral, single spawn on top of Crocodile den north of Port Hope, Plains of Havoc, underground Liberty Bay, Nargor Undead Cave and other constituents of the Shattered Isles, Green Claw Swamp, first floor up in the big building in the Cemetery Quarter, Robson Isle, Vengoth. After the summer update of 2876, tarantulas can be seen on the beginner's island of Rookgaard.",
+}
 monster.experience = 120
 monster.race = "venom"
 monster.maxHealth = 225

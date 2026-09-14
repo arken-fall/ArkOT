@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Blue Djinn"
 monster.description = "a blue djinn"
+
+monster.raceId = 80
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Kha'zeel, Magician Quarter, Forgotten Tomb.",
+}
 monster.experience = 215
 monster.race = "blood"
 monster.maxHealth = 330

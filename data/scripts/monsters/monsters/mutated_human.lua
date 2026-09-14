@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mutated Human"
 monster.description = "a mutated human"
+
+monster.raceId = 521
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Alchemist Quarter and Factory Quarter (Yalahar), Robson's Isle, Tiquanda Laboratory.",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 240

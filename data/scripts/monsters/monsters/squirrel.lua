@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Squirrel"
 monster.description = "a squirrel"
+
+monster.raceId = 384
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "North of Carlin, Northwest of Thais, East of Kazordoon, Yalahar, Dawnport, Edron Hunters Camp, Plains of Havoc and other Tibian woods.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 20

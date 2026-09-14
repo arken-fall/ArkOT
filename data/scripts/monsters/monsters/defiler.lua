@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Defiler"
 monster.description = "a defiler"
+
+monster.raceId = 289
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno, The Inquisition Quest (The Vats) and Grounds of Plague.",
+}
 monster.experience = 3700
 monster.race = "venom"
 monster.maxHealth = 3650

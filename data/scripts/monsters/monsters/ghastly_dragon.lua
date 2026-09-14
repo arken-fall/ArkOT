@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ghastly Dragon"
 monster.description = "a ghastly dragon"
+
+monster.raceId = 643
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Ghastly Dragon Lair, Corruption Hole, Razachai including the Inner Sanctum, Zao Palace, Deeper Banuta single spawn, Chyllfroest.",
+}
 monster.experience = 4600
 monster.race = "undead"
 monster.maxHealth = 7800

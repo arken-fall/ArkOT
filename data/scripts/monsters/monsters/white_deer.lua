@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "White Deer"
 monster.description = "a white deer"
+
+monster.raceId = 720
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 2,
+	locations = "Around AbDendriel, Carlin east from Lothar, Femor Hills and Ferngrims Gate, usually in pairs. They will appear when they're not overhunted.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 195

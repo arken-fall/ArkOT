@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dwarf Geomancer"
 monster.description = "a dwarf geomancer"
+
+monster.raceId = 66
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Mount Sternum Undead Cave, Dwarf Mines, Circle Room in Kazordoon, Triangle Tower, Tiquanda Dwarf Cave, Cormaya Dwarven Cave, Beregar Mines.",
+}
 monster.experience = 265
 monster.race = "blood"
 monster.maxHealth = 380

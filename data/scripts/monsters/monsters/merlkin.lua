@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Merlkin"
 monster.description = "a merlkin"
+
+monster.raceId = 117
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Banuta, north-east of Port Hope.",
+}
 monster.experience = 145
 monster.race = "blood"
 monster.maxHealth = 235

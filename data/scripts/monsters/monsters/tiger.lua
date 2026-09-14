@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Tiger"
 monster.description = "a tiger"
+
+monster.raceId = 125
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Tiquanda, Meriana, Arena and Zoo Quarter. Three unreachable ones are found in the Rookgaard Academy, below Ankrahmun (during the Nomads Land Quest), and on Charles's ship.",
+}
 monster.experience = 40
 monster.race = "blood"
 monster.maxHealth = 75

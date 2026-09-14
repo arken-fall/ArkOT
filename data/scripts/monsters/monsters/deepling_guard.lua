@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deepling Guard"
 monster.description = "a deepling guard"
+
+monster.raceId = 770
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Fiehonja. During Deeplings stage 1 around 10 spawns exist. Also may spawn during the gemcutting mission. Many more spawns in almost all areas of Deepling stage 2 and 3.",
+}
 monster.experience = 2100
 monster.race = "blood"
 monster.maxHealth = 1900

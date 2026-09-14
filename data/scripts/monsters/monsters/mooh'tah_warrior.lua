@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mooh'Tah Warrior"
 monster.description = "a mooh'tah warrior"
+
+monster.raceId = 1051
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Oramond/Southern Plains, Minotaur Hills, Oramond Dungeon (depending on Magistrate votes), Underground Glooth Factory.",
+}
 monster.experience = 900
 monster.race = "blood"
 monster.maxHealth = 1200

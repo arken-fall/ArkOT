@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Panda"
 monster.description = "a panda"
+
+monster.raceId = 123
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "South of Port Hope around Trapwood, as well as a lone specimen in the Arena Quarter.",
+}
 monster.experience = 23
 monster.race = "blood"
 monster.maxHealth = 80

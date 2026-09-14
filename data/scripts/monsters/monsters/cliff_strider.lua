@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Cliff Strider"
 monster.description = "a cliff strider"
+
+monster.raceId = 889
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 3.",
+}
 monster.experience = 5700
 monster.race = "undead"
 monster.maxHealth = 9400

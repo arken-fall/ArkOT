@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dragon Hatchling"
 monster.description = "a dragon hatchling"
+
+monster.raceId = 385
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Thais Dragon Lair, beneath Fenrock, Darashia Dragon Lair, Venore Dragon Lair, Edron Dragon Lair, Dragonblaze Peaks, Krailos Steppe. Also summoned by Lizard Dragon Priests.",
+}
 monster.experience = 185
 monster.race = "blood"
 monster.maxHealth = 380

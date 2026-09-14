@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Cyclops Drone"
 monster.description = "a cyclops drone"
+
+monster.raceId = 391
+monster.bestiary = {
+	race = "Giant",
+	class = "Giant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cyclopolis, Mount Sternum, Mistrock and in the Cyclops version of the Forsaken Mine.",
+}
 monster.experience = 200
 monster.race = "blood"
 monster.maxHealth = 325

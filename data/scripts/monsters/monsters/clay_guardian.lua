@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Clay Guardian"
 monster.description = "a clay guardian"
+
+monster.raceId = 706
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Horestis Tomb, Middle Spike, Medusa Tower.",
+}
 monster.experience = 400
 monster.race = "undead"
 monster.maxHealth = 625

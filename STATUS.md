@@ -3,6 +3,20 @@
 Branch: `modern-protocol`. Last session: 2026-09-13.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
 
+**2026-09-14 — Bestiary system (real-client verified).** New
+`BlackTek::Bestiary` module (`src/bestiary.h/.cpp`): race registry built as
+monsters load (`monster.raceId` / `monster.bestiary` in the monster Lua),
+kill stages, loot rarity bands, charm table from `config/charms.toml`, charm
+purchase/assign/unassign, and assigned charms as augments filtered by the
+creature's name. Player state: kills per race, charm points, charm slots
+(`player_bestiary`, `player_charms`, `players.charm_points`; migration 2).
+`harness/build_bestiary_data.py` gave 456 of 740 monsters their entries
+from Canary's datapack by name. Rig proof: races 21/430, overview Mammal 49,
+rat page stage 4, tracker refresh on kill, kill count 250 -> 252 persisted,
+Wound bought (5000 -> 4760 points) and assigned to rat (persisted).
+GOTCHAS: client binds `g_game.BuyCharmRune` (capital B) and
+`requestBestiaryOverview(name, false, {})` needs the id list.
+
 **2026-09-14 — Phase D tranche 2 (real-client verified).** Prey (three
 locked slots + prices, at login and on 0xED), bestiary (0xE1 races, 0xE2
 overview, 0xE4 charms, empty), object inspection (0xCD -> 0x76) with the
@@ -65,7 +79,7 @@ Real client: `~/Documents/BlackTek15` (mehah OTClient Redemption, built from sou
 | A — session login | **PASS** | POST /login on opentibiabr/login-server → session key → modern handshake → "Tester has logged in." → walk answered |
 | B — asset/ID pipeline | **PASS** | 21 golden items round-trip serverId↔15.25 appearanceId; full table appearance-backed (41 stale rows pruned); blacktek_tests 10/10 |
 | C — enter world (mehah) | **PASS** | **real mehah 15.25 client renders the world and walks, zero parse errors / zero invalid-thing warnings** (2026-07-20). Autonomous edit/build/launch/screenshot loop via `otclientrc.lua` auto-login harness |
-| D — feature stubs | IN PROGRESS | 2026-09-14: cyclopedia character info (all 15 request types answered; base, general, combat, offence, defence, misc, deaths, item summary, outfits/mounts, store summary, badges, titles carry real data where the server has it) and the blessings status + dialog verified on the real 15.25 client; prey slots (locked, with prices) sent at login and on request, bestiary races/overview/charms answered empty, object and character inspection windows (0x76) and the cyclopedia inspection page verified on the real client; forge/wheel/store still stubbed off |
+| D — feature stubs | IN PROGRESS | 2026-09-14: cyclopedia character info (all 15 request types answered; base, general, combat, offence, defence, misc, deaths, item summary, outfits/mounts, store summary, badges, titles carry real data where the server has it) and the blessings status + dialog verified on the real 15.25 client; prey slots (locked, with prices) sent at login and on request, bestiary races/overview/charms answered empty, object and character inspection windows (0x76) and the cyclopedia inspection page verified on the real client; **bestiary is a real system** (race ids + entries on 456 monsters from Canary's data, kill tracking persisted in `player_bestiary`, staged creature pages, tracker, charm points, `config/charms.toml` runes unlocked/assigned/persisted in `player_charms`, assigned runes applied as augments against the creature) — verified on the real client; prey/forge/wheel/store still stubbed off |
 | E — long tail | IN PROGRESS | 2026-09-13: NPC shop (0x7A/0x7B + 0xEE balances), outfit window (0xC8), death window, text windows, quest line, GM map teleport (0x73), market (enter/browse/own offers/history/leave with request bytes, tiers, u64 prices, 15.25 descriptions), client item ids reverse-mapped for use/move/rotate/wrap/trade/equip/shop — all verified on the real 15.25 client; u16 spell cooldowns and u64 experience messages ported by layout (GM has no cooldowns, so not client-verified); cyclopedia still pending |
 
 ### Phase C ground truth (2026-07-20)

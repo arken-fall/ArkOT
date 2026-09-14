@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Minotaur Amazon"
 monster.description = "a minotaur amazon"
+
+monster.raceId = 1045
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Underground Glooth Factory, Oramond Minotaur Camp, Oramond Dungeon",
+}
 monster.experience = 2200
 monster.race = "blood"
 monster.maxHealth = 2600

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dwarf Guard"
 monster.description = "a dwarf guard"
+
+monster.raceId = 70
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Kazordoon Dwarf Mines, Dwacatra, Ferngrims Gate, Cyclopolis, Mount Sternum Undead Cave, Stonehome Rotworm cave (near Edron), Maze of Lost Souls, Tiquanda Dwarf Cave, Beregar, Cormaya Dwarf Cave.",
+}
 monster.experience = 165
 monster.race = "blood"
 monster.maxHealth = 245

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orchid Frog"
 monster.description = "an orchid frog"
+
+monster.raceId = 271
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Meriana, Laguna Islands, and other Shattered Isles.",
+}
 monster.experience = 20
 monster.race = "blood"
 monster.maxHealth = 60

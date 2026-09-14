@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mad Scientist"
 monster.description = "a mad scientist"
+
+monster.raceId = 528
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Magician Quarter, Trade Quarter, Factory Quarter,Isle of Evil, Tiquanda Laboratory.",
+}
 monster.experience = 205
 monster.race = "blood"
 monster.maxHealth = 325

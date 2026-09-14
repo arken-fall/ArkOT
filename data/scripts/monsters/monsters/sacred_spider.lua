@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sacred Spider"
 monster.description = "a sacred spider"
+
+monster.raceId = 709
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Horestis Tomb (third floor and lower).",
+}
 monster.experience = 330
 monster.race = "venom"
 monster.maxHealth = 550

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crazed Beggar"
 monster.description = "a crazed beggar"
+
+monster.raceId = 525
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Factory, Foreigner, and Trade Quarters in Yalahar.",
+}
 monster.experience = 35
 monster.race = "blood"
 monster.maxHealth = 100

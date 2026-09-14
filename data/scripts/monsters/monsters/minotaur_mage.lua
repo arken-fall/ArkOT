@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Minotaur Mage"
 monster.description = "a minotaur mage"
+
+monster.raceId = 23
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Cyclopolis, Mintwallin, Maze of Lost Souls, Dark Pyramid, Folda (hidden cave), Kazordoon (The Horned Fox's hideout), the Plains of Havoc, Point of No Return south of Outlaw Camp, Elvenbane, the depths of Fibula Dungeon (level 50+), cave east from Dwarf Bridge, Foreigner Quarter, Rookgaard Minotaur Hell (not reachable).",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 155

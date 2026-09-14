@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Glooth Anemone"
 monster.description = "a glooth anemone"
+
+monster.raceId = 1042
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Rathleton Sewers, Underground Glooth Factory, Jaccus Maxxen's Dungeon.",
+}
 monster.experience = 1800
 monster.race = "venom"
 monster.maxHealth = 2400

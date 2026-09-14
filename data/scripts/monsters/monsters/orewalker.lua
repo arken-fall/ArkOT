@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orewalker"
 monster.description = "an orewalker"
+
+monster.raceId = 883
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 3.",
+}
 monster.experience = 4800
 monster.race = "undead"
 monster.maxHealth = 7200

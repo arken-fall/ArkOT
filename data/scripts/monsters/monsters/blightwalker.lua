@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Blightwalker"
 monster.description = "a blightwalker"
+
+monster.raceId = 298
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno, Edron (In the Vats during The Inquisition Quest), Roshamuul Prison, Grounds of Undeath.",
+}
 monster.experience = 5850
 monster.race = "undead"
 monster.maxHealth = 8900

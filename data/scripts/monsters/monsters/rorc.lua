@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Rorc"
 monster.description = "a rorc"
+
+monster.raceId = 978
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "South-west of Ulderek's Rock and in the Rorc version of the Forsaken Mine.",
+}
 monster.experience = 105
 monster.race = "blood"
 monster.maxHealth = 260

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gravedigger"
 monster.description = "a gravedigger"
+
+monster.raceId = 975
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Around the higher level areas of Drefia, including the Drefia Grim Reaper Dungeons and the Drefia Vampire Crypt.",
+}
 monster.experience = 950
 monster.race = "blood"
 monster.maxHealth = 1500

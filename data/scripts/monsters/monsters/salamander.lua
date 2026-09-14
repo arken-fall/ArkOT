@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Salamander"
 monster.description = "a salamander"
+
+monster.raceId = 913
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Shadowthorn in the bog god's temple, Drefia, around Lake Equivocolao when it's dirty.",
+}
 monster.experience = 25
 monster.race = "blood"
 monster.maxHealth = 70

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deepling Tyrant"
 monster.description = "a deepling tyrant"
+
+monster.raceId = 861
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 2,
+	locations = "Fiehonja.",
+}
 monster.experience = 4200
 monster.race = "blood"
 monster.maxHealth = 4900

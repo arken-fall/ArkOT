@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Squidgy Slime"
 monster.description = "a squidgy slime"
+
+monster.raceId = 20
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "Horestis Tomb during one of the states of The Mummys Curse World Change.",
+}
 monster.experience = 55
 monster.race = "venom"
 monster.maxHealth = 150

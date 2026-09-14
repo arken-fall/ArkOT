@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wyrm"
 monster.description = "a wyrm"
+
+monster.raceId = 461
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Drefia Wyrm Lair (after the Medusa Shield Quest room), Darashia Wyrm Hills, Arena and Zoo Quarter, beneath Fenrock, Deeper Razachai, Lower Spike, Vandura Wyrm Cave and Vandura Mountain in Liberty Bay.",
+}
 monster.experience = 1550
 monster.race = "blood"
 monster.maxHealth = 1825

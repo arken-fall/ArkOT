@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hero"
 monster.description = "a hero"
+
+monster.raceId = 73
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "In Hero Cave in Edron, it has many rooms with many kinds of monsters and different amounts of Heroes. Also in Magician Quarter, accompanied by other monsters. Old Fortress.",
+}
 monster.experience = 1200
 monster.race = "blood"
 monster.maxHealth = 1400

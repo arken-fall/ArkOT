@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mummy"
 monster.description = "a mummy"
+
+monster.raceId = 65
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Drefia, Darama's Dark Pyramid, Draconia, Mount Sternum Undead Cave, Green Claw Swamp, Venore Amazon Camp underground, Helheim, Upper Spike, all Tombs, Dark Cathedral, Lion's Rock.",
+}
 monster.experience = 150
 monster.race = "undead"
 monster.maxHealth = 240

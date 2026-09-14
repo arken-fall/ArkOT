@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sea Serpent"
 monster.description = "a sea serpent"
+
+monster.raceId = 438
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Sea Serpent Area and Seacrest Grounds.",
+}
 monster.experience = 2300
 monster.race = "blood"
 monster.maxHealth = 1950

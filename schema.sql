@@ -327,6 +327,7 @@ CREATE TABLE `players` (
     `skulltime` bigint NOT NULL DEFAULT '0',
     `lastlogout` bigint UNSIGNED NOT NULL DEFAULT '0',
     `blessings` tinyint NOT NULL DEFAULT '0',
+    `charm_points` int UNSIGNED NOT NULL DEFAULT '0',
     `onlinetime` bigint NOT NULL DEFAULT '0',
     `deletion` bigint NOT NULL DEFAULT '0',
     `balance` bigint UNSIGNED NOT NULL DEFAULT '0',
@@ -521,6 +522,27 @@ CREATE TABLE `player_spells` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `player_bestiary`
+-- kills per bestiary race id
+CREATE TABLE `player_bestiary` (
+    `player_id` int NOT NULL,
+    `race_id` smallint UNSIGNED NOT NULL,
+    `kills` int UNSIGNED NOT NULL DEFAULT '0',
+    PRIMARY KEY (`player_id`, `race_id`),
+    FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
+
+-- Table structure for table `player_charms`
+-- unlocked charm runes: their tier and the race they are assigned to
+CREATE TABLE `player_charms` (
+    `player_id` int NOT NULL,
+    `charm_id` tinyint UNSIGNED NOT NULL,
+    `tier` tinyint UNSIGNED NOT NULL DEFAULT '1',
+    `race_id` smallint UNSIGNED NOT NULL DEFAULT '0',
+    PRIMARY KEY (`player_id`, `charm_id`),
+    FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
+
 -- Table structure for table `player_storage`
 --
 

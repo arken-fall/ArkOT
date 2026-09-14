@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Snake"
 monster.description = "a snake"
+
+monster.raceId = 28
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In almost all grassy areas of Tibia. Also found in Rookgaard.",
+}
 monster.experience = 10
 monster.race = "blood"
 monster.maxHealth = 15

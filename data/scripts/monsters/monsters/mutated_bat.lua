@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mutated Bat"
 monster.description = "a mutated bat"
+
+monster.raceId = 509
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cemetery Quarter (around 10 underground on the west side along with banshees, and 4 bats on the church roof), Alchemist Quarter (4 found on top of roofs), Arena and Zoo Quarter (2 under the arena with other mutated creatures), Razzachai, Northern Zao Plantations, Souleater Mountains, Middle Spike, Vengoth and Vengoth Castle.",
+}
 monster.experience = 615
 monster.race = "blood"
 monster.maxHealth = 900

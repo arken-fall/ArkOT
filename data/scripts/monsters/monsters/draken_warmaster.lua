@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Draken Warmaster"
 monster.description = "a draken warmaster"
+
+monster.raceId = 617
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Zao Palace, Chazorai, Razzachai, and Zzaion.",
+}
 monster.experience = 2400
 monster.race = "blood"
 monster.maxHealth = 4150

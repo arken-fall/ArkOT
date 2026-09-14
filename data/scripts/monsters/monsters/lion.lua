@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lion"
 monster.description = "a lion"
+
+monster.raceId = 41
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Jakundaf Desert, Darama, Arena Quarter, Venore Amazon Camp.",
+}
 monster.experience = 30
 monster.race = "blood"
 monster.maxHealth = 80

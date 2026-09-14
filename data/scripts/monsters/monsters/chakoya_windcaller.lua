@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Chakoya Windcaller"
 monster.description = "a chakoya windcaller"
+
+monster.raceId = 329
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Inukaya, Chyllfroest, Chakoya Iceberg.",
+}
 monster.experience = 48
 monster.race = "blood"
 monster.maxHealth = 84

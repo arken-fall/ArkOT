@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc Warrior"
 monster.description = "an orc warrior"
+
+monster.raceId = 7
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ancient Temple in Thais, Orc Fort, below Point of No Return in Outlaw Camp and inside a mountain north of it, Orc Peninsula, Folda, Edron Orc cave, Maze of Lost Souls, Elvenbane Castle, Foreigner Quarter, Zao Orc Land.",
+}
 monster.experience = 50
 monster.race = "blood"
 monster.maxHealth = 125

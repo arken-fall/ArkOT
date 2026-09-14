@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vicious Squire"
 monster.description = "a vicious squire"
+
+monster.raceId = 1145
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Old Fortress (north of Edron), Old Masonry, Forbidden Temple (Carlin).",
+}
 monster.experience = 900
 monster.race = "blood"
 monster.maxHealth = 1000

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Necromancer"
 monster.description = "a necromancer"
+
+monster.raceId = 9
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "All the Tombs, Lich Hell, Drefia, Medusa Shield Quest room, Old Fortress, Old Masonry, beneath Fenrock, Cemetery Quarter and Magician Quarter.",
+}
 monster.experience = 580
 monster.race = "blood"
 monster.maxHealth = 580

@@ -1762,6 +1762,8 @@ class LuaScriptInterface
 		static int luaMonsterTypeOutfit(lua_State* L);
 		static int luaMonsterTypeRace(lua_State* L);
 		static int luaMonsterTypeCorpseId(lua_State* L);
+		static int luaMonsterTypeRaceId(lua_State* L);
+		static int luaMonsterTypeBestiary(lua_State* L);
 		static int luaMonsterTypeManaCost(lua_State* L);
 		static int luaMonsterTypeBaseSpeed(lua_State* L);
 		static int luaMonsterTypeLight(lua_State* L);

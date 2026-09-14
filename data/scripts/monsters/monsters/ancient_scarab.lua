@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ancient Scarab"
 monster.description = "an ancient scarab"
+
+monster.raceId = 79
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Ankrahmun Library Tomb, Stone Tomb, Peninsula Tomb, Mother of Scarabs Lair, Kha'zeel Scarab Lair, deep in Larva Caves (found beneath steps underground), Lion's Rock, Arena and Zoo Quarter and beneath Fenrock.",
+}
 monster.experience = 720
 monster.race = "venom"
 monster.maxHealth = 1000

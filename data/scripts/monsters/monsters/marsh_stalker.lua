@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Marsh Stalker"
 monster.description = "a marsh stalker"
+
+monster.raceId = 914
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Venore swamp surface, Venore Salamander Cave, Dryad Gardens.",
+}
 monster.experience = 50
 monster.race = "blood"
 monster.maxHealth = 100

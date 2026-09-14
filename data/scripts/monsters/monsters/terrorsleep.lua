@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Terrorsleep"
 monster.description = "a terrorsleep"
+
+monster.raceId = 1016
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Roshamuul Mines, Roshamuul Cistern.",
+}
 monster.experience = 5900
 monster.race = "venom"
 monster.maxHealth = 7200

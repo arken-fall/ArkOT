@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Quara Mantassin Scout"
 monster.description = "a quara mantassin scout"
+
+monster.raceId = 242
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Malada, Water Elemental Cave near Port Hope, Hrodmir Quara Scout Caves, Quara Grotto, Oramond.",
+}
 monster.experience = 100
 monster.race = "blood"
 monster.maxHealth = 220

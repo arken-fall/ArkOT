@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Leaf Golem"
 monster.description = "a leaf golem"
+
+monster.raceId = 979
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Leaf dungeon in Hellgate, Lair of the Treeling Witch, Forest Fury Camp and in the Forest Fury version of the Forsaken Mine.",
+}
 monster.experience = 45
 monster.race = "undead"
 monster.maxHealth = 90

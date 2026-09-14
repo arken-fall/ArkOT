@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Skeleton Warrior"
 monster.description = "a skeleton warrior"
+
+monster.raceId = 446
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Island of Destiny, Drefia, Ghostland and beneath Fenrock.",
+}
 monster.experience = 45
 monster.race = "undead"
 monster.maxHealth = 65

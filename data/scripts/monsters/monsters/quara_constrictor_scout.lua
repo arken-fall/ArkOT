@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Quara Constrictor Scout"
 monster.description = "a quara constrictor scout"
+
+monster.raceId = 240
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Malada, Arena Quarter, Treasure Island Eastern Caves, Hrodmir Quara Scout Caves, Quara Grotto, Oramond.",
+}
 monster.experience = 200
 monster.race = "blood"
 monster.maxHealth = 450

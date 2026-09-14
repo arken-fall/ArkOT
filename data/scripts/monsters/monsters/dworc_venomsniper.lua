@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Dworc Venomsniper")
+monster.raceId = 216
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "South of Port Hope (Trapwood) on ground level and underground and on Foreigner Quarter of Yalahar.",
+}
 local monster = {}
 
 monster.name = "Dworc Venomsniper"

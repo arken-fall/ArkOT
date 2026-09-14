@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Azure Frog"
 monster.description = "an azure frog"
+
+monster.raceId = 268
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Meriana, Laguna Islands, and other Shattered Isles.",
+}
 monster.experience = 20
 monster.race = "blood"
 monster.maxHealth = 60

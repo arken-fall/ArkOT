@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crocodile"
 monster.description = "a crocodile"
+
+monster.raceId = 119
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "In the crocodile cave and the jungle east of Port Hope as well as the swamp to the north, Fenrock, Arena and Zoo Quarter, Trade Quarter, Talahu, also located on Meriana and Laguna Islands.",
+}
 monster.experience = 40
 monster.race = "blood"
 monster.maxHealth = 105

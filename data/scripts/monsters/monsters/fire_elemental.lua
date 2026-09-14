@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Fire Elemental"
 monster.description = "a fire elemental"
+
+monster.raceId = 49
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cyclopolis, Hero Cave in Edron, Ankrahmun tombs, Serpentine Tower, Factory Quarter in Yalahar, Deeper Banuta, Goroma inside the volcano and beneath Fenrock.",
+}
 monster.experience = 220
 monster.race = "fire"
 monster.maxHealth = 280

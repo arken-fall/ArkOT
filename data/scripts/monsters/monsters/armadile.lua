@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Armadile"
 monster.description = "an armadile"
+
+monster.raceId = 880
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 1.",
+}
 monster.experience = 2900
 monster.race = "undead"
 monster.maxHealth = 3800

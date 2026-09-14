@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Calamary"
 monster.description = "a calamary"
+
+monster.raceId = 780
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "Fiehonja.",
+}
 monster.experience = 0
 monster.race = "undead"
 monster.maxHealth = 75

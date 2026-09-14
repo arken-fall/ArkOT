@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Doom Deer"
 monster.description = "a doom deer"
+
+monster.raceId = 559
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "Isle of Evil.",
+}
 monster.experience = 200
 monster.race = "blood"
 monster.maxHealth = 405

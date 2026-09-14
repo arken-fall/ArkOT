@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lost Basher"
 monster.description = "a lost basher"
+
+monster.raceId = 925
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Caves of the Lost, Lower Spike and in the Lost Dwarf version of the Forsaken Mine.",
+}
 monster.experience = 1800
 monster.race = "blood"
 monster.maxHealth = 2600

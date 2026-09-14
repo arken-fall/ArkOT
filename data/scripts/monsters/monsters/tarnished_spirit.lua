@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Tarnished Spirit"
 monster.description = "a tarnished spirit"
+
+monster.raceId = 976
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Drefia.",
+}
 monster.experience = 120
 monster.race = "undead"
 monster.maxHealth = 150

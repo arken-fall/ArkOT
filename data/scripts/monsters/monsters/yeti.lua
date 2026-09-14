@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Yeti"
 monster.description = "a yeti"
+
+monster.raceId = 110
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Folda, Chyllfroest, Isle of Merriment.",
+}
 monster.experience = 460
 monster.race = "blood"
 monster.maxHealth = 950

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dwarf"
 monster.description = "a dwarf"
+
+monster.raceId = 69
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Kazordoon Dwarf Mines, Dwarf Bridge, deep Elvenbane, Tiquanda Dwarf Cave, Cormaya Dwarf Cave, Island of Destiny (Knights area), Beregar.",
+}
 monster.experience = 45
 monster.race = "blood"
 monster.maxHealth = 90

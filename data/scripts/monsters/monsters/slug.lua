@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Slug"
 monster.description = "a slug"
+
+monster.raceId = 731
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "South-east of Venore, Swamp Troll Cave.",
+}
 monster.experience = 70
 monster.race = "venom"
 monster.maxHealth = 255

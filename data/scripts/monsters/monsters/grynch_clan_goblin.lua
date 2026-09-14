@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Grynch Clan Goblin"
 monster.description = "Grynch Clan Goblin"
+
+monster.raceId = 393
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 10,
+	stars = 1,
+	occurrence = 3,
+	locations = "They do not have a set respawn spot. They are announced to be stealing presents from a random Tibian city and spawn in the aforetold city. There are two or three messages that appear on each raid and three massive spawns of goblins.",
+}
 monster.experience = 4
 monster.race = "blood"
 monster.maxHealth = 80

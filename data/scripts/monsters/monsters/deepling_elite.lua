@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deepling Elite"
 monster.description = "a deepling elite"
+
+monster.raceId = 862
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "Fiehonja (Tanjis lair).",
+}
 monster.experience = 3000
 monster.race = "blood"
 monster.maxHealth = 3200

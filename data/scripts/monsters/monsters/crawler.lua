@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crawler"
 monster.description = "a crawler"
+
+monster.raceId = 786
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Hive, Hive Outpost.",
+}
 monster.experience = 1000
 monster.race = "venom"
 monster.maxHealth = 1450

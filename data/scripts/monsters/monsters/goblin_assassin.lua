@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Goblin Assassin"
 monster.description = "a goblin assassin"
+
+monster.raceId = 463
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Femor Hills, Edron Goblin Cave and Fenrock.",
+}
 monster.experience = 52
 monster.race = "blood"
 monster.maxHealth = 75

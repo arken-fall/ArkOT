@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gloom Wolf"
 monster.description = "a gloom wolf"
+
+monster.raceId = 1139
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "Tainted Caves, Poacher Caves/Gloomy.",
+}
 monster.experience = 70
 monster.race = "blood"
 monster.maxHealth = 200

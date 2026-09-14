@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Parrot"
 monster.description = "a parrot"
+
+monster.raceId = 217
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In the jungle of Tiquanda, Liberty Bay, the Shattered Isles, and as a house pet in Meriana.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 25

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Legionnaire"
 monster.description = "a lizard legionnaire"
+
+monster.raceId = 624
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Zzaion, Zao Palace and its antechambers, Muggy Plains, Zao Orc Land (in fort), Corruption Hole, Razachai, Temple of Equilibrium, Northern Zao Plantations.",
+}
 monster.experience = 1100
 monster.race = "blood"
 monster.maxHealth = 1400

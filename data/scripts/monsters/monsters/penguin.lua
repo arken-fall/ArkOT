@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Penguin"
 monster.description = "a penguin"
+
+monster.raceId = 318
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In and north of Formorgar Glacier, Nibelor, Helheim, Grimlund, south of Svargrond, Chyllfroest.",
+}
 monster.experience = 1
 monster.race = "blood"
 monster.maxHealth = 33

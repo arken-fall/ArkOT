@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Troll Legionnaire"
 monster.description = "a troll legionnaire"
+
+monster.raceId = 541
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Old Beregar mines. In group with Furious Trolls almost all the time.",
+}
 monster.experience = 140
 monster.race = "blood"
 monster.maxHealth = 210

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Killer Rabbit"
 monster.description = "a killer rabbit"
+
+monster.raceId = 560
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "Isle of Evil.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 205

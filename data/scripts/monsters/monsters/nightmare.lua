@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Nightmare"
 monster.description = "a nightmare"
+
+monster.raceId = 299
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Pits of Inferno, Formorgar Mines, Cemetery Quarter, Edron (In multiple places during The Inquisition Quest), Alchemist Quarter, Vengoth Castle, Deeper Banuta, Krailos Ruins, Grounds of Deceit.",
+}
 monster.experience = 1666
 monster.race = "blood"
 monster.maxHealth = 2700

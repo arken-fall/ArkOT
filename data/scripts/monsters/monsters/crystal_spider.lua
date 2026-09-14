@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crystal Spider"
 monster.description = "a crystal spider"
+
+monster.raceId = 330
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Atop of the Formorgar Glacier and deep inside Formorgar Mines, Frost Dragon Tunnel, Ice Witch Temple, Nibelor Ice Cave, the Crystal Caves in The Inquisition Quest, Mushroom Gardens, Crystal Gardens.",
+}
 monster.experience = 900
 monster.race = "undead"
 monster.maxHealth = 1250

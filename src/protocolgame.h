@@ -150,6 +150,8 @@ class ProtocolGame : public Protocol
 		void parseCyclopediaCharacterInfo(NetworkMessage& msg);
 		void parsePreyAction(NetworkMessage& msg);
 		void parseBestiaryOverview(NetworkMessage& msg);
+		void parseBestiaryMonsterData(NetworkMessage& msg);
+		void parseBestiaryTracker(NetworkMessage& msg);
 		void parseBuyCharmRune(NetworkMessage& msg);
 		void parseInspectionObject(NetworkMessage& msg);
 		void parseInspectPlayer(NetworkMessage& msg);
@@ -293,8 +295,11 @@ class ProtocolGame : public Protocol
 		// empty until those systems land, but the windows open cleanly
 		void sendPreySlots();
 		void sendBestiaryRaces();
-		void sendBestiaryOverview(const std::string& raceName);
+		void sendBestiaryOverview(const std::string& raceName, const std::vector<const MonsterType*>& monsters);
+		void sendBestiaryMonsterData(uint16_t raceId);
 		void sendBestiaryCharms();
+		void sendBestiaryTracker();
+		void sendCharmBalance();
 
 		// 12.x+ inspection windows
 		void sendItemInspection(const ItemPtr& item, bool cyclopedia);

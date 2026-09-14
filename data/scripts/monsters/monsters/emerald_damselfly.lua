@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Emerald Damselfly"
 monster.description = "an emerald damselfly"
+
+monster.raceId = 912
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Venore Salamander Cave, Dryad Gardens.",
+}
 monster.experience = 35
 monster.race = "venom"
 monster.maxHealth = 90

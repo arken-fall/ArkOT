@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Cyclops Smith"
 monster.description = "a cyclops smith"
+
+monster.raceId = 389
+monster.bestiary = {
+	race = "Giant",
+	class = "Giant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cyclopolis second floor and below, Mistrock, Mount Sternum, Cyclops Camp second floor and in the Cyclops version of the Forsaken Mine.",
+}
 monster.experience = 255
 monster.race = "blood"
 monster.maxHealth = 435

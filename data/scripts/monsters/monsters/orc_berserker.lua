@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc Berserker"
 monster.description = "an orc berserker"
+
+monster.raceId = 8
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Orc Fort, Dwacatra, Orc Peninsula, Elvenbane, Edron Orc Cave, Plains of Havoc, below Point of No Return in Outlaw Camp, Maze of Lost Souls, Cyclopolis, Desert Dungeon, Ancient Temple, Foreigner Quarter, Zao Orc Land.",
+}
 monster.experience = 195
 monster.race = "blood"
 monster.maxHealth = 210

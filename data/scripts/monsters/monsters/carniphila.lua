@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Carniphila"
 monster.description = "a carniphila"
+
+monster.raceId = 120
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Deep inside the Tiquanda Jungle including Tiquanda Laboratory and a small cave, Forbidden Lands, Deeper Banuta, Arena and Zoo quarter in Yalahar.",
+}
 monster.experience = 150
 monster.race = "venom"
 monster.maxHealth = 255

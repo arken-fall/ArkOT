@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Killer Caiman"
 monster.description = "a killer caiman"
+
+monster.raceId = 627
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Northern Zao Plantations, Souleater Mountains, Muggy Plains, Killer Caiman Cave in the Zao Steppe, Chyllfroest.",
+}
 monster.experience = 900
 monster.race = "blood"
 monster.maxHealth = 1500

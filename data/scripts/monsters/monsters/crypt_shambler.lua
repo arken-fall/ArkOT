@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crypt Shambler"
 monster.description = "a crypt shambler"
+
+monster.raceId = 100
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ankrahmun Tombs, Trapwood, Ramoa, Hellgate, Helheim, Mount Sternum Undead Cave, Deeper Catacombs, Cemetery Quarter, Treasure Island, Upper Spike, Lion's Rock.",
+}
 monster.experience = 195
 monster.race = "undead"
 monster.maxHealth = 330

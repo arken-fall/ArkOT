@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Undead Cavebear"
 monster.description = "Undead Cavebear"
+
+monster.raceId = 696
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Lich Hell.",
+}
 monster.experience = 600
 monster.race = "blood"
 monster.maxHealth = 450

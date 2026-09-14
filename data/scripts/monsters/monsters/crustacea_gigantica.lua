@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crustacea Gigantica"
 monster.description = "a crustacea gigantica"
+
+monster.raceId = 697
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Calassa, Treasure Island , Seacrest Grounds. In the Seacrest Grounds the spawns are Varying Monster Spawns in which the common creature is an Abyssal Calamary. The chance to spawn a Crustacea Gigantica seems to be around 1%-2%.",
+}
 monster.experience = 1800
 monster.race = "blood"
 monster.maxHealth = 1600

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Troll Champion"
 monster.description = "a troll champion"
+
+monster.raceId = 392
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Edron Troll-Goblin Peninsula, Ab'dendriel Shadow Caves, Thais South-East Troll Caves, Dusalk's Troll Clan Cave, Island of Destiny in Paladin's guild.",
+}
 monster.experience = 40
 monster.race = "blood"
 monster.maxHealth = 75

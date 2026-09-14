@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc Spearman"
 monster.description = "an orc spearman"
+
+monster.raceId = 50
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Orc Fortress, Folda Dungeon, Edron Orc Cave and around it, Ancient Temple, Venore Orc Cave, below the Point of No Return in Outlaw Camp, Plains of Havoc, North of Thais in the Orc Peninsula, Elvenbane and Orc Camp in Foreigner Quarter. Also found in Rookgaard West plains, Zao Orc Land.",
+}
 monster.experience = 38
 monster.race = "blood"
 monster.maxHealth = 105

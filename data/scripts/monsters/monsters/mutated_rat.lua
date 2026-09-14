@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mutated Rat"
 monster.description = "a mutated rat"
+
+monster.raceId = 502
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Alchemist Quarter, Arena and Zoo Quarter (Inside the arena with other mutated creatures), Razzachai, Vampire Castle on Vengoth, Robson's Isle, Mushroom Gardens, Souleater Mountains, Northern Zao Plantations, Middle Spike.",
+}
 monster.experience = 450
 monster.race = "blood"
 monster.maxHealth = 550

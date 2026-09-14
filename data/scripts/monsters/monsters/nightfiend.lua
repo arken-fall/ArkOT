@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Nightfiend"
 monster.description = "a nightfiend"
+
+monster.raceId = 973
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Deep under Drefia.",
+}
 monster.experience = 2100
 monster.race = "blood"
 monster.maxHealth = 2700

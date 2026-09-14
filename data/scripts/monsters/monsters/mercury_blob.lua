@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mercury Blob"
 monster.description = "a mercury blob"
+
+monster.raceId = 515
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Alchemist Quarter.",
+}
 monster.experience = 180
 monster.race = "undead"
 monster.maxHealth = 150

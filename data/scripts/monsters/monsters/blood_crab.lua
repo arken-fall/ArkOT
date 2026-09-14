@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Blood Crab"
 monster.description = "a blood crab"
+
+monster.raceId = 261
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Goroma (beyond electric barrier), Laguna Islands, Shattered Isles, Underground Port Hope, Mistrock, Treasure Island. There is also one underwater next to The Tibianic, however it is unreachable.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 290

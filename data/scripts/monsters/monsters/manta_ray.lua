@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Manta Ray"
 monster.description = "a manta ray"
+
+monster.raceId = 779
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Fiehonja only in stage 3 in a large room.",
+}
 monster.experience = 125
 monster.race = "blood"
 monster.maxHealth = 680

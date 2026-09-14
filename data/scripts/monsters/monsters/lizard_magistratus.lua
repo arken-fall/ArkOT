@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Magistratus"
 monster.description = "a lizard magistratus"
+
+monster.raceId = 655
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Razzachai.",
+}
 monster.experience = 2000
 monster.race = "blood"
 monster.maxHealth = 8000

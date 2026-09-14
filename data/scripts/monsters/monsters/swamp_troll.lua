@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Swamp Troll"
 monster.description = "a swamp troll"
+
+monster.raceId = 76
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Port Hope Swamp Trolls, Venore Swamp Troll Cave, all around north area of Port Hope, small spawn north-west of Venore and in cave south-east of Thais, also one in Foreigner Quarter.",
+}
 monster.experience = 25
 monster.race = "blood"
 monster.maxHealth = 55

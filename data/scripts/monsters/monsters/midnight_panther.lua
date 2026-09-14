@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Midnight Panther"
 monster.description = "a midnight panther"
+
+monster.raceId = 698
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Tiquanda.",
+}
 monster.experience = 900
 monster.race = "blood"
 monster.maxHealth = 1200

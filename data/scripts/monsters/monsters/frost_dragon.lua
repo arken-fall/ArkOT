@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Frost Dragon"
 monster.description = "a frost dragon"
+
+monster.raceId = 317
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Okolnir, Razachai, Ice Witch Temple, Frost Dragon Tunnel, Yakchal Crypt (only during Yakchals awakening ritual), Dragonblaze Peaks, Deeper Banuta, Chyllfroest.",
+}
 monster.experience = 2100
 monster.race = "undead"
 monster.maxHealth = 1800

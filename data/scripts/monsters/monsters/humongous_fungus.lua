@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Humongous Fungus"
 monster.description = "a humongous fungus"
+
+monster.raceId = 881
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Warzone 1, Rathleton Sewers, unreachable location in Tiquanda Laboratory.",
+}
 monster.experience = 2600
 monster.race = "blood"
 monster.maxHealth = 3400

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Adventurer"
 monster.description = "an adventurer"
+
+monster.raceId = 922
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Venore swamp.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 65

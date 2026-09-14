@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Spit Nettle"
 monster.description = "a spit nettle"
+
+monster.raceId = 221
+monster.bestiary = {
+	race = "Plant",
+	class = "Plant",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Tiquanda, Trapwood, the outskirts of Chor and Forbidden Lands, Alchemist Quarter in Yalahar, Tiquanda Laboratory.",
+}
 monster.experience = 20
 monster.race = "venom"
 monster.maxHealth = 150

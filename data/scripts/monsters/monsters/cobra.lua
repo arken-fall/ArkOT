@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Cobra")
+monster.raceId = 81
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ankrahmun Library Tomb, Tarpit Tomb, Mountain Tomb, Peninsula Tomb, Darama, Tiquanda, Drefia, Forbidden Lands, Arena Quarter, Lion's Rock.",
+}
 local monster = {}
 
 monster.name = "Cobra"

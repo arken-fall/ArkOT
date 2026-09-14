@@ -1,0 +1,304 @@
+# Charm runes for the bestiary.
+#
+# A character earns charm points by completing bestiary entries, spends them
+# here to unlock runes (three tiers each; the points list is the price of
+# each tier), and then assigns a rune to a creature whose entry is complete.
+# An assigned rune becomes an augment against that creature, built from the
+# `modifiers` list below in the same vocabulary as data/augments/*.toml
+# (mod, value, factor, damage, origin) with one `chance` per tier.
+#
+# `category`: major (charm points) or minor. `effect`: offensive, defensive
+# or passive, shown by the client only. `percent` and `chance` are what the
+# client displays; the modifiers decide what actually happens.
+#
+# Charms without modifiers are listed so the rune wall is complete; they
+# unlock and assign like the others and take effect once their system lands.
+
+[Wound]
+id = 0
+name = "Wound"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as physical damage once."
+category = "major"
+effect = "offensive"
+damage = "physical"
+percent = 5
+chance = [5, 10, 11]
+points = [240, 360, 1200]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "physical" },
+]
+
+[Enflame]
+id = 1
+name = "Enflame"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as fire damage once."
+category = "major"
+effect = "offensive"
+damage = "fire"
+percent = 5
+chance = [5, 10, 11]
+points = [400, 600, 2000]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "fire" },
+]
+
+[Poison]
+id = 2
+name = "Poison"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as earth damage once."
+category = "major"
+effect = "offensive"
+damage = "earth"
+percent = 5
+chance = [5, 10, 11]
+points = [240, 360, 1200]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "earth" },
+]
+
+[Freeze]
+id = 3
+name = "Freeze"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as ice damage once."
+category = "major"
+effect = "offensive"
+damage = "ice"
+percent = 5
+chance = [5, 10, 11]
+points = [320, 480, 1600]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "ice" },
+]
+
+[Zap]
+id = 4
+name = "Zap"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as energy damage once."
+category = "major"
+effect = "offensive"
+damage = "energy"
+percent = 5
+chance = [5, 10, 11]
+points = [320, 480, 1600]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "energy" },
+]
+
+[Curse]
+id = 5
+name = "Curse"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as death damage once."
+category = "major"
+effect = "offensive"
+damage = "death"
+percent = 5
+chance = [5, 10, 11]
+points = [360, 540, 1800]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "death" },
+]
+
+[Cripple]
+id = 6
+name = "Cripple"
+description = "Cripples a creature with a certain chance for ten seconds when it is hit."
+category = "minor"
+effect = "offensive"
+chance = [6, 9, 12]
+points = [100, 150, 225]
+
+[Parry]
+id = 7
+name = "Parry"
+description = "Reflects a creature's attack with a certain chance, dealing the same damage back."
+category = "major"
+effect = "defensive"
+damage = "physical"
+chance = [5, 10, 11]
+points = [400, 600, 2000]
+modifiers = [
+	{ mod = "reflect", value = 100, chance = [5, 10, 11], damage = "physical" },
+]
+
+[Dodge]
+id = 8
+name = "Dodge"
+description = "Dodges a creature's attack with a certain chance without taking any damage."
+category = "major"
+effect = "defensive"
+chance = [5, 10, 11]
+points = [240, 360, 1200]
+modifiers = [
+	{ mod = "resist", value = 100, chance = [5, 10, 11] },
+]
+
+[AdrenalineBurst]
+id = 9
+name = "Adrenaline Burst"
+description = "Grants a burst of speed for ten seconds with a certain chance when a creature hits."
+category = "minor"
+effect = "defensive"
+chance = [6, 9, 12]
+points = [100, 150, 225]
+
+[Numb]
+id = 10
+name = "Numb"
+description = "Numbs a creature with a certain chance for ten seconds when it hits."
+category = "minor"
+effect = "defensive"
+chance = [6, 9, 12]
+points = [100, 150, 225]
+
+[Cleanse]
+id = 11
+name = "Cleanse"
+description = "Cleanses a negative status effect with a certain chance when a creature inflicts one."
+category = "minor"
+effect = "defensive"
+chance = [6, 9, 12]
+points = [100, 150, 225]
+
+[Bless]
+id = 12
+name = "Bless"
+description = "Reduces the skill and experience loss by 10% when killed by the creature."
+category = "minor"
+effect = "passive"
+percent = 10
+chance = [6, 9, 12]
+points = [100, 150, 225]
+
+[Scavenge]
+id = 13
+name = "Scavenge"
+description = "Raises the chance to successfully skin or dust a dead creature."
+category = "minor"
+effect = "passive"
+chance = [60, 90, 120]
+points = [100, 150, 225]
+
+[Gut]
+id = 14
+name = "Gut"
+description = "Raises the chance that the creature yields more of its products."
+category = "minor"
+effect = "passive"
+chance = [6, 9, 12]
+points = [100, 150, 225]
+
+[LowBlow]
+id = 15
+name = "Low Blow"
+description = "Adds a chance to critically hit the creature with any attack."
+category = "major"
+effect = "passive"
+chance = [4, 8, 9]
+points = [800, 1200, 4000]
+modifiers = [
+	{ mod = "critical", value = 10, chance = [4, 8, 9] },
+]
+
+[DivineWrath]
+id = 16
+name = "Divine Wrath"
+description = "Triggers on a creature with a certain chance and deals 5% of its initial hit points as holy damage once."
+category = "major"
+effect = "offensive"
+damage = "holy"
+percent = 5
+chance = [5, 10, 11]
+points = [600, 900, 3000]
+modifiers = [
+	{ mod = "critical", value = 5, chance = [5, 10, 11], damage = "holy" },
+]
+
+[VampiricEmbrace]
+id = 17
+name = "Vampiric Embrace"
+description = "Adds life leech against the creature."
+category = "minor"
+effect = "passive"
+chance = [1.6, 2.4, 3.2]
+points = [100, 150, 225]
+modifiers = [
+	{ mod = "lifesteal", value = 2, chance = [100, 100, 100] },
+]
+
+[VoidsCall]
+id = 18
+name = "Void's Call"
+description = "Adds mana leech against the creature."
+category = "minor"
+effect = "passive"
+chance = [0.8, 1.2, 1.6]
+points = [100, 150, 225]
+modifiers = [
+	{ mod = "manasteal", value = 1, chance = [100, 100, 100] },
+]
+
+[SavageBlow]
+id = 19
+name = "Savage Blow"
+description = "Adds extra critical damage against the creature."
+category = "major"
+effect = "passive"
+chance = [20, 40, 44]
+points = [800, 1200, 4000]
+modifiers = [
+	{ mod = "critical", value = 20, chance = [20, 40, 44] },
+]
+
+[FatalHold]
+id = 20
+name = "Fatal Hold"
+description = "Keeps the creature from fleeing with a certain chance when it is low on health."
+category = "minor"
+effect = "passive"
+chance = [30, 45, 60]
+points = [100, 150, 225]
+
+[VoidInversion]
+id = 21
+name = "Void Inversion"
+description = "Turns the creature's mana drain into mana gain with a certain chance."
+category = "minor"
+effect = "passive"
+chance = [20, 30, 40]
+points = [100, 150, 225]
+
+[Carnage]
+id = 22
+name = "Carnage"
+description = "Deals extra damage to the creature and its neighbours with a certain chance when it dies."
+category = "major"
+effect = "offensive"
+percent = 15
+chance = [10, 20, 22]
+points = [600, 900, 3000]
+
+[Overpower]
+id = 23
+name = "Overpower"
+description = "Deals 5% of your own maximum hit points as extra damage with a certain chance."
+category = "major"
+effect = "offensive"
+percent = 5
+chance = [5, 10, 11]
+points = [600, 900, 3000]
+modifiers = [
+	{ mod = "piercing", value = 5, chance = [5, 10, 11] },
+]
+
+[Overflux]
+id = 24
+name = "Overflux"
+description = "Deals 2.5% of your own maximum mana as extra damage with a certain chance."
+category = "major"
+effect = "offensive"
+percent = 2.5
+chance = [5, 10, 11]
+points = [600, 900, 3000]
+modifiers = [
+	{ mod = "piercing", value = 3, chance = [5, 10, 11] },
+]

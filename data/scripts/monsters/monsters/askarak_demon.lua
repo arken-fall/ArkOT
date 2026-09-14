@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Askarak Demon"
 monster.description = "an askarak demon"
+
+monster.raceId = 727
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Demonwar Crypt teleporter before vampire shield quest.",
+}
 monster.experience = 900
 monster.race = "venom"
 monster.maxHealth = 1500

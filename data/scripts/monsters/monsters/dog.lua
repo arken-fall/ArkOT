@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dog"
 monster.description = "a dog"
+
+monster.raceId = 32
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 25,
+	firstUnlock = 5,
+	secondUnlock = 10,
+	charmPoints = 1,
+	stars = 0,
+	occurrence = 0,
+	locations = "Isle of the Kings, North of the Thais temple, Lubos house, west of Carlin (with sheep), Edron north of castle and one south towards Ivory Towers, Liberty Bay (Silverhand Manor), Mintwallin central park and on the way to the old Mintwallin area, Factory Quarter (Yalahar).",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 20

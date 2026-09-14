@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ladybug"
 monster.description = "a ladybug"
+
+monster.raceId = 778
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "The Hive surface during the Hive Born World Change's third stage.",
+}
 monster.experience = 70
 monster.race = "venom"
 monster.maxHealth = 255

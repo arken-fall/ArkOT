@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Poacher"
 monster.description = "a poacher"
+
+monster.raceId = 376
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "South of Elvenbane and Ab'Dendriel, Ferngrims Gate, Northeast of Carlin, Edron Hunter Camps, Yalahar - Trade Quarter and Foreigner Quarter.",
+}
 monster.experience = 70
 monster.race = "blood"
 monster.maxHealth = 90

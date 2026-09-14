@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc Leader"
 monster.description = "an orc leader"
+
+monster.raceId = 59
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Orc Fort, Edron Orc Cave, South of the temple in PoH, Maze of Lost Souls, Cyclopolis, Zao Orc Land.",
+}
 monster.experience = 270
 monster.race = "blood"
 monster.maxHealth = 450

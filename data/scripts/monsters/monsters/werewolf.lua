@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Werewolf"
 monster.description = "a werewolf"
+
+monster.raceId = 510
+monster.bestiary = {
+	race = "Lycanthrope",
+	class = "Lycanthrope",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Vengoth Castle, Vengoth Werewolf Cave, Grimvale, were-beasts cave south-west of Edron.",
+}
 monster.experience = 1900
 monster.race = "blood"
 monster.maxHealth = 1955

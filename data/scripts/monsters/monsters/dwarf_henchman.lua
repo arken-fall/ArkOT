@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dwarf Henchman"
 monster.description = "a dwarf henchman"
+
+monster.raceId = 379
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Kazordoon Underground",
+}
 monster.experience = 15
 monster.race = "blood"
 monster.maxHealth = 350

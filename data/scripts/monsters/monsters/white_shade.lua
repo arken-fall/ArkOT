@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "White Shade"
 monster.description = "a white shade"
+
+monster.raceId = 962
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Drefia.",
+}
 monster.experience = 120
 monster.race = "undead"
 monster.maxHealth = 260

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Northern Pike"
 monster.description = "a northern pike"
+
+monster.raceId = 783
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 25,
+	firstUnlock = 5,
+	secondUnlock = 10,
+	charmPoints = 1,
+	stars = 0,
+	occurrence = 1,
+	locations = "Fiehonja.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 95

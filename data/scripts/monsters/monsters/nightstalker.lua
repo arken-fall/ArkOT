@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Nightstalker"
 monster.description = "a nightstalker"
+
+monster.raceId = 520
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cemetery Quarter, Vengoth Castle, Vandura Mountain, Robson Isle.",
+}
 monster.experience = 500
 monster.race = "undead"
 monster.maxHealth = 700

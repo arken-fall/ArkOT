@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lancer Beetle"
 monster.description = "a lancer beetle"
+
+monster.raceId = 633
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Zao Wailing Widow Cave, Muggy Plains (during raid), Razzachai, Northern Zao Plantations, Northern Brimstone Bug Cave, Chyllfroest.",
+}
 monster.experience = 275
 monster.race = "venom"
 monster.maxHealth = 400

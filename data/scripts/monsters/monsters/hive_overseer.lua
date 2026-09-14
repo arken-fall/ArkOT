@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hive Overseer"
 monster.description = "a hive overseer"
+
+monster.raceId = 801
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 2,
+	locations = "The Hive towers: on the highest floor of each tower, and in many of the closed rooms accessed with pheromones; many in the large underground room of the west tower. Liberty Bay Hive Outpost: one spawn on the second floor underground.",
+}
 monster.experience = 5500
 monster.race = "venom"
 monster.maxHealth = 7500

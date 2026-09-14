@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Poison Spider"
 monster.description = "a poison spider"
+
+monster.raceId = 36
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Found in various caves and plains around Tibia (including Rookgaard).",
+}
 monster.experience = 22
 monster.race = "venom"
 monster.maxHealth = 26

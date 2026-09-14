@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dryad"
 monster.description = "a dryad"
+
+monster.raceId = 383
+monster.bestiary = {
+	race = "Fey",
+	class = "Fey",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Dryads appear in forest areas of Edron, Port Hope, Carlin and Cormaya during raids in June. There are 5 total waves, the initial one with the raid message and the rest every 15 minutes during next hour.",
+}
 monster.experience = 190
 monster.race = "blood"
 monster.maxHealth = 310

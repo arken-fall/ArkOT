@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Spectre"
 monster.description = "a spectre"
+
+monster.raceId = 286
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Pits of Inferno, The Crystal Caves and The Soul Well in The Inquisition Quest, Drefia Grim Reaper Dungeons, as well in Vengoth.",
+}
 monster.experience = 2100
 monster.race = "undead"
 monster.maxHealth = 1350

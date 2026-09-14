@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Mushroom Sniffer"
 monster.description = "a mushroom sniffer"
+
+monster.raceId = 870
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 25,
+	firstUnlock = 5,
+	secondUnlock = 10,
+	charmPoints = 1,
+	stars = 0,
+	occurrence = 0,
+	locations = "Truffels Garden.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 250

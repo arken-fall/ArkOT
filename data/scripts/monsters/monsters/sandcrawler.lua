@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sandcrawler"
 monster.description = "a sandcrawler"
+
+monster.raceId = 641
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Zao Steppe, Raging Mage tower, Ankrahmun Desert, Darashia Desert, Drefia.",
+}
 monster.experience = 20
 monster.race = "venom"
 monster.maxHealth = 30

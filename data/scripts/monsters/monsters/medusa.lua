@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Medusa"
 monster.description = "a medusa"
+
+monster.raceId = 570
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Vandura Mountain (single spawn), Talahu (Medusa Cave), Deeper Banuta, Medusa Tower.",
+}
 monster.experience = 4050
 monster.race = "blood"
 monster.maxHealth = 4500

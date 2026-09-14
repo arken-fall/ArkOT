@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Witch"
 monster.description = "a witch"
+
+monster.raceId = 54
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Vandura, west of the Dwarf Mines in a small house, Amazon Tower north of Carlin, Triangle Tower, Temple of Xayepocax, Green Claw Swamp and Amazon Camp (Venore), Dark Cathedral (2 levels underground), Goroma Volcano (underground), west from Necromant House, Mammoth Shearing Factory, Trade Quarter in Yalahar, The Witches' Cliff (only accessible during a quest).",
+}
 monster.experience = 120
 monster.race = "blood"
 monster.maxHealth = 300

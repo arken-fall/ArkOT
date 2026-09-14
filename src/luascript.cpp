@@ -3,6 +3,8 @@
 
 #include "otpch.h"
 
+#include "bestiary.h"
+
 #include <boost/range/adaptor/reversed.hpp>
 #include <fmt/format.h>
 #include <fstream>
@@ -3555,6 +3557,8 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("MonsterType", "outfit", luaMonsterTypeOutfit);
 	registerMethod("MonsterType", "race", luaMonsterTypeRace);
 	registerMethod("MonsterType", "corpseId", luaMonsterTypeCorpseId);
+	registerMethod("MonsterType", "raceId", luaMonsterTypeRaceId);
+	registerMethod("MonsterType", "bestiary", luaMonsterTypeBestiary);
 	registerMethod("MonsterType", "manaCost", luaMonsterTypeManaCost);
 	registerMethod("MonsterType", "baseSpeed", luaMonsterTypeBaseSpeed);
 	registerMethod("MonsterType", "light", luaMonsterTypeLight);
@@ -20619,6 +20623,54 @@ int LuaScriptInterface::luaMonsterTypeRace(lua_State* L)
 	} else {
 		lua_pushnil(L);
 	}
+	return 1;
+}
+
+int LuaScriptInterface::luaMonsterTypeRaceId(lua_State* L)
+{
+	// get: monsterType:raceId() set: monsterType:raceId(id)
+	MonsterType* monsterType = getUserdata<MonsterType>(L, 1);
+	if (monsterType) {
+		if (lua_gettop(L) == 1) {
+			lua_pushinteger(L, monsterType->info.bestiary.race_id);
+		} else {
+			monsterType->info.bestiary.race_id = getNumber<uint16_t>(L, 2);
+			BlackTek::Bestiary::Registry::getInstance().registerMonster(*monsterType);
+			lua_pushboolean(L, true);
+		}
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaMonsterTypeBestiary(lua_State* L)
+{
+	// set: monsterType:bestiary({ race = "Dragon", class = "Dragon", toKill = 1000, firstUnlock = 50, secondUnlock = 500, charmPoints = 25, stars = 3, occurrence = 0, locations = "..." })
+	MonsterType* monsterType = getUserdata<MonsterType>(L, 1);
+	if (not monsterType or not lua_istable(L, 2)) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	auto& entry = monsterType->info.bestiary;
+	entry.race = std::to_underlying(BlackTek::Bestiary::ParseRace(getFieldString(L, 2, "race")));
+	entry.class_name = getFieldString(L, 2, "class");
+	entry.locations = getFieldString(L, 2, "locations");
+	entry.to_kill = getField<uint16_t>(L, 2, "toKill");
+	entry.first_unlock = getField<uint16_t>(L, 2, "firstUnlock");
+	entry.second_unlock = getField<uint16_t>(L, 2, "secondUnlock");
+	entry.charm_points = getField<uint16_t>(L, 2, "charmPoints");
+	entry.stars = getField<uint8_t>(L, 2, "stars");
+	entry.occurrence = getField<uint8_t>(L, 2, "occurrence");
+	lua_pop(L, 9);
+
+	if (entry.class_name.empty()) {
+		entry.class_name = std::string(BlackTek::Bestiary::RaceName(static_cast<BlackTek::Bestiary::Race>(entry.race)));
+	}
+
+	BlackTek::Bestiary::Registry::getInstance().registerMonster(*monsterType);
+	lua_pushboolean(L, true);
 	return 1;
 }
 

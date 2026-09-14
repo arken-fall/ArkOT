@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ironblight"
 monster.description = "Ironblight"
+
+monster.raceId = 890
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 3.",
+}
 monster.experience = 4400
 monster.race = "undead"
 monster.maxHealth = 6600

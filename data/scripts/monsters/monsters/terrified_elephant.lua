@@ -3,6 +3,18 @@ local monster = {}
 
 monster.name = "Terrified Elephant"
 monster.description = "a terrified elephant"
+
+monster.raceId = 771
+monster.bestiary = {
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "East of Port Hope, close to the Deeper Banuta shortcut, Mapper Coords128.84127.16872texthere.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 320

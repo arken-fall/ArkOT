@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dragonling"
 monster.description = "a dragonling"
+
+monster.raceId = 894
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "Fury Dungeon and Goroma volcano (surface floor, inner volcano) only during the Fire from the Earth Mini World Change.",
+}
 monster.experience = 2200
 monster.race = "blood"
 monster.maxHealth = 2600

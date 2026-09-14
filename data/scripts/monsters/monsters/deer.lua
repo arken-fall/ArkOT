@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deer"
 monster.description = "a deer"
+
+monster.raceId = 31
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Darama (Devourer, Kha'labal), in most grassy areas of Tibia, also found in Rookgaard and on Tutorial Island. There are also 2 unreachable Deer found near Fiehonja's protection zone.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 25

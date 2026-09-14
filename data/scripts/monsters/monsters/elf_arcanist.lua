@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elf Arcanist"
 monster.description = "an elf arcanist"
+
+monster.raceId = 63
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Yalahar Foreigner Quarter, Demona, Shadowthorn, northwest of Ab'Dendriel, Maze of Lost Souls, Cyclopolis, Elvenbane, near Mount Sternum.",
+}
 monster.experience = 175
 monster.race = "blood"
 monster.maxHealth = 220

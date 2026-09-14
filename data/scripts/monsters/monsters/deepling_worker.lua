@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deepling Worker"
 monster.description = "a deepling worker"
+
+monster.raceId = 795
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Fiehonja, Coral mine.",
+}
 monster.experience = 130
 monster.race = "blood"
 monster.maxHealth = 190

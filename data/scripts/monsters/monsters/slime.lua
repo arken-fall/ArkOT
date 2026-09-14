@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Slime"
 monster.description = "a slime"
+
+monster.raceId = 19
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ancient Temple under the Rotworm area, under White Flower Temple, Mount Sternum Undead Cave on the last floor, Thais Troll Cave, Bonelord cave in Drefia, Green Claw Swamp, Dwarf Mines, Villa Scapula, Ankrahmun Tombs, Dark Cathedral, north of Port Hope, Deeper Banuta, on Folda on the floor above the Water Elementals, Hellgate, Vengoth, Alchemist Quarter, Yalahar and Carlin sewers, Ghostlands, Desert Dungeon, Dusalk's Troll Clan Cave, Nargor, and in a cave northeast of Ab'Dendriel.",
+}
 monster.experience = 160
 monster.race = "venom"
 monster.maxHealth = 150

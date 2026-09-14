@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Spider"
 monster.description = "a spider"
+
+monster.raceId = 30
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Almost everywhere, in grass areas, sewers like Carlin sewers, caves like as Ancient Temple, Rookgaard and the Tiquanda Tarantula Caves.",
+}
 monster.experience = 12
 monster.race = "venom"
 monster.maxHealth = 20

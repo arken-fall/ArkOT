@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lizard Snakecharmer"
 monster.description = "a lizard snakecharmer"
+
+monster.raceId = 115
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Chor, Forbidden Temple.",
+}
 monster.experience = 210
 monster.race = "blood"
 monster.maxHealth = 325

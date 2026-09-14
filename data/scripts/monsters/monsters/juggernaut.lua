@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Juggernaut"
 monster.description = "a juggernaut"
+
+monster.raceId = 296
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Deep in Pits of Inferno (Apocalypse's throne room), The Dark Path, The Blood Halls, The Vats, The Hive, The Shadow Nexus, a room deep in Formorgar Mines, Roshamuul Prison, Oramond Dungeon, Grounds of Destruction and Halls of Ascension.",
+}
 monster.experience = 11200
 monster.race = "blood"
 monster.maxHealth = 20000

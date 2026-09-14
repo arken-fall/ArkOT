@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vampire Bride"
 monster.description = "a vampire bride"
+
+monster.raceId = 483
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Drefia and Vampire Castle on Vengoth, Edron Vampire Crypt.",
+}
 monster.experience = 1050
 monster.race = "blood"
 monster.maxHealth = 1200

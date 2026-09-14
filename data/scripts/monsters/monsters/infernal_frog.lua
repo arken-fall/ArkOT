@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Infernal Frog"
 monster.description = "an infernal frog"
+
+monster.raceId = 563
+monster.bestiary = {
+	race = "Amphibic",
+	class = "Amphibic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "Isle of Evil, Drefia.",
+}
 monster.experience = 190
 monster.race = "blood"
 monster.maxHealth = 655

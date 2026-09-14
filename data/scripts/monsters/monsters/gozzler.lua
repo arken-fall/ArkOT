@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gozzler"
 monster.description = "a gozzler"
+
+monster.raceId = 523
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Magician Quarter, cave in Beregar, Farmine Mines.",
+}
 monster.experience = 180
 monster.race = "undead"
 monster.maxHealth = 240

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Warlock"
 monster.description = "a warlock"
+
+monster.raceId = 10
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Demona, Ghostland (Banshee Quest area), Temple of Xayepocax, Oasis Tomb, Kharos, Magician Quarter, beneath Fenrock, The Arcanum.",
+}
 monster.experience = 4000
 monster.race = "blood"
 monster.maxHealth = 3500

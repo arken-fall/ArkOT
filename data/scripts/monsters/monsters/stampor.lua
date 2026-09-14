@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Stampor"
 monster.description = "a stampor"
+
+monster.raceId = 694
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Stampor Cave on the Muggy Plains, Chyllfroest.",
+}
 monster.experience = 780
 monster.race = "blood"
 monster.maxHealth = 1200

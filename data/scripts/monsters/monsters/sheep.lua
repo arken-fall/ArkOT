@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sheep"
 monster.description = "a sheep"
+
+monster.raceId = 14
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In Rookgaard Sheep field, Greenshore and other farms like the one in Thais, east of Carlin. They can also be found wandering the fields of Edron, and some can be found along with a Black Sheep with the Hunter in Femor Hills.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 20

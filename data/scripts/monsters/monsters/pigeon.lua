@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Pigeon"
 monster.description = "a pigeon"
+
+monster.raceId = 915
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 25,
+	firstUnlock = 5,
+	secondUnlock = 10,
+	charmPoints = 1,
+	stars = 0,
+	occurrence = 1,
+	locations = "Streets of Venore, Gardens of Night.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 30

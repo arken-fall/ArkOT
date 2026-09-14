@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Yielothax"
 monster.description = "Yielothax"
+
+monster.raceId = 717
+monster.bestiary = {
+	race = "Extra Dimensional",
+	class = "Extra Dimensional",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "In another dimension, through a portal in the Raging Mage tower, southern Zao.",
+}
 monster.experience = 1250
 monster.race = "venom"
 monster.maxHealth = 1500

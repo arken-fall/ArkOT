@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vampire Viscount"
 monster.description = "a vampire viscount"
+
+monster.raceId = 958
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Drefia, Edron Vampire Crypt.",
+}
 monster.experience = 800
 monster.race = "blood"
 monster.maxHealth = 1200

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Moohtant"
 monster.description = "a moohtant"
+
+monster.raceId = 1044
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Oramond Mountain Hideout, Oramond Minotaur Camp (northern camp), Underground Glooth Factory, Oramond Dungeon.",
+}
 monster.experience = 2600
 monster.race = "blood"
 monster.maxHealth = 3200

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Silver Rabbit"
 monster.description = "a silver rabbit"
+
+monster.raceId = 327
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "A lot of places on the Ice Islands and one on Rookgaard (unreachable).",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 15

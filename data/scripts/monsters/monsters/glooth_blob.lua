@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Glooth Blob"
 monster.description = "a glooth blob"
+
+monster.raceId = 1054
+monster.bestiary = {
+	race = "Slime",
+	class = "Slime",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Oramond/Western Plains, Lower Rathleton, Glooth Factory, Underground Glooth Factory, Rathleton Sewers.",
+}
 monster.experience = 700
 monster.race = "venom"
 monster.maxHealth = 750

@@ -3,6 +3,18 @@ local monster = {}
 
 monster.name = "Crypt Defiler"
 monster.description = "a crypt defiler"
+
+monster.raceId = 868
+monster.bestiary = {
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "Horestis Tomb.",
+}
 monster.experience = 70
 monster.race = "blood"
 monster.maxHealth = 180

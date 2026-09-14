@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Spidris Elite"
 monster.description = "Spidris Elite"
+
+monster.raceId = 797
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "The Hive: east tower (beyond gates), west tower (including beyond gates), also anywhere Hive Overseers are found (as summons), Hive Outpost.",
+}
 monster.experience = 4000
 monster.race = "venom"
 monster.maxHealth = 5000

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Goblin Leader"
 monster.description = "a goblin leader"
+
+monster.raceId = 377
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 30,
+	stars = 2,
+	occurrence = 3,
+	locations = "Way to Beregar, below Femor Hills (Tower Defence Quest), near Femor Hills during Goblin raid.",
+}
 monster.experience = 75
 monster.race = "blood"
 monster.maxHealth = 50

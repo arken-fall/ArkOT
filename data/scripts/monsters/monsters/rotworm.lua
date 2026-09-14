@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Rotworm"
 monster.description = "a rotworm"
+
+monster.raceId = 26
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Almost everywhere, like Ancient Temple, Vandura, Folda dungeon, Fibula Dungeon, caves connecting Edron and Cormaya, Venore Swamp Troll cave, Thais Troll cave, Ferngrims Gate, Dwarf Mines, Hellgate, below the graves in eastern Rookgaard, spider cave in western Rookgaard, cave northeast of Ab'Dendriel, Darashia Rotworm Caves, Liberty Bay, Fenrock, below Green Claw Swamp and some other places.",
+}
 monster.experience = 40
 monster.race = "blood"
 monster.maxHealth = 65

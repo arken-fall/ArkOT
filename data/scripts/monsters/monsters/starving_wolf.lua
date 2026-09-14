@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Starving Wolf"
 monster.description = "a starving wolf"
+
+monster.raceId = 723
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "East, west and south-west of the Femor Hills.",
+}
 monster.experience = 65
 monster.race = "blood"
 monster.maxHealth = 85

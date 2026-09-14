@@ -95,6 +95,18 @@ registerMonsterType.corpse = function(mtype, mask)
 	end
 end
 
+registerMonsterType.raceId = function(mtype, mask)
+	if mask.raceId then
+		mtype:raceId(mask.raceId)
+	end
+end
+
+registerMonsterType.bestiary = function(mtype, mask)
+	if mask.bestiary then
+		mtype:bestiary(mask.bestiary)
+	end
+end
+
 registerMonsterType.flags = function(mtype, mask)
 	if not mask.flags then
 		return

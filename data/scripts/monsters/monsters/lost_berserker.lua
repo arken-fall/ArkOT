@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lost Berserker"
 monster.description = "a lost berserker"
+
+monster.raceId = 888
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Warzones 2 and 3.",
+}
 monster.experience = 4400
 monster.race = "blood"
 monster.maxHealth = 5900

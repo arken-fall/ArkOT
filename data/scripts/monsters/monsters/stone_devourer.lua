@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Stone Devourer"
 monster.description = "a stone devourer"
+
+monster.raceId = 879
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 1.",
+}
 monster.experience = 2900
 monster.race = "undead"
 monster.maxHealth = 4200

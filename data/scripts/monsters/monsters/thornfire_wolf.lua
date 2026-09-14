@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Thornfire Wolf"
 monster.description = "a thornfire wolf"
+
+monster.raceId = 739
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Shadowthorn.",
+}
 monster.experience = 200
 monster.race = "energy"
 monster.maxHealth = 600

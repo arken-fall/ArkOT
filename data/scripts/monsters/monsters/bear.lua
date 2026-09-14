@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Bear"
 monster.description = "a bear"
+
+monster.raceId = 16
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Several spawns near Kazordoon, Femor Hills, north of Thais, near the White Flower Temple, Rookgaard Bear Cave, Bear Room Quest in Rookgaard, Rookgaard Bear Mountain, South of Villa Scapula, Ferngrims Gate, North of Carlin, Fields of Glory, Edron Troll Cave, south of Venore, Desert Dungeon, first floor of the Orc Fort mountain and west of Outlaw Camp.",
+}
 monster.experience = 23
 monster.race = "blood"
 monster.maxHealth = 80

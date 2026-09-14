@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dwarf Soldier"
 monster.description = "a dwarf soldier"
+
+monster.raceId = 71
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Kazordoon Dwarf Mines, Cyclopolis, Dwacatra, Ferngrims Gate, Dwarf Bridge, Mount Sternum Undead Cave, Beregar, Tiquanda Dwarf Cave, Cormaya Dwarf Cave.",
+}
 monster.experience = 70
 monster.race = "blood"
 monster.maxHealth = 135

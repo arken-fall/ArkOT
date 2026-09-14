@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Wyvern"
 monster.description = "a wyvern"
+
+monster.raceId = 290
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Beregar, Black Knight's Villa, Chor, Ghostlands, Chyllfroest, Crystal Gardens, Crystal Grounds, Dragon Lair (Edron), Drillworm Cave, Folda, Hero Fortress, Kazordoon, Green Djinn Tower, Mushroom Fields,Paradox Tower, Plains of Havoc, Plague Spike, Poachers' Camp (Ferngrims Gate), Stonehome, Tiquanda, Truffels Garden, Vandura Mountain, Vega, Venore, Wyvern Cave (Ferngrims Gate), Wyvern Hill and Wyvern Ulderek's Rock Cave.",
+}
 monster.experience = 515
 monster.race = "blood"
 monster.maxHealth = 795

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Cyclops"
 monster.description = "a cyclops"
+
+monster.raceId = 22
+monster.bestiary = {
+	race = "Giant",
+	class = "Giant",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Plains of Havoc, Mount Sternum, Femor Hills, Cyclops Camp, Cyclopolis, Ancient Temple, Shadowthorn, Orc Fort, Mistrock, Foreigner Quarter, Outlaw Camp and in the Cyclops version of the Forsaken Mine. ",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 260

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crystalcrusher"
 monster.description = "a crystalcrusher"
+
+monster.raceId = 869
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Crystal Grounds, Mushroom Farms, Middle Spike.",
+}
 monster.experience = 500
 monster.race = "venom"
 monster.maxHealth = 570

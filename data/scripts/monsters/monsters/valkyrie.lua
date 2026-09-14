@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Valkyrie"
 monster.description = "a valkyrie"
+
+monster.raceId = 12
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Amazon Camp (Venore), Amazon Camp (Carlin), Amazonia, single respawn to the north west of Thais, Foreigner Quarter in Yalahar.",
+}
 monster.experience = 85
 monster.race = "blood"
 monster.maxHealth = 190

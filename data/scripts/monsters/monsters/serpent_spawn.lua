@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Serpent Spawn"
 monster.description = "a serpent spawn"
+
+monster.raceId = 220
+monster.bestiary = {
+	race = "Reptile",
+	class = "Reptile",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Deeper Banuta, Forbidden Islands: Talahu (Medusa Cave) and Kharos (at level -1), Razzachai, Deep below the Crystal Lakes in Foreigner Quarter, Cult's cave in the Magician Quarter, Medusa Tower.",
+}
 monster.experience = 3050
 monster.race = "blood"
 monster.maxHealth = 3000

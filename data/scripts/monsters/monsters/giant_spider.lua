@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Giant Spider"
 monster.description = "a giant spider"
+
+monster.raceId = 38
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Plains of Havoc, Point of no Return in Outlaw Camp, Ghostlands, Hellgate, Mintwallin Secret Laboratory, Mad Mage Room deep below Ancient Temple, Mount Sternum Undead Cave, Green Claw Swamp, Maze of Lost Souls, Crusader Helmet Quest in the Dwarf Mines, Mushroom Gardens, west Drillworm Caves, Edron Hero Cave, Edron Orc Cave, on a hill near Drefia, on a hill north-west of Ankrahmun (inaccessible), Forbidden Lands, Deeper Banuta, Malada, Ramoa, Arena and Zoo Quarter, second floor up of Cemetery Quarter, beneath Fenrock, Vengoth Castle, Vandura Mountain, in a cave in Robson Isle, Chyllfroest, Spider Caves, second floor of Krailos Spider Lair, Caverna Exanima.",
+}
 monster.experience = 900
 monster.race = "venom"
 monster.maxHealth = 1300

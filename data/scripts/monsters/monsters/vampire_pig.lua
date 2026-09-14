@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vampire Pig"
 monster.description = "a vampire pig"
+
+monster.raceId = 558
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "Isle of Evil on the surface.",
+}
 monster.experience = 165
 monster.race = "blood"
 monster.maxHealth = 305

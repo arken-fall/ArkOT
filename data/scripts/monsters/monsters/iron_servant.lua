@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Iron Servant"
 monster.description = "an iron servant"
+
+monster.raceId = 700
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 30,
+	stars = 2,
+	occurrence = 3,
+	locations = "Edron.",
+}
 monster.experience = 210
 monster.race = "energy"
 monster.maxHealth = 350

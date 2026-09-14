@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Enraged Crystal Golem"
 monster.description = "enraged crystal golem"
+
+monster.raceId = 873
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Golem Workshop.",
+}
 monster.experience = 550
 monster.race = "energy"
 monster.maxHealth = 700

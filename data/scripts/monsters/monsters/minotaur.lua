@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Minotaur"
 monster.description = "a minotaur"
+
+monster.raceId = 25
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Mino Hell (Rookgaard), Two outside Bear Room Quest, (Rookgaard) and also 2x on the premium side, Mintwallin, Folda, Minotaur Pyramid, Outlaw Camp, Kazordoon minotaur cave, Plains of Havoc, Elven Bane, Deeper Fibula Dungeon (level 50+ to open the door), Ancient Temple, Maze of Lost Souls, Thais Minotaur Camp, Foreigner Quarter.",
+}
 monster.experience = 50
 monster.race = "blood"
 monster.maxHealth = 100

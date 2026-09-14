@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Plaguesmith"
 monster.description = "a plaguesmith"
+
+monster.raceId = 314
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Pits of Inferno, Formorgar Mines, Edron Demon Forge (The Vats, The Foundry), Magician Quarter, Alchemist Quarter, Roshamuul Prison, Grounds of Plague and Halls of Ascension.",
+}
 monster.experience = 4500
 monster.race = "venom"
 monster.maxHealth = 8250

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Glooth Brigand"
 monster.description = "a glooth brigand"
+
+monster.raceId = 1120
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Underground Glooth Factory.",
+}
 monster.experience = 1900
 monster.race = "blood"
 monster.maxHealth = 2400

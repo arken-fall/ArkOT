@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Shadow Hound"
 monster.description = "a shadow hound"
+
+monster.raceId = 582
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Ramoa around the Lightbringers basin.",
+}
 monster.experience = 600
 monster.race = "blood"
 monster.maxHealth = 555

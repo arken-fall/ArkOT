@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Pirate Corsair"
 monster.description = "a pirate corsair"
+
+monster.raceId = 250
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Nargor, Trade Quarter, Foreigner Quarter Dock, Krailos Steppe During a World Change.",
+}
 monster.experience = 350
 monster.race = "blood"
 monster.maxHealth = 675

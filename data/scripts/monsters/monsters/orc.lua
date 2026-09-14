@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc"
 monster.description = "an orc"
+
+monster.raceId = 5
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ulderek's Rock, Edron Orc Cave, Ancient Temple, Ice Islands, Venore Orc Cave, Rookgaard Orc Fortress, Rookgaard main cave, Fibula Dungeon, Elvenbane, Foreigner Quarter, Zao Orc Land.",
+}
 monster.experience = 25
 monster.race = "blood"
 monster.maxHealth = 70

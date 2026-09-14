@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Braindeath"
 monster.description = "a braindeath"
+
+monster.raceId = 321
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Helheim, Demon Forge (The Arcanum), beneath Fenrock, Vandura Bonelord Cave, Alchemist Quarter and Cemetery Quarter.",
+}
 monster.experience = 985
 monster.race = "venom"
 monster.maxHealth = 1225

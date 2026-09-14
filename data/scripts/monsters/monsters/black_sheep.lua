@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Black Sheep")
+monster.raceId = 13
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Femor Hills, cultist cave in Liberty Bay, Drefia.",
+}
 local monster = {}
 
 monster.name = "Black Sheep"

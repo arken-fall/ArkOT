@@ -1,4 +1,16 @@
 local mtype = Game.createMonsterType("Centipede")
+monster.raceId = 124
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "All around Port Hope and Tiquanda, Dark Cathedral, Vandura, Meriana, Razzachai, Slime cave east of Venore, Arena and Zoo Quarter, Gnarlhound Caves.",
+}
 local monster = {}
 
 monster.name = "Centipede"

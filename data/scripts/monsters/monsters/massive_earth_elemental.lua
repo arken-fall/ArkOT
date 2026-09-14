@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Massive Earth Elemental"
 monster.description = "a massive earth elemental"
+
+monster.raceId = 455
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Forbidden Lands, on top of a hill in the northern part of the Arena and Zoo Quarter, Lower Spike, Truffels Garden and Mushroom Gardens.",
+}
 monster.experience = 950
 monster.race = "undead"
 monster.maxHealth = 1330

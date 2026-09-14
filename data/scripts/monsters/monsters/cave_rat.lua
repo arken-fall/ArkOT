@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Cave Rat"
 monster.description = "a cave rat"
+
+monster.raceId = 56
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Almost everywhere in tibia, they seem to have a nest-like place in Greenshore, a semi-large spawn at the entrance to the Port Hope troll cave and in cave near Ankrahmun ship. Also appears in Rat Plague in Thais and Rat Plague in Rookgaard.",
+}
 monster.experience = 10
 monster.race = "blood"
 monster.maxHealth = 30

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hellfire Fighter"
 monster.description = "a hellfire fighter"
+
+monster.raceId = 295
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Pits of Inferno, Demon Forge, Fury Dungeon.",
+}
 monster.experience = 3900
 monster.race = "fire"
 monster.maxHealth = 3800

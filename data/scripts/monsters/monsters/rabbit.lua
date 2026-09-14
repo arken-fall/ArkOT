@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Rabbit"
 monster.description = "a rabbit"
+
+monster.raceId = 74
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "In most grass areas of Tibia, for example on Tutorial Island.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 15

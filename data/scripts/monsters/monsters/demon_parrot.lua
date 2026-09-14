@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Demon Parrot"
 monster.description = "a demon parrot"
+
+monster.raceId = 562
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 1,
+	locations = "Isle of Evil.",
+}
 monster.experience = 225
 monster.race = "blood"
 monster.maxHealth = 360

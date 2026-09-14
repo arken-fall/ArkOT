@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Flamingo"
 monster.description = "a flamingo"
+
+monster.raceId = 212
+monster.bestiary = {
+	race = "Bird",
+	class = "Bird",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Tiquanda, Shattered Isles, Gardens of Night.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 25

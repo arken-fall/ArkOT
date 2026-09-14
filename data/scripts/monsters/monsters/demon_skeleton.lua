@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Demon Skeleton"
 monster.description = "a demon skeleton"
+
+monster.raceId = 37
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Triangle Tower, Hellgate, Draconia, Plains of Havoc, Pits of Inferno, Thais Ancient Temple, Fibula Dungeon, Mintwallin, Mount Sternum hidden cave, Drefia, Ghost Ship, Edron Hero Cave, Shadowthorn, Elvenbane, Ghostlands, Femor Hills, White Flower Temple, Isle of the Kings, Dark Cathedral, Ankrahmun Tombs, Ramoa, Helheim, Vengoth, Upper Spike, Lion's Rock.",
+}
 monster.experience = 240
 monster.race = "undead"
 monster.maxHealth = 400

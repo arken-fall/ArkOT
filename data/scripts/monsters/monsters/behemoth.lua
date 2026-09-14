@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Behemoth"
 monster.description = "a behemoth"
+
+monster.raceId = 55
+monster.bestiary = {
+	race = "Giant",
+	class = "Giant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Cyclopolis, deepest part of Tarpit Tomb after the flame, Forbidden Lands, Vandura Mountain, Deeper Banuta, Serpentine Tower (unreachable), deep into the Formorgar Mines, Arena and Zoo Quarter, The Dark Path, Lower Spike, Chyllfroest, Medusa Tower and Underground Glooth Factory (west side).",
+}
 monster.experience = 2500
 monster.race = "blood"
 monster.maxHealth = 4000

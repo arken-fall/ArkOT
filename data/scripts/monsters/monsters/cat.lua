@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Cat"
 monster.description = "a cat"
+
+monster.raceId = 387
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 25,
+	firstUnlock = 5,
+	secondUnlock = 10,
+	charmPoints = 1,
+	stars = 0,
+	occurrence = 0,
+	locations = "Carlin, Rookgaard, Factory Quarter, Yalahar, The Witches' Cliff (only accessible during a quest), probably more areas.",
+}
 monster.experience = 0
 monster.race = "blood"
 monster.maxHealth = 20

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Enslaved Dwarf"
 monster.description = "an enslaved dwarf"
+
+monster.raceId = 886
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Caves of the Lost and Lower Spike.",
+}
 monster.experience = 2700
 monster.race = "blood"
 monster.maxHealth = 3800

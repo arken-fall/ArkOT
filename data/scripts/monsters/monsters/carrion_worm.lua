@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Carrion Worm"
 monster.description = "a carrion worm"
+
+monster.raceId = 251
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Edron, Cormaya, Drillworm Caves, Venore Swamps, Liberty Bay, Vandura, Hellgate, Fibula Dungeon, Stonehome, Kazordoon, Darashia Rotworm Caves, Port Hope, Ancient Temple, Fenrock, Arena and Zoo Quarter.",
+}
 monster.experience = 70
 monster.race = "blood"
 monster.maxHealth = 145

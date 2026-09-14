@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Guzzlemaw"
 monster.description = "a guzzlemaw"
+
+monster.raceId = 1013
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Guzzlemaw Valley, and a single spawn in a tower in Upper Roshamuul (south of the Depot and west of the entrance to Roshamuul Prison).",
+}
 monster.experience = 6050
 monster.race = "blood"
 monster.maxHealth = 6400

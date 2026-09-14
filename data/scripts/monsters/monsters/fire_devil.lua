@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Fire Devil"
 monster.description = "a fire devil"
+
+monster.raceId = 40
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Desert Dungeon, Ancient Temple, Magician Tower, Shadow Tomb, Ghostlands, Goroma, Plains of Havoc at Ornamented Shield Quest, Spike Sword Quest.",
+}
 monster.experience = 145
 monster.race = "blood"
 monster.maxHealth = 200

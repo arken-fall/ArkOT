@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sight Of Surrender"
 monster.description = "a sight of surrender"
+
+monster.raceId = 1012
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Dark Grounds, Guzzlemaw Valley (if less than 100 Blowing Horns tasks have been done the day before) and the Silencer Plateau (when Silencer Resonating Chambers are used there).",
+}
 monster.experience = 17000
 monster.race = "undead"
 monster.maxHealth = 28000

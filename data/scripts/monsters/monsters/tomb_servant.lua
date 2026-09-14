@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Tomb Servant"
 monster.description = "a tomb servant"
+
+monster.raceId = 708
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 2,
+	locations = "Horestis Tomb",
+}
 monster.experience = 215
 monster.race = "undead"
 monster.maxHealth = 475

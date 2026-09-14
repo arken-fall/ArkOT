@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gazer"
 monster.description = "a gazer"
+
+monster.raceId = 109
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Hellgate bonelord cave, Vandura Bonelord Cave, also anywhere Elder Bonelords exist, as summons.",
+}
 monster.experience = 90
 monster.race = "venom"
 monster.maxHealth = 120

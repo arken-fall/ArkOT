@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Undead Mine Worker"
 monster.description = "an undead mine worker"
+
+monster.raceId = 594
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "West of Edron in the Lost Mines.",
+}
 monster.experience = 45
 monster.race = "undead"
 monster.maxHealth = 65

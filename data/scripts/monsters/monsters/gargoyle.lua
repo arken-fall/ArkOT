@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Gargoyle"
 monster.description = "a gargoyle"
+
+monster.raceId = 95
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Meriana Gargoyle Cave, Ankrahmun Tombs, Mal'ouquah, Goroma, Deeper Banuta, Formorgar Mines, Vengoth, Farmine Mines, Upper Spike and Medusa Tower.",
+}
 monster.experience = 150
 monster.race = "undead"
 monster.maxHealth = 250

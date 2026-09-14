@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Honour Guard"
 monster.description = "an honour guard"
+
+monster.raceId = 712
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 2,
+	locations = "Desert north of Ankrahmun.",
+}
 monster.experience = 55
 monster.race = "undead"
 monster.maxHealth = 85

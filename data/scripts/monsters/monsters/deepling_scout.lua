@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deepling Scout"
 monster.description = "a deepling scout"
+
+monster.raceId = 734
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Fiehonja, Sunken Mines near Dwarf Mines.",
+}
 monster.experience = 160
 monster.race = "blood"
 monster.maxHealth = 240

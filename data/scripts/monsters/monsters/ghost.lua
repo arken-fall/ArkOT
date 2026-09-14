@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ghost"
 monster.description = "a ghost"
+
+monster.raceId = 48
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Ghost Ship, Drefia, Ankrahmun Tombs, Mount Sternum Undead Cave between Thais and Kazordoon, Dark Cathedral, under Treasure Island, Isle of the Kings, Grothmok tunnels (in Dwarven Mines), Goroma, Ramoa, Lich Hell, Upper Spike.",
+}
 monster.experience = 120
 monster.race = "undead"
 monster.maxHealth = 150

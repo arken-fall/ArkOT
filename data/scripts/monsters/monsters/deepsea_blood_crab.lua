@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Deepsea Blood Crab"
 monster.description = "a deepsea blood crab"
+
+monster.raceId = 437
+monster.bestiary = {
+	race = "Aquatic",
+	class = "Aquatic",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Svargrond Sea Serpent Area, Drefia. There is also one under Rookgaard Academy, however it is unreachable.",
+}
 monster.experience = 180
 monster.race = "blood"
 monster.maxHealth = 320

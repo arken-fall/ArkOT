@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elder Wyrm"
 monster.description = "an elder wyrm"
+
+monster.raceId = 963
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Drefia Wyrm Lair, Vandura Wyrm Cave, Oramond Factory Raids (west), Warzone 4.",
+}
 monster.experience = 2500
 monster.race = "blood"
 monster.maxHealth = 2700

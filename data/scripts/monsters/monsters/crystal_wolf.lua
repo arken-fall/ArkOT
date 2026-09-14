@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Crystal Wolf"
 monster.description = "a crystal wolf"
+
+monster.raceId = 740
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Shadowthorn",
+}
 monster.experience = 275
 monster.race = "undead"
 monster.maxHealth = 750

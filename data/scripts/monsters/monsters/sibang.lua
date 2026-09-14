@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sibang"
 monster.description = "a sibang"
+
+monster.raceId = 118
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "In Banuta, north-east of Port Hope.",
+}
 monster.experience = 105
 monster.race = "blood"
 monster.maxHealth = 225

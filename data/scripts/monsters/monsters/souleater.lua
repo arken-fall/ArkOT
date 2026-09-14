@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Souleater"
 monster.description = "a souleater"
+
+monster.raceId = 675
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Razzachai, Northern Zao Plantations, Souleater Mountains, Deeper Banuta.",
+}
 monster.experience = 1300
 monster.race = "undead"
 monster.maxHealth = 1100

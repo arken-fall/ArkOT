@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Frost Dragon Hatchling"
 monster.description = "a frost dragon hatchling"
+
+monster.raceId = 402
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Okolnir, Factory Quarter (Yalahar), Dragonblaze Peaks, Ice Witch Temple, Frost Dragon Tunnel, Chyllfroest.",
+}
 monster.experience = 745
 monster.race = "undead"
 monster.maxHealth = 800

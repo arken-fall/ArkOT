@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Frazzlemaw"
 monster.description = "a frazzlemaw"
+
+monster.raceId = 1022
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Lower Roshamuul, Guzzlemaw Valley, the entrance to Upper Roshamuul.",
+}
 monster.experience = 3400
 monster.race = "blood"
 monster.maxHealth = 4100

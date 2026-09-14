@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ogre Brute"
 monster.description = "an ogre brute"
+
+monster.raceId = 1161
+monster.bestiary = {
+	race = "Giant",
+	class = "Giant",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Krailos Steppe.",
+}
 monster.experience = 800
 monster.race = "blood"
 monster.maxHealth = 1000

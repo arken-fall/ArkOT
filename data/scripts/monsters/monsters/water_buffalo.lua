@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Water Buffalo"
 monster.description = "a water buffalo"
+
+monster.raceId = 872
+monster.bestiary = {
+	race = "Mammal",
+	class = "Mammal",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 30,
+	stars = 2,
+	occurrence = 3,
+	locations = "It raids every four hours, starting at server save, in groups of one to three at various places around Venore swamp, especially near the southern production site.",
+}
 monster.experience = 20
 monster.race = "blood"
 monster.maxHealth = 390

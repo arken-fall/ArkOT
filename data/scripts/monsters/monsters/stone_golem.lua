@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Stone Golem"
 monster.description = "a stone golem"
+
+monster.raceId = 67
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Maze of Lost Souls, in and around Ashta daramai, Formorgar Mines, Mad Technomancer room, Dark Cathedral, Demona, Goroma, Tarpit Tomb, Peninsula Tomb, Deeper Banuta, Forbidden Lands, Beregar Mines, Farmine Mines, Drillworm Caves, 2 caves on Hrodmir, Orc Fortress (single spawn) and Medusa Tower.",
+}
 monster.experience = 160
 monster.race = "undead"
 monster.maxHealth = 270

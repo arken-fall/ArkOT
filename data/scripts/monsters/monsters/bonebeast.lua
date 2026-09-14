@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Bonebeast"
 monster.description = "a bonebeast"
+
+monster.raceId = 101
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Old Fortress, Ankrahmun Tombs, Helheim, Ramoa, Lich Hell, beneath Fenrock, Deeper Banuta, Vengoth Castle, Vandura Mountain, Robson's Isle, Middle Spike, Lion's Rock, Mother of Scarabs Lair, Caverna Exanima.",
+}
 monster.experience = 580
 monster.race = "undead"
 monster.maxHealth = 515

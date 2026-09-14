@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Orc Marauder"
 monster.description = "an orc marauder"
+
+monster.raceId = 614
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Zao Orc Land.",
+}
 monster.experience = 205
 monster.race = "blood"
 monster.maxHealth = 235

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lava Golem"
 monster.description = "a lava golem"
+
+monster.raceId = 884
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 2.",
+}
 monster.experience = 6200
 monster.race = "fire"
 monster.maxHealth = 9000

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Corym Vanguard"
 monster.description = "a corym vanguard"
+
+monster.raceId = 918
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Venore Corym Cave, Tiquanda Corym Cave, Corym Black Market, Carlin Corym Cave/Dwarf Mines Diggers Depths Mine, Upper Spike.",
+}
 monster.experience = 490
 monster.race = "blood"
 monster.maxHealth = 700

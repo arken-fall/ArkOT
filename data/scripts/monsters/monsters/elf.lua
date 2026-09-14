@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Elf"
 monster.description = "an elf"
+
+monster.raceId = 62
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Yalahar Foreigner Quarter and Trade Quarter, Maze of Lost Souls, Orc Fort (unreachable), Hellgate, Shadowthorn, Ab'Dendriel elf caves, Elvenbane, north of Thais.",
+}
 monster.experience = 42
 monster.race = "blood"
 monster.maxHealth = 100

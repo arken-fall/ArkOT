@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Lich"
 monster.description = "a lich"
+
+monster.raceId = 99
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Ankrahmun Library Tomb, Ancient Ruins Tomb, Oasis Tomb, Mountain Tomb, Drefia, Kharos, Pits of Inferno, Lich Hell in Ramoa, Cemetery Quarter in Yalahar, underground of Fenrock (on the way to Beregar). Can also be seen during an undead raid in Darashia or Carlin.",
+}
 monster.experience = 900
 monster.race = "undead"
 monster.maxHealth = 880

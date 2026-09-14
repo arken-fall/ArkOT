@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Vicious Manbat"
 monster.description = "a vicious manbat"
+
+monster.raceId = 959
+monster.bestiary = {
+	race = "Undead",
+	class = "Undead",
+	toKill = 5,
+	firstUnlock = 2,
+	secondUnlock = 3,
+	charmPoints = 50,
+	stars = 3,
+	occurrence = 3,
+	locations = "Deep under Drefia.",
+}
 monster.experience = 1200
 monster.race = "blood"
 monster.maxHealth = 1700

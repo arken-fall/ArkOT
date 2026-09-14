@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Water Elemental"
 monster.description = "a water elemental"
+
+monster.raceId = 236
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Water Elemental Cave in Port Hope, Water Elemental Dungeon, Deeper Banuta, Malada, Ramoa, Talahu, Folda (7 spawn on the 3rd floor), Water Elemental Cave in Outlaw Camp (only during the Down the Drain Mini World Change), Krailos Steppe underwater cave.",
+}
 monster.experience = 650
 monster.race = "undead"
 monster.maxHealth = 550

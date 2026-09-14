@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Dark Magician"
 monster.description = "a dark magician"
+
+monster.raceId = 371
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Hero Cave (Edron), Magician Tower, Dark Cathedral and Yalahar Academy of Magic in Magician Quarter and a single one on The Witches' Cliff (only accessible during a quest).",
+}
 monster.experience = 185
 monster.race = "blood"
 monster.maxHealth = 325

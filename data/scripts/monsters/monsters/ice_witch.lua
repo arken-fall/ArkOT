@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Ice Witch"
 monster.description = "an ice witch"
+
+monster.raceId = 331
+monster.bestiary = {
+	race = "Human",
+	class = "Human",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Ice Witch Temple, tower in Krimhorn, caves around Hrodmir ('camps' area), Formorgar Glacier deepest mines, Magician Quarter in Yalahar (Level 60 Requirement Door).",
+}
 monster.experience = 580
 monster.race = "blood"
 monster.maxHealth = 650

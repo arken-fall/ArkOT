@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Magma Crawler"
 monster.description = "a magma crawler"
+
+monster.raceId = 885
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Warzone 2.",
+}
 monster.experience = 2700
 monster.race = "fire"
 monster.maxHealth = 4800

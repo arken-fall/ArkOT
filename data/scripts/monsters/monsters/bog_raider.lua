@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Bog Raider"
 monster.description = "a bog raider"
+
+monster.raceId = 460
+monster.bestiary = {
+	race = "Magical",
+	class = "Magical",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Underneath Malada and Talahu, Edron Bog Raider Cave in Stonehome, Edron Earth Elemental Cave, Alchemist Quarter, Vengoth Castle, Robson Isle. Oramond Hydra/Bog Raider Cave.",
+}
 monster.experience = 800
 monster.race = "venom"
 monster.maxHealth = 1300

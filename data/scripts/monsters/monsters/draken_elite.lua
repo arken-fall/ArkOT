@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Draken Elite"
 monster.description = "a draken elite"
+
+monster.raceId = 672
+monster.bestiary = {
+	race = "Dragon",
+	class = "Dragon",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Razachai, including the Crystal Column chambers in the Inner Sanctum.",
+}
 monster.experience = 4200
 monster.race = "blood"
 monster.maxHealth = 5550

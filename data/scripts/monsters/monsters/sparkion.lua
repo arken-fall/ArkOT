@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Sparkion"
 monster.description = "a sparkion"
+
+monster.raceId = 1234
+monster.bestiary = {
+	race = "Extra Dimensional",
+	class = "Extra Dimensional",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 0,
+	locations = "Otherworld",
+}
 monster.experience = 1520
 monster.race = "energy"
 monster.maxHealth = 2700

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Frost Troll"
 monster.description = "a frost troll"
+
+monster.raceId = 53
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 250,
+	firstUnlock = 10,
+	secondUnlock = 100,
+	charmPoints = 5,
+	stars = 1,
+	occurrence = 0,
+	locations = "Ice Islands, Svargrond and Edron.",
+}
 monster.experience = 23
 monster.race = "blood"
 monster.maxHealth = 55

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Weeper"
 monster.description = "a weeper"
+
+monster.raceId = 882
+monster.bestiary = {
+	race = "Construct",
+	class = "Construct",
+	toKill = 2500,
+	firstUnlock = 100,
+	secondUnlock = 1000,
+	charmPoints = 50,
+	stars = 4,
+	occurrence = 1,
+	locations = "Warzone 2.",
+}
 monster.experience = 4800
 monster.race = "fire"
 monster.maxHealth = 6800

@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Hellspawn"
 monster.description = "a hellspawn"
+
+monster.raceId = 519
+monster.bestiary = {
+	race = "Demon",
+	class = "Demon",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Magician Quarter, Vengoth, Deeper Banuta, Formorgar Minese, Chyllfroest, Oramond Dungeon, Asura Palace, Asura Vaults.",
+}
 monster.experience = 2550
 monster.race = "fire"
 monster.maxHealth = 3500

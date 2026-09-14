@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Little Corym Charlatan"
 monster.description = "a little corym charlatan"
+
+monster.raceId = 920
+monster.bestiary = {
+	race = "Humanoid",
+	class = "Humanoid",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 1,
+	locations = "Venore marshes.",
+}
 monster.experience = 40
 monster.race = "blood"
 monster.maxHealth = 90

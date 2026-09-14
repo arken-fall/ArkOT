@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Insect Swarm"
 monster.description = "an insect swarm"
+
+monster.raceId = 621
+monster.bestiary = {
+	race = "Vermin",
+	class = "Vermin",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Zao Steppe, Northern Zao Plantations and the Horestis Tomb (only when the curse of Horestis is not active).",
+}
 monster.experience = 40
 monster.race = "undead"
 monster.maxHealth = 50

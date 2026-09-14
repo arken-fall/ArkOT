@@ -3,6 +3,19 @@ local monster = {}
 
 monster.name = "Frost Giant"
 monster.description = "a frost giant"
+
+monster.raceId = 324
+monster.bestiary = {
+	race = "Giant",
+	class = "Giant",
+	toKill = 500,
+	firstUnlock = 25,
+	secondUnlock = 250,
+	charmPoints = 15,
+	stars = 2,
+	occurrence = 0,
+	locations = "Tyrsung (in the Jotunar mountain), Formorgar Glacier (single spawn), Mammoth Shearing Factory, Chyllfroest.",
+}
 monster.experience = 150
 monster.race = "blood"
 monster.maxHealth = 270
