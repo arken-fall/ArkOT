@@ -803,6 +803,7 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::TurnEast: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerTurn(player_id, DIRECTION_EAST); }); break;
 		case ClientCode::TurnSouth: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerTurn(player_id, DIRECTION_SOUTH); }); break;
 		case ClientCode::TurnWest: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerTurn(player_id, DIRECTION_WEST); }); break;
+		case ClientCode::Teleport: parseTeleport(msg); break;
 		case ClientCode::EquipObject: parseEquipObject(msg); break;
 		case ClientCode::Throw: parseThrow(msg); break;
 		case ClientCode::LookInShop: parseLookInShop(msg); break;
@@ -1371,16 +1372,23 @@ void ProtocolGame::parseLookInShop(NetworkMessage& msg)
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerLookInShop(playerID, id, count); });
 }
 
+void ProtocolGame::parseTeleport(NetworkMessage& msg)
+{
+	Position newPosition = msg.getPosition();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerTeleport(playerID, newPosition); });
+}
+
 void ProtocolGame::parsePlayerPurchase(NetworkMessage& msg)
 {
 	uint16_t id = msg.get<uint16_t>();
 	uint8_t count = msg.getByte();
-	uint8_t amount = msg.getByte();
+	// 12.90+ clients trade in u16 amounts; the game side still caps at u8
+	uint16_t amount = usesModernLayout() ? msg.get<uint16_t>() : msg.getByte();
 	bool ignoreCap = msg.getByte() != 0;
 	bool inBackpacks = msg.getByte() != 0;
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]()
 	{
-		g_game.playerPurchaseItem(playerID, id, count, amount, ignoreCap, inBackpacks);
+		g_game.playerPurchaseItem(playerID, id, count, std::min<uint16_t>(amount, std::numeric_limits<uint8_t>::max()), ignoreCap, inBackpacks);
 	});
 }
 
@@ -1388,9 +1396,9 @@ void ProtocolGame::parsePlayerSale(NetworkMessage& msg)
 {
 	uint16_t id = msg.get<uint16_t>();
 	uint8_t count = msg.getByte();
-	uint8_t amount = msg.getByte();
+	uint16_t amount = usesModernLayout() ? msg.get<uint16_t>() : msg.getByte();
 	bool ignoreEquipped = msg.getByte() != 0;
-	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerSellItem(playerID, id, count, amount, ignoreEquipped); });
+	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [=, playerID = player->getID()]() { g_game.playerSellItem(playerID, id, count, std::min<uint16_t>(amount, std::numeric_limits<uint8_t>::max()), ignoreEquipped); });
 }
 
 void ProtocolGame::parseRequestTrade(NetworkMessage& msg)
@@ -1825,6 +1833,10 @@ void ProtocolGame::sendReLoginWindow(uint8_t unfairFightReduction)
 	msg.add(ServerCode::Death);
 	msg.add(CommonCode::Zero);
 	msg.addByte(unfairFightReduction);
+	if (usesModernLayout())
+	{
+		msg.add(CommonCode::False); // death redemption available (12.81+)
+	}
 	writeToOutputBuffer(msg);
 }
 
@@ -2107,6 +2119,13 @@ void ProtocolGame::sendShop(const NpcPtr& npc, const ShopInfoList& itemList)
 	msg.add(ServerCode::NpcShop);
 	msg.addString(npc->getName());
 
+	if (usesModernLayout())
+	{
+		// 12.81+ shops name their currency; BlackTek shops only deal in gold
+		addItemId(msg, ITEM_GOLD_COIN);
+		msg.add<SpecialCode>(SpecialCode::Zero); // currency name
+	}
+
 	uint16_t itemsToSend = std::min<size_t>(itemList.size(), std::numeric_limits<uint16_t>::max());
 	msg.add<uint16_t>(itemsToSend);
 
@@ -2126,11 +2145,30 @@ void ProtocolGame::sendCloseShop()
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendSaleItemList(const std::list<ShopInfo>& shop)
+void ProtocolGame::sendResourceBalance(ResourceType type, uint64_t value)
 {
 	NetworkMessage msg;
+	msg.add(ServerCode::ResourceBalance);
+	msg.add(type);
+	msg.add<uint64_t>(value);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendSaleItemList(const std::list<ShopInfo>& shop)
+{
+	if (hasFeature(ProtocolFeature::ResourceBalance))
+	{
+		// the modern trade window reads money from the resource balances
+		sendResourceBalance(ResourceType::Bank, player->getBankBalance());
+		sendResourceBalance(ResourceType::Inventory, player->getMoney());
+	}
+
+	NetworkMessage msg;
 	msg.add(ServerCode::SaleItemList);
-	msg.add<uint64_t>(player->getMoney() + player->getBankBalance());
+	if (not usesModernLayout())
+	{
+		msg.add<uint64_t>(player->getMoney() + player->getBankBalance());
+	}
 
 	std::map<uint16_t, uint32_t> saleMap;
 
@@ -2211,6 +2249,23 @@ void ProtocolGame::sendSaleItemList(const std::list<ShopInfo>& shop)
 				}
 			}
 		}
+	}
+
+	if (usesModernLayout())
+	{
+		// 12.90+ counts and amounts are u16
+		uint16_t itemsToSend = std::min<size_t>(saleMap.size(), std::numeric_limits<uint16_t>::max());
+		msg.add<uint16_t>(itemsToSend);
+
+		uint16_t i = 0;
+		for (std::map<uint16_t, uint32_t>::const_iterator it = saleMap.begin(); i < itemsToSend; ++it, ++i)
+		{
+			addItemId(msg, it->first);
+			msg.add<uint16_t>(std::min<uint32_t>(it->second, std::numeric_limits<uint16_t>::max()));
+		}
+
+		writeToOutputBuffer(msg);
+		return;
 	}
 
 	uint8_t itemsToSend = std::min<size_t>(saleMap.size(), std::numeric_limits<uint8_t>::max());
@@ -2805,10 +2860,18 @@ void ProtocolGame::sendQuestLine(const Quest* quest)
 	msg.add<uint16_t>(quest->getID());
 	msg.addByte(quest->getMissionsCount(player));
 
+	// missions have no id of their own; their position in the quest is
+	// stable, and only the client's quest tracker refers back to it
+	uint16_t missionId = 0;
 	for (const Mission& mission : quest->getMissions())
 	{
+		++missionId;
 		if (mission.isStarted(player))
 		{
+			if (usesModernLayout())
+			{
+				msg.add<uint16_t>(missionId);
+			}
 			msg.addString(mission.getName(player));
 			msg.addString(mission.getDescription(player));
 		}
@@ -3712,6 +3775,11 @@ void ProtocolGame::sendTextWindow(uint32_t windowTextId, const ItemPtr& item, ui
 		msg.add<SpecialCode>(SpecialCode::Zero);
 	}
 
+	if (usesModernLayout())
+	{
+		msg.add(CommonCode::Zero); // writer name suffix (12.81+)
+	}
+
 	time_t writtenDate = item->getDate();
 	if (writtenDate != 0)
 	{
@@ -3733,8 +3801,12 @@ void ProtocolGame::sendTextWindow(uint32_t windowTextId, uint32_t itemId, const 
 	addItem(msg, itemId, 1);
 	msg.add<uint16_t>(text.size());
 	msg.addString(text);
-	msg.add<SpecialCode>(SpecialCode::Zero);
-	msg.add<SpecialCode>(SpecialCode::Zero);
+	msg.add<SpecialCode>(SpecialCode::Zero); // writer
+	if (usesModernLayout())
+	{
+		msg.add(CommonCode::Zero); // writer name suffix (12.81+)
+	}
+	msg.add<SpecialCode>(SpecialCode::Zero); // date
 	writeToOutputBuffer(msg);
 }
 
@@ -3794,6 +3866,9 @@ void ProtocolGame::sendOutfitWindow()
 		protocolOutfits.emplace_back("Gamemaster", 75, 0);
 	}
 
+	// 12.81+ lists are u16 counted and every entry carries an availability
+	// byte; the u8 lists below stay the legacy 10.98 limit
+	const size_t outfitLimit = usesModernLayout() ? std::numeric_limits<uint16_t>::max() : std::numeric_limits<uint8_t>::max();
 	for (const Outfit& outfit : outfits)
 	{
 		uint8_t addons;
@@ -3803,18 +3878,10 @@ void ProtocolGame::sendOutfitWindow()
 		}
 
 		protocolOutfits.emplace_back(outfit.name, outfit.lookType, addons);
-		if (protocolOutfits.size() == std::numeric_limits<uint8_t>::max())
-		{ // Game client currently doesn't allow more than 255 outfits
+		if (protocolOutfits.size() == outfitLimit)
+		{
 			break;
 		}
-	}
-
-	msg.addByte(protocolOutfits.size());
-	for (const ProtocolOutfit& outfit : protocolOutfits)
-	{
-		msg.add<uint16_t>(outfit.lookType);
-		msg.addString(outfit.name);
-		msg.addByte(outfit.addons);
 	}
 
 	std::vector<const Mount*> mounts;
@@ -3824,6 +3891,51 @@ void ProtocolGame::sendOutfitWindow()
 		{
 			mounts.push_back(&mount);
 		}
+	}
+
+	if (usesModernLayout())
+	{
+		if (currentOutfit.lookMount == 0)
+		{
+			// mount colors are expected here even without a mount
+			msg.add(CommonCode::Zero); // mount head
+			msg.add(CommonCode::Zero); // mount body
+			msg.add(CommonCode::Zero); // mount legs
+			msg.add(CommonCode::Zero); // mount feet
+		}
+		msg.add<SpecialCode>(SpecialCode::Zero); // current familiar look type
+
+		msg.add<uint16_t>(protocolOutfits.size());
+		for (const ProtocolOutfit& outfit : protocolOutfits)
+		{
+			msg.add<uint16_t>(outfit.lookType);
+			msg.addString(outfit.name);
+			msg.addByte(outfit.addons);
+			msg.add(CommonCode::Zero); // available (0x01 store offer, 0x02 golden outfit)
+		}
+
+		msg.add<uint16_t>(mounts.size());
+		for (const Mount* mount : mounts)
+		{
+			msg.add<uint16_t>(mount->clientId);
+			msg.addString(mount->name);
+			msg.add(CommonCode::Zero); // available
+		}
+
+		msg.add<SpecialCode>(SpecialCode::Zero); // familiars; BlackTek has none
+		msg.add(CommonCode::False); // try outfit mode
+		msg.add(player->isMounted() ? CommonCode::True : CommonCode::False);
+		msg.add(CommonCode::False); // random mount (12.81+)
+		writeToOutputBuffer(msg);
+		return;
+	}
+
+	msg.addByte(protocolOutfits.size());
+	for (const ProtocolOutfit& outfit : protocolOutfits)
+	{
+		msg.add<uint16_t>(outfit.lookType);
+		msg.addString(outfit.name);
+		msg.addByte(outfit.addons);
 	}
 
 	msg.addByte(mounts.size());
@@ -4612,7 +4724,7 @@ void ProtocolGame::MoveDownCreature(NetworkMessage& msg, const CreatureConstPtr&
 void ProtocolGame::AddShopItem(NetworkMessage& msg, const ShopInfo& item)
 {
 	const ItemType& it = Item::items[item.itemId];
-	msg.add<uint16_t>(it.getID());
+	addItemId(msg, it.getID());
 
 	if (it.isSplash() or it.isFluidContainer())
 	{

@@ -145,6 +145,7 @@ class ProtocolGame : public Protocol
 		void parseAttack(NetworkMessage& msg);
 		void parseFollow(NetworkMessage& msg);
 		void parseEquipObject(NetworkMessage& msg);
+		void parseTeleport(NetworkMessage& msg);
 
 		void parseBugReport(NetworkMessage& msg);
 		void parseDebugAssert(NetworkMessage& msg);
@@ -258,6 +259,7 @@ class ProtocolGame : public Protocol
 		void sendShop(const NpcPtr& npc, const ShopInfoList& itemList);
 		void sendCloseShop();
 		void sendSaleItemList(const std::list<ShopInfo>& shop);
+		void sendResourceBalance(BlackTek::Network::ResourceType type, uint64_t value);
 		void sendMarketEnter();
 		void sendMarketLeave();
 		void sendMarketBrowseItem(uint16_t itemId, const MarketOfferList& buyOffers, const MarketOfferList& sellOffers);

@@ -361,6 +361,18 @@ namespace BlackTek {
             // Special Messages
             LoginSuccess = 0x17,
             ReLoginWindow = 0x28,
+
+            // Modern (12.x+) resource balances, see ResourceType
+            ResourceBalance = 0xEE,
+        };
+
+        // Modern clients keep one balance per resource and read money
+        // from these instead of the u64 that used to lead SaleItemList;
+        // every entry here carries a u64 value on the wire
+        enum class ResourceType : uint8_t
+        {
+            Bank = 0x00,
+            Inventory = 0x01,
         };
 
         enum class SpecialCode : uint16_t 

@@ -216,3 +216,33 @@ conflicts, resolved as follows.
 **Verified:** `make config=release_64` clean (GCC 14, zero warnings in the
 merge build), `blacktek_tests` 10/10, gate A green: webservice session key
 -> modern handshake -> "Tester has logged in." -> walk answered.
+
+## 2026-09-13 — Phase E tranche 1: shop, outfit, death, text, quest, GM teleport
+
+**Why:** with the trunk merged, the next blockers for real-map play on the
+15.25 client were the windows a player opens first. Behaviour was read from
+the client's own parsers (mehah `protocolgameparse.cpp`) with canary as a
+cross-check; the code is BlackTek's, not theirs. **What:**
+
+- `networkopcodes.h`: `ServerCode::ResourceBalance` (0xEE) and a
+  `ResourceType` group (Bank, Inventory).
+- `sendShop`: 12.81+ currency block (gold coin id through `addItemId`, empty
+  currency name); `AddShopItem` writes the client id instead of the server
+  id. `sendSaleItemList`: pushes the bank and inventory balances first (the
+  modern trade window reads money from them), drops the leading u64, u16
+  count and u16 per-item amounts. `parsePlayerPurchase`/`parsePlayerSale`
+  read u16 amounts on modern connections and clamp to the u8 the game layer
+  takes.
+- `sendOutfitWindow`: 12.81+ layout — mount colours even without a mount,
+  familiar look type, u16-counted outfit/mount lists with an availability
+  byte, empty familiar list, try-outfit/mounted/random-mount flags.
+- `sendReLoginWindow`: trailing death-redemption flag. `sendTextWindow`
+  (both overloads): writer-suffix byte before the date. `sendQuestLine`:
+  u16 mission id (position within the quest) ahead of each mission.
+- `ClientCode::Teleport` (0x73): `parseTeleport` -> `Game::playerTeleport`,
+  access players only, `internalTeleport` with the cancel message on failure.
+
+**Verified:** real mehah 15.25 client, headless under Xvfb, capture decoded
+with `packet_diff.py`: opcodes 0x7A, 0x7C, 0xC8, 0xF0, 0xF1 all accepted;
+client-side counts and item names match the datapack. Unit tests 10/10.
+Not yet covered: player-to-player trade window, market, quest tracker.

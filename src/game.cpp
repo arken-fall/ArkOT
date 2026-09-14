@@ -4627,6 +4627,22 @@ void Game::playerTurn(const uint32_t playerId, const Direction dir)
 	internalCreatureTurn(player, dir);
 }
 
+void Game::playerTeleport(const uint32_t playerId, const Position& newPosition)
+{
+	const auto& player = getPlayerByID(playerId);
+	if (not player or not player->isAccessPlayer())
+	{
+		return;
+	}
+
+	// modern clients offer a map click teleport to gamemasters (0x73)
+	ReturnValue ret = internalTeleport(player, newPosition, false);
+	if (ret != RETURNVALUE_NOERROR)
+	{
+		player->sendCancelMessage(ret);
+	}
+}
+
 void Game::playerRequestOutfit(const uint32_t playerId)
 {
 	if (!g_config.GetBoolean(ConfigManager::ALLOW_CHANGEOUTFIT)) {
