@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Dworc Venomsniper")
+local monster = {}
+
 monster.raceId = 216
 monster.bestiary = {
 	race = "Humanoid",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "South of Port Hope (Trapwood) on ground level and underground and on Foreigner Quarter of Yalahar.",
 }
-local monster = {}
 
 monster.name = "Dworc Venomsniper"
 monster.experience = 35

@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Bug")
+local monster = {}
+
 monster.raceId = 45
 monster.bestiary = {
 	race = "Vermin",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "In many parts around Tibia, including Rookgaard.",
 }
-local monster = {}
 
 monster.name = "Bug"
 monster.experience = 18

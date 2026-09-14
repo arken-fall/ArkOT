@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Cobra")
+local monster = {}
+
 monster.raceId = 81
 monster.bestiary = {
 	race = "Reptile",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Ankrahmun Library Tomb, Tarpit Tomb, Mountain Tomb, Peninsula Tomb, Darama, Tiquanda, Drefia, Forbidden Lands, Arena Quarter, Lion's Rock.",
 }
-local monster = {}
 
 monster.name = "Cobra"
 monster.experience = 30

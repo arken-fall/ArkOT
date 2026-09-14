@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Chicken")
+local monster = {}
+
 monster.raceId = 111
 monster.bestiary = {
 	race = "Bird",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Sabrehaven, Rookgaard, The McRonalds Farm in Thais, Northport, Fibula, Carlin (killable but unreachable), Greenshore, Krimhorn, Orc Fortress, Factory Quarter, also theres one in the farm near Edron.",
 }
-local monster = {}
 
 monster.name = "Chicken"
 monster.experience = 0

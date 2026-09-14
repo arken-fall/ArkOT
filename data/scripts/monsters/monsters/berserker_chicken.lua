@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Berserker Chicken")
+local monster = {}
+
 monster.raceId = 561
 monster.bestiary = {
 	race = "Bird",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 1,
 	locations = "Isle of Evil.",
 }
-local monster = {}
 
 monster.name = "Berserker Chicken"
 monster.experience = 220

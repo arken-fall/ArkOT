@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Coral Frog")
+local monster = {}
+
 monster.raceId = 269
 monster.bestiary = {
 	race = "Amphibic",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Meriana, Laguna Islands, and other Shattered Isles.",
 }
-local monster = {}
 
 monster.name = "Coral Frog"
 monster.experience = 20

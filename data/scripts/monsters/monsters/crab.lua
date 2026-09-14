@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Crab")
+local monster = {}
+
 monster.raceId = 112
 monster.bestiary = {
 	race = "Aquatic",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Various locations like Goroma, Edron, Port Hope, Nargor and other Shattered Isles. There is also one located underwater by The Tibianic, however it is unreachable.",
 }
-local monster = {}
 
 monster.name = "Crab"
 monster.experience = 30

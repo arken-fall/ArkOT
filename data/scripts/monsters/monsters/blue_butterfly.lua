@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Butterfly")
+local monster = {}
+
 monster.raceId = 227
 monster.bestiary = {
 	race = "Vermin",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Ab'Dendriel, Ab'Dendriel Surroundings, Carlin, Cormaya, Edron Surroundings, Feyrist Meadows, Fibula, Fields of Glory, Green Claw Swamp, Issavi, Kazordoon Surroundings, Meriana, Outlaw Camp, Port Hope Surroundings, Stonehome, Thais Surroundings, Venore Southern Swamp, Venore Surroundings.",
 }
-local monster = {}
 
 monster.name = "Butterfly"
 monster.experience = 0

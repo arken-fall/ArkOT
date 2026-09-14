@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Wiggler")
+local monster = {}
+
 monster.raceId = 899
 monster.bestiary = {
 	race = "Vermin",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Can be found in Truffels Garden as well as the Mushroom Gardens.",
 }
-local monster = {}
 
 monster.name = "Wiggler"
 monster.experience = 900

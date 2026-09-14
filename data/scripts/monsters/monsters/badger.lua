@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Badger")
+local monster = {}
+
 monster.raceId = 105
 monster.bestiary = {
 	race = "Mammal",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "Hrodmir, southern Tiquanda, unannounced raid in Ab'Dendriel and Edron.",
 }
-local monster = {}
 
 monster.name = "Badger"
 monster.experience = 5

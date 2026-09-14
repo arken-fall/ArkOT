@@ -5,7 +5,8 @@ Canary's monster files carry a race id and a Bestiary block for every
 creature CipSoft lists in the cyclopedia. BlackTek's monsters (a TFS 1.4.2
 lineage) carry neither. This script matches the two by creature name and
 writes `monster.raceId` and a `monster.bestiary` block, in BlackTek's key
-style, right after the description line of each BlackTek monster file.
+style, after the description line of each BlackTek monster file (or after its
+`local monster = {}` when there is no description).
 
 Usage:
     python3 harness/build_bestiary_data.py --canary ~/Documents/canary [--dry-run]
@@ -101,7 +102,9 @@ def main() -> int:
             unmatched += 1
             continue
         race_id, fields = entry
-        anchor = re.search(r'^monster\.description\s*=.*\n', text, re.M)
+        # after the description when there is one, otherwise right after the
+        # monster table is declared - the block must follow `local monster = {}`
+        anchor = re.search(r'^monster\.description\s*=.*\n', text, re.M) or re.search(r'^local monster = \{\}\n', text, re.M)
         insert_at = anchor.end() if anchor else CREATE.search(text).end() + 1
         block = ('\n' if anchor else '') + render(race_id, fields)
         if not args.dry_run:

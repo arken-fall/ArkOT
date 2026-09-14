@@ -1,4 +1,6 @@
 local mtype = Game.createMonsterType("Dworc Voodoomaster")
+local monster = {}
+
 monster.raceId = 214
 monster.bestiary = {
 	race = "Humanoid",
@@ -11,7 +13,6 @@ monster.bestiary = {
 	occurrence = 0,
 	locations = "South of Port Hope around Trapwood. There is also a group of 3 voodoomasters and 2 crypt shamblers on the shore east of Trapwood.",
 }
-local monster = {}
 
 monster.name = "Dworc Voodoomaster"
 monster.experience = 55
