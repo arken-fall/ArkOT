@@ -1150,7 +1150,7 @@ void Game::playerMoveItem(const PlayerPtr& player,
 		}
 	}
 
-	if (item->getID() != spriteId)
+	if (not Item::items.sharesAppearance(item->getID(), spriteId))
 	{
 		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
 		return;
@@ -3366,7 +3366,7 @@ void Game::playerUseItemEx(const uint32_t playerId, const Position& fromPos, con
 		return;
 	}
 
-	if (item->getID() != fromSpriteId)
+	if (not Item::items.sharesAppearance(item->getID(), fromSpriteId))
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
@@ -3438,7 +3438,13 @@ void Game::playerUseItemEx(const uint32_t playerId, const Position& fromPos, con
 	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(player->getPosition()))
 		spawnOverlay->Trigger(player, Zones::SpawnTrigger::Use);
 
+	const uint16_t usedItemId = item->getID();
+	const uint32_t stockBefore = item->getItemCount() + item->getCharges();
 	g_itemEvents->useItemEx(player, fromPos, toPos, toStackPos, item, isHotkey);
+	if (not item->getLocation() or item->getItemCount() + item->getCharges() < stockBefore)
+	{
+		player->sendSupplyTracker(usedItemId);
+	}
 }
 
 void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uint8_t stackPos,
@@ -3461,7 +3467,7 @@ void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uin
 		return;
 	}
 
-	if (item->getID() != spriteId)
+	if (not Item::items.sharesAppearance(item->getID(), spriteId))
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
@@ -3496,7 +3502,14 @@ void Game::playerUseItem(const uint32_t playerId, const Position& pos, const uin
 	if (auto spawnOverlay = Zones::ZoneManager::GetSpawns(player->getPosition()))
 		spawnOverlay->Trigger(player, Zones::SpawnTrigger::Use);
 
+	// a use that consumed the item, a charge or a portion counts as a supply
+	const uint16_t usedItemId = item->getID();
+	const uint32_t stockBefore = item->getItemCount() + item->getCharges();
 	g_itemEvents->useItem(player, pos, index, item, isHotkey);
+	if (not item->getLocation() or item->getItemCount() + item->getCharges() < stockBefore)
+	{
+		player->sendSupplyTracker(usedItemId);
+	}
 }
 
 void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPos, const uint8_t fromStackPos, const uint32_t creatureId, const uint16_t spriteId)
@@ -3529,7 +3542,7 @@ void Game::playerUseWithCreature(const uint32_t playerId, const Position& fromPo
 		return;
 	}
 
-	if (item->getID() != spriteId)
+	if (not Item::items.sharesAppearance(item->getID(), spriteId))
 	{
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
@@ -3678,7 +3691,7 @@ void Game::playerRotateItem(const uint32_t playerId, const Position& pos, const 
 		return;
 	}
 
-	if (item->getID() != spriteId or not item->isRotatable() or item->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID))
+	if (not Item::items.sharesAppearance(item->getID(), spriteId) or not item->isRotatable() or item->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID))
 	{
 		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
 		return;
@@ -3865,7 +3878,7 @@ void Game::playerWrapItem(const uint32_t playerId, const Position& position, con
 		return;
 	}
 
-	if (item->getID() != spriteId or not item->hasAttribute(ITEM_ATTRIBUTE_WRAPID) or item->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID))
+	if (not Item::items.sharesAppearance(item->getID(), spriteId) or not item->hasAttribute(ITEM_ATTRIBUTE_WRAPID) or item->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID))
 	{
 		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
 		return;
@@ -3928,7 +3941,7 @@ void Game::playerRequestTrade(const uint32_t playerId, const Position& pos, uint
 		return;
 	}
 
-	if (tradeItem->getID() != spriteId || !tradeItem->isPickupable() || tradeItem->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID)) {
+	if (not Item::items.sharesAppearance(tradeItem->getID(), spriteId) || !tradeItem->isPickupable() || tradeItem->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID)) {
 		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
 		return;
 	}

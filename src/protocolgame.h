@@ -301,6 +301,12 @@ class ProtocolGame : public Protocol
 		void sendPreyTimeLeft(uint8_t slotId);
 		void sendPreyPrices();
 
+		// 12.x+ hunt analytics
+		void sendImpactTracker(BlackTek::Network::ImpactTrackerCode type, uint32_t amount, CombatType_t combatType, const std::string& target);
+		void sendSupplyTracker(uint16_t itemId);
+		void sendLootTracker(const ItemConstPtr& item);
+		void sendKillTracker(const std::string& name, const Outfit_t& outfit, const ItemDeque& items);
+
 		// 12.81+ exaltation forge
 		void sendForgeItemClasses();
 		void sendForgeWindow();

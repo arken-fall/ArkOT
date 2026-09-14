@@ -909,6 +909,10 @@ class Player final : public Creature
 		void sendForgeError(const std::string& message) const											{ if (client) client->sendForgeError(message); }
 		void sendForgeResult(BlackTek::Forge::System::Action action, bool convergence, bool success, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, BlackTek::Forge::System::Bonus bonus, uint8_t coreCount) const { if (client) client->sendForgeResult(action, convergence, success, leftItemId, leftTier, rightItemId, rightTier, bonus, coreCount); }
 		void sendForgeBalances() const																	{ if (client) client->sendForgeBalances(); }
+		void sendImpactTracker(BlackTek::Network::ImpactTrackerCode type, uint32_t amount, CombatType_t combatType, const std::string& target) const { if (client) client->sendImpactTracker(type, amount, combatType, target); }
+		void sendSupplyTracker(uint16_t itemId) const													{ if (client) client->sendSupplyTracker(itemId); }
+		void sendLootTracker(const ItemConstPtr& item) const											{ if (client) client->sendLootTracker(item); }
+		void sendKillTracker(const std::string& name, const Outfit_t& outfit, const ItemDeque& items) const { if (client) client->sendKillTracker(name, outfit, items); }
 		void sendItemInspection(const ItemPtr& item, bool cyclopedia) const						{ if (client) client->sendItemInspection(item, cyclopedia); }
 		void sendItemTypeInspection(uint16_t itemId, uint8_t inspectionType) const					{ if (client) client->sendItemTypeInspection(itemId, inspectionType); }
 		void sendCharacterInspection(const PlayerConstPtr& target, bool cyclopedia) const			{ if (client) client->sendCharacterInspection(target, cyclopedia); }

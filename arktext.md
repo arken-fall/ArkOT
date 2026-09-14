@@ -490,3 +490,46 @@ audit found four rules they missed. **What changed (no behaviour change):**
 
 **Verified:** rebuilt, unit tests 10/10, and the bestiary, prey and forge
 harnesses rerun on the real client with zero protocol exceptions.
+
+## 2026-09-14 — Fixes from the first live test on the VM build
+
+**Why:** Josh played the deployed 15.25 build and reported pink blood,
+random "cannot use this object" on smart left-click, gold not always
+stacking, monsters respawning next to him, and dead analyser windows.
+**What:**
+
+- Fluids: `ModernFluidId` maps the server's `FLUID_*` values onto the
+  12.x+ client's fluid list (water 1, mana 2, beer 3, oil 4, blood 5, slime
+  6, mud 7, lemonade 8, milk 9, wine 10, life 11, urine 12, rum 13, fruit
+  juice 14, coconut milk 15, tea 16, mead 17). The legacy colour index made
+  blood (2) render as mana.
+- Use requests: `Items::sharesAppearance(a, b)` — after `getItemId` maps a
+  client appearance back to the canonical server id, an aliased item on the
+  tile failed the `getID() != spriteId` check. Every use, use-with, rotate,
+  wrap and trade check now compares appearances.
+- Analytics: `ServerCode::ImpactTracker/SupplyTracker/LootTracker/KillTracker`
+  (0xCC/0xCE/0xCF/0xD1), `ImpactTrackerCode`, `ProtocolFeature::HuntAnalytics`;
+  writers in `ProtocolGame`, wrappers on `Player`; hooks in
+  `Combat::heal_notification` (healer), `damage_notification` (attacker and
+  defender, element via `CyclopediaElementOf`, now shared with the bestiary
+  page), `Game::playerUseItem/Ex` (supply when the item, a charge or a
+  portion is gone after the use), and `default_onDropLoot.lua` (kill with
+  its drops, then each drop as loot).
+- Gold stacking: no server-side cause found — loot carries no attributes and
+  merging only stops at a full stack or a differing attribute (a forge tier
+  counts). Needs a reproducible case.
+- Zone respawns: by design — the converted map's zones are `passive = true,
+  forced = true`, so a zone with players waits up to five intervals and then
+  spawns anyway; the player list is zone-wide (one zone per floor).
+- Client-side (in `~/Documents/BlackTek15`, not this repo): 78 relative
+  `g_ui.loadUI/displayUI` calls in 43 modules rewritten to absolute paths.
+  The client's path resolver drops the calling script's directory while the
+  renderer is in its pre-draw pass, which runs on another thread, so any
+  layout opened from an event handler failed at random — the blank
+  cyclopedia tabs and the dead Customise Character entry. Backup:
+  `modules-backup-20260914.tar.gz` in the client folder. Also the RubinOT
+  tooltip strings in `gamelib/player.lua` now say ArkOT.
+
+**Verified:** headless real client — impact tracker on damage received;
+outfit window and cyclopedia tabs open every time after the module rewrite.
+Unit tests 10/10.

@@ -381,6 +381,12 @@ namespace BlackTek {
             PreyData = 0xE8,
             PreyPrices = 0xE9,
 
+            // 12.x+ hunt analytics
+            ImpactTracker = 0xCC,
+            SupplyTracker = 0xCE,
+            LootTracker = 0xCF,
+            KillTracker = 0xD1,
+
             // 12.81+ exaltation forge
             ForgeItemClasses = 0x86,
             ForgeOpen = 0x87,
@@ -494,6 +500,14 @@ namespace BlackTek {
             Drown = 0x08,
             LifeDrain = 0x09,
             ManaDrain = 0x0A,
+        };
+
+        // what an ImpactTracker entry reports
+        enum class ImpactTrackerCode : uint8_t
+        {
+            Heal = 0x00,
+            DamageDealt = 0x01,
+            DamageReceived = 0x02,
         };
 
         // what the client asks for with BuyCharmRune

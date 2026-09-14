@@ -23,6 +23,12 @@ ec.onDropLoot = function(self, corpse)
 		end
 
 		if player then
+			-- the hunt analysers: the kill with its drops, and every drop as loot
+			player:sendKillTracker(self, corpse)
+			for _, lootItem in ipairs(corpse:getItems()) do
+				player:sendLootTracker(lootItem)
+			end
+
 			local text = ("Loot of %s: %s"):format(mType:getNameDescription(), corpse:getContentDescription())
 			local party = player:getParty()
 			if party then

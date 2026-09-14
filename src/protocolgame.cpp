@@ -43,6 +43,36 @@ namespace
 	// types have to collapse onto them or the client throws (and mehah
 	// crashes on the null creature that leaves behind). Bosses render as
 	// monsters, guild/party summons as hostile summons.
+	// the element ids the client shows in the cyclopedia and the analysers
+	constexpr std::array<std::pair<CombatType_t, CyclopediaElement>, 8> CyclopediaElements { {
+		{ COMBAT_PHYSICALDAMAGE, CyclopediaElement::Physical },
+		{ COMBAT_FIREDAMAGE, CyclopediaElement::Fire },
+		{ COMBAT_EARTHDAMAGE, CyclopediaElement::Earth },
+		{ COMBAT_ENERGYDAMAGE, CyclopediaElement::Energy },
+		{ COMBAT_ICEDAMAGE, CyclopediaElement::Ice },
+		{ COMBAT_HOLYDAMAGE, CyclopediaElement::Holy },
+		{ COMBAT_DEATHDAMAGE, CyclopediaElement::Death },
+		{ COMBAT_HEALING, CyclopediaElement::Healing },
+	} };
+
+	CyclopediaElement CyclopediaElementOf(CombatType_t combatType) noexcept
+	{
+		if (combatType == COMBAT_DROWNDAMAGE)
+		{
+			return CyclopediaElement::Drown;
+		}
+		if (combatType == COMBAT_LIFEDRAIN)
+		{
+			return CyclopediaElement::LifeDrain;
+		}
+		if (combatType == COMBAT_MANADRAIN)
+		{
+			return CyclopediaElement::ManaDrain;
+		}
+		const auto it = std::ranges::find(CyclopediaElements, combatType, &std::pair<CombatType_t, CyclopediaElement>::first);
+		return it != CyclopediaElements.end() ? it->second : CyclopediaElement::Physical;
+	}
+
 	CreatureType_t ModernCreatureType(CreatureType_t type)
 	{
 		switch (type)
@@ -3052,6 +3082,76 @@ void ProtocolGame::sendPreyPrices()
 	writeToOutputBuffer(msg);
 }
 
+// the client's analyser windows: healing, damage by element, supplies
+// consumed, loot dropped and creatures killed
+void ProtocolGame::sendImpactTracker(ImpactTrackerCode type, uint32_t amount, CombatType_t combatType, const std::string& target)
+{
+	if (not hasFeature(ProtocolFeature::HuntAnalytics))
+	{
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::ImpactTracker);
+	msg.add(type);
+	msg.add<uint32_t>(amount);
+	if (type != ImpactTrackerCode::Heal)
+	{
+		msg.add(CyclopediaElementOf(combatType));
+	}
+	if (type == ImpactTrackerCode::DamageReceived)
+	{
+		msg.addString(target);
+	}
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendSupplyTracker(uint16_t itemId)
+{
+	if (not hasFeature(ProtocolFeature::HuntAnalytics))
+	{
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::SupplyTracker);
+	msg.add<uint16_t>(Item::items.getModernClientId(itemId));
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendLootTracker(const ItemConstPtr& item)
+{
+	if (not hasFeature(ProtocolFeature::HuntAnalytics) or not item)
+	{
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::LootTracker);
+	addItem(msg, item);
+	msg.addString(item->getName());
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendKillTracker(const std::string& name, const Outfit_t& outfit, const ItemDeque& items)
+{
+	if (not hasFeature(ProtocolFeature::HuntAnalytics))
+	{
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::KillTracker);
+	msg.addString(name);
+	addOutfitLook(msg, outfit);
+	msg.addByte(static_cast<uint8_t>(std::min<size_t>(items.size(), std::numeric_limits<uint8_t>::max())));
+	for (const auto& item : items | std::views::take(std::numeric_limits<uint8_t>::max()))
+	{
+		addItem(msg, item);
+	}
+	writeToOutputBuffer(msg);
+}
+
 void ProtocolGame::parseForgeAction(NetworkMessage& msg)
 {
 	using Action = BlackTek::Forge::System::Action;
@@ -3572,18 +3672,8 @@ void ProtocolGame::sendBestiaryMonsterData(uint16_t raceId)
 	{
 		// resistances as the client shows them: 100% is neutral, less is
 		// resistant, more is weak
-		static constexpr std::array<std::pair<CombatType_t, CyclopediaElement>, 8> elements { {
-			{ COMBAT_PHYSICALDAMAGE, CyclopediaElement::Physical },
-			{ COMBAT_FIREDAMAGE, CyclopediaElement::Fire },
-			{ COMBAT_EARTHDAMAGE, CyclopediaElement::Earth },
-			{ COMBAT_ENERGYDAMAGE, CyclopediaElement::Energy },
-			{ COMBAT_ICEDAMAGE, CyclopediaElement::Ice },
-			{ COMBAT_HOLYDAMAGE, CyclopediaElement::Holy },
-			{ COMBAT_DEATHDAMAGE, CyclopediaElement::Death },
-			{ COMBAT_HEALING, CyclopediaElement::Healing },
-		} };
-		msg.addByte(elements.size());
-		for (const auto& [combatType, element] : elements)
+		msg.addByte(CyclopediaElements.size());
+		for (const auto& [combatType, element] : CyclopediaElements)
 		{
 			int32_t percent = 100;
 			if (auto it = monsterType->info.elementMap.find(combatType); it != monsterType->info.elementMap.end())
@@ -5793,6 +5883,32 @@ namespace
 	// mapped id for a modern client, with a visible placeholder when the
 	// server id has no surviving appearance - a wrong-looking item beats a
 	// client-side parse exception on id 0
+	// 12.x+ clients read a fluid by its own list, not the 10.98 colour index
+	uint8_t ModernFluidId(uint8_t fluidType) noexcept
+	{
+		switch (fluidType)
+		{
+			case FLUID_WATER: return 1;
+			case FLUID_MANA: return 2;
+			case FLUID_BEER: return 3;
+			case FLUID_OIL: return 4;
+			case FLUID_BLOOD: return 5;
+			case FLUID_SLIME: return 6;
+			case FLUID_MUD: return 7;
+			case FLUID_LEMONADE: return 8;
+			case FLUID_MILK: return 9;
+			case FLUID_WINE: return 10;
+			case FLUID_LIFE: return 11;
+			case FLUID_URINE: return 12;
+			case FLUID_RUM: return 13;
+			case FLUID_FRUITJUICE: return 14;
+			case FLUID_COCONUTMILK: return 15;
+			case FLUID_TEA: return 16;
+			case FLUID_MEAD: return 17;
+			default: return 0;
+		}
+	}
+
 	uint16_t ModernItemId(uint16_t serverId)
 	{
 		constexpr uint16_t FALLBACK_GOLD_COIN = 3031;
@@ -5890,7 +6006,7 @@ void ProtocolGame::addItem(NetworkMessage& msg, const ItemConstPtr& item) const
 	uint8_t countOrSubType;
 	if (app and (app->liquidContainer or app->liquidPool))
 	{
-		countOrSubType = static_cast<uint8_t>(item->getFluidType() & 7);
+		countOrSubType = ModernFluidId(item->getFluidType());
 	}
 	else
 	{

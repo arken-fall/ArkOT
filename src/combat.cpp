@@ -4618,6 +4618,11 @@ namespace BlackTek
 			player->sendStats();
 		}
 
+		if (caster and caster->is_player())
+		{
+			static_cast<Player*>(caster.get())->sendImpactTracker(BlackTek::Network::ImpactTrackerCode::Heal, amount, COMBAT_HEALING, "");
+		}
+
 		if (not self_target and caster->is_player())
 		{
 			const std::string amount_str	= std::to_string(amount);
@@ -4894,6 +4899,7 @@ namespace BlackTek
 				player->sendTextMessage(defender_message);
 				sendSharedEffectsAndHealth(player);
 				player->sendStats();
+				player->sendImpactTracker(BlackTek::Network::ImpactTrackerCode::DamageReceived, amount, static_cast<CombatType_t>(GetDamageType()), attacker ? attacker->getName() : "");
 			}
 
 			if (not self_target and attacker->is_player())
@@ -4920,6 +4926,7 @@ namespace BlackTek
 				auto* player = static_cast<Player*>(attacker.get());
 				player->sendTextMessage(attacker_message);
 				sendSharedEffectsAndHealth(player);
+				player->sendImpactTracker(BlackTek::Network::ImpactTrackerCode::DamageDealt, amount, static_cast<CombatType_t>(GetDamageType()), "");
 			}
 
 			if (has_observers)

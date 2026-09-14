@@ -1229,6 +1229,8 @@ class LuaScriptInterface
 		static int luaPlayerAddForgeDust(lua_State* L);
 		static int luaPlayerGetForgeDustLevel(lua_State* L);
 		static int luaPlayerOpenForge(lua_State* L);
+		static int luaPlayerSendLootTracker(lua_State* L);
+		static int luaPlayerSendKillTracker(lua_State* L);
 		static int luaPlayerSetBankBalance(lua_State* L);
 
 		static int luaPlayerGetStorageValue(lua_State* L);

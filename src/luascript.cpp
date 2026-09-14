@@ -2801,6 +2801,8 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "addForgeDust", luaPlayerAddForgeDust);
 	registerMethod("Player", "getForgeDustLevel", luaPlayerGetForgeDustLevel);
 	registerMethod("Player", "openForge", luaPlayerOpenForge);
+	registerMethod("Player", "sendLootTracker", luaPlayerSendLootTracker);
+	registerMethod("Player", "sendKillTracker", luaPlayerSendKillTracker);
 	registerMethod("Player", "setBankBalance", luaPlayerSetBankBalance);
 
 	registerMethod("Player", "getStorageValue", luaPlayerGetStorageValue);
@@ -12941,6 +12943,37 @@ int LuaScriptInterface::luaPlayerOpenForge(lua_State* L)
 
 	player->sendForgeBalances();
 	player->sendForgeWindow();
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSendLootTracker(lua_State* L)
+{
+	// player:sendLootTracker(item)
+	const auto player = getSharedPtr<Player>(L, 1);
+	const auto item = getSharedPtr<Item>(L, 2);
+	if (not player or not item) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	player->sendLootTracker(item);
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSendKillTracker(lua_State* L)
+{
+	// player:sendKillTracker(monster, corpse)
+	const auto player = getSharedPtr<Player>(L, 1);
+	const auto monster = getSharedPtr<Monster>(L, 2);
+	const auto corpse = getSharedPtr<ItemContainer>(L, 3);
+	if (not player or not monster) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	player->sendKillTracker(monster->getName(), monster->getCurrentOutfit(), corpse ? corpse->getItemList() : ItemDeque {});
 	lua_pushboolean(L, true);
 	return 1;
 }

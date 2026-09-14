@@ -88,6 +88,7 @@ namespace BlackTek {
 			PlayerStateU64        = 1ULL << 28, // 14.05+: 0xA2 states widen u32 -> u64
 			PlayerStateCounter    = 1ULL << 29, // 13.20+: 0xA2 gains a trailing icon-counter u8
 			TaskBoard             = 1ULL << 30, // 15.20+: the cyclopedia store summary carries a weekly-task-expansion flag
+			HuntAnalytics         = 1ULL << 31, // 12.x+: impact, supply, loot and kill tracker packets
 		};
 
 		[[nodiscard]] constexpr ProtocolFeature operator|(ProtocolFeature left, ProtocolFeature right)
@@ -231,7 +232,8 @@ namespace BlackTek {
 						| ProtocolFeature::MonkMantra
 						| ProtocolFeature::PlayerStateU64
 						| ProtocolFeature::PlayerLevelPercentU16
-						| ProtocolFeature::TaskBoard),
+						| ProtocolFeature::TaskBoard
+						| ProtocolFeature::HuntAnalytics),
 				.name = "15.25",
 			},
 		} };

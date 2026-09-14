@@ -463,6 +463,18 @@ class Items
 		// callers decide whether that means "hide it" or "refuse".
 		bool loadModernClientIds(const std::string& path);
 
+		// modern clients name an item by its appearance, and aliased server
+		// ids share one - so a request for the alias still matches the item
+		[[nodiscard]] bool sharesAppearance(uint16_t itemId, uint16_t otherId) const noexcept
+		{
+			if (itemId == otherId)
+			{
+				return true;
+			}
+			const uint32_t appearance = getModernClientId(itemId);
+			return appearance != 0 and appearance == getModernClientId(otherId);
+		}
+
 		[[nodiscard]] uint32_t getModernClientId(uint16_t itemId) const {
 			auto it = modernClientIds.find(itemId);
 			return it != modernClientIds.end() ? it->second : 0;

@@ -3,6 +3,23 @@
 Branch: `modern-protocol`. Last session: 2026-09-14.
 Public remote: https://github.com/arken-fall/ArkOT (this branch pushed as `main`).
 
+**2026-09-14 — Live-test fixes.** From Josh's first session on the deployed
+build: (1) fluids on 12.x+ clients are sent by the client's own fluid list
+(blood was showing as mana/pink) — `ModernFluidId`; (2) use/rotate/wrap/trade
+requests compare by appearance, since aliased server ids share one and the
+reverse id map returns the canonical one (random "You cannot use this
+object" on smart left-click) — `Items::sharesAppearance`; (3) the hunt
+analysers now get their packets: impact tracker 0xCC (heal, damage dealt,
+damage received by element) from the combat notifications, supply tracker
+0xCE from any use that consumed the item, a charge or a portion, loot
+tracker 0xCF and kill tracker 0xD1 from the drop-loot callback
+(`player:sendLootTracker`, `player:sendKillTracker`); feature bit
+`HuntAnalytics`. Not a server issue: zone respawns near players are the
+datapack's `passive`/`forced` zone flags by design; blank cyclopedia tabs and
+the dead Customise Character menu were the client resolving bare layout
+names against the wrong directory during the render pass (78 loads in 43
+client modules rewritten to absolute paths, client-side only).
+
 **2026-09-14 — Contribution-guide pass.** The bestiary, prey and forge
 sources were audited against `CONTRIBUTING.md`: enums now nest inside
 their owning class, `continue` loops became filtered views, free helpers
