@@ -2,10 +2,10 @@
 
 [rates]
 # rateExp is ignored when experience stages are enabled in config/stages.toml
-experience = 5
-skill      = 3
+experience = 3
+skill      = 2
 loot       = 2
-magic      = 3
+magic      = 1
 spawn      = 1
 
 [reward]
