@@ -36,7 +36,6 @@ extern CreatureEvents* g_creatureEvents;
 extern Chat* g_chat;
 
 using namespace BlackTek::Network;
-using namespace BlackTek::Store;
 
 namespace
 {
@@ -907,7 +906,9 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case ClientCode::EditVip: parseEditVip(msg); break;
 		case ClientCode::BugReport: parseBugReport(msg); break;
 		case ClientCode::WheelGemAction: parseWheelGemAction(msg); break;
-		case ClientCode::DebugAssert: parseDebugAssert(msg); break;
+		case ClientCode::StoreOfferDescription: parseStoreOfferDescription(msg); break;
+		case ClientCode::StoreEvent: /* the client's store telemetry; nothing to answer */ break;
+		case ClientCode::TransferCoins: parseTransferCoins(msg); break;
 		///new protocol byte maybe? ///case 0xEE: addGameTask([player_id]() { g_game.playerSay(player_id, 0, TALKTYPE_SAY, "", "hi"); }); break;
 		case ClientCode::ShowQuestLog: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, [player_id]() { g_game.playerShowQuestLog(player_id); }); break;
 		case ClientCode::QuestLine: parseQuestLine(msg); break;
@@ -1807,59 +1808,72 @@ void ProtocolGame::parseGameStoreRequest(NetworkMessage& /*msg*/)
 	addGameTask([playerID = player->getID()]() { g_game.openPlayerStore(playerID); });
 }
 
+// what the client wants to see: a category by name, the front page, a
+// premium or boost tab, one offer, or the results of a search
 void ProtocolGame::parseStoreSelectCategory(NetworkMessage& msg)
 {
-	msg.getByte(); // reserved byte
-	auto categoryName = std::string{ msg.getString() };
-
-	auto* window = g_storeManager.getWindowForAccountType(player->getAccountType());
-	if (not window)
+	using Action = BlackTek::Store::System::Action;
+	const uint8_t action = msg.getByte();
+	std::string text;
+	uint8_t subAction = 0;
+	uint32_t offerId = 0;
+	switch (static_cast<Action>(action))
 	{
-		return;
+		case Action::Category:
+			text = msg.getString();
+			break;
+		case Action::PremiumBoost:
+		case Action::UsefulThings:
+			subAction = msg.getByte();
+			break;
+		case Action::Offer:
+			offerId = msg.get<uint32_t>();
+			break;
+		case Action::Search:
+			text = msg.getString();
+			break;
+		case Action::Home:
+			break;
 	}
-
-	auto* category = window->getCategoryByName(categoryName);
-	if (category)
-	{
-		sendStoreOffers(*category);
-	}
+	addGameTask([=, playerID = player->getID(), textCopy = std::string{ text }]() { g_game.playerStoreBrowse(playerID, action, textCopy, subAction, offerId); });
 }
 
 void ProtocolGame::parseStoreBuyOffer(NetworkMessage& msg)
 {
-	auto offerId   = msg.get<uint32_t>();
-	auto offerType = static_cast<uint8_t>(msg.getByte());
+	const uint32_t offerId = msg.get<uint32_t>();
+	const uint8_t productType = msg.getByte();
 	std::string param;
-	if (static_cast<OfferType>(offerType) == OfferType::NameChange)
+	if (productType == 1 or productType == 2 or productType == 3 or productType == 4)
 	{
 		param = msg.getString();
 	}
-	addGameTask([=, playerID = player->getID(), paramCopy = std::string{ param }]() {
-		g_game.playerPurchaseStoreOffer(playerID, offerId, offerType, paramCopy);
-	});
+	addGameTask([=, playerID = player->getID(), paramCopy = std::string{ param }]() { g_game.playerPurchaseStoreOffer(playerID, offerId, productType, paramCopy); });
 }
 
-void ProtocolGame::parseStoreOpenHistory(NetworkMessage& /*msg*/)
+void ProtocolGame::parseStoreOpenHistory(NetworkMessage& msg)
 {
-	addGameTask([playerID = player->getID()]() {
-		g_game.playerOpenStoreHistory(playerID, 0);
-	});
+	const uint8_t perPage = msg.getByte();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerRequestStoreHistory(playerID, 0, perPage); });
 }
 
-void ProtocolGame::parseStoreRequestHistory(NetworkMessage& /*msg*/)
+void ProtocolGame::parseStoreRequestHistory(NetworkMessage& msg)
 {
-	addGameTask([playerID = player->getID()]() {
-		g_game.playerRequestStoreHistory(playerID, 0);
-	});
+	const uint32_t page = msg.get<uint32_t>();
+	const uint8_t perPage = msg.getByte();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerRequestStoreHistory(playerID, page, perPage); });
+}
+
+void ProtocolGame::parseStoreOfferDescription(NetworkMessage& msg)
+{
+	const uint32_t offerId = msg.get<uint32_t>();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerStoreOfferDescription(playerID, offerId); });
 }
 
 void ProtocolGame::parseTransferCoins(NetworkMessage& msg)
 {
-	auto recipientName = std::string{ msg.getString() };
-	auto amount        = msg.get<uint16_t>();
-	addGameTask([=, playerID = player->getID()]() {
-		g_game.playerTransferCoins(playerID, recipientName, amount);
-	});
+	const std::string recipientName{ msg.getString() };
+	const uint32_t amount = msg.get<uint32_t>();
+	addGameTask([=, playerID = player->getID()]() { g_game.playerTransferCoins(playerID, recipientName, amount); });
 }
 
 void ProtocolGame::parseBrowseField(NetworkMessage& msg)
@@ -6833,88 +6847,262 @@ void ProtocolGame::parseExtendedOpcode(NetworkMessage& msg)
 	addGameTask([=, playerID = player->getID(), buffer = std::string{ buffer }]() { g_game.parsePlayerExtendedOpcode(playerID, opcode, buffer); });
 }
 
-void ProtocolGame::sendOpenStore(const PlayerPtr& storePlayer)
+// the shelves: every category with its icon and parent
+void ProtocolGame::sendStoreCategories(const BlackTek::StoreWindow& window)
 {
-	auto* window = g_storeManager.getWindowForAccountType(player->getAccountType());
-	if (not window)
-	{
-		BlackTek::Console::Error("[Store] No store window for account type {} - ensure store.lua loaded without errors and called store:register().",
-		    static_cast<uint32_t>(player->getAccountType()));
-		return;
-	}
-
-	window->executeOnOpen(storePlayer);
-	sendStore(*window);
-}
-
-void ProtocolGame::sendStore(const BlackTek::StoreWindow& window)
-{
+	const auto& categories = window.getCategories();
 	NetworkMessage msg;
 	msg.add(ServerCode::StoreCategories);
-	msg.add(CommonCode::True);
-	msg.add<uint32_t>(window.getCoins());
-	msg.add<uint32_t>(window.getTransferableCoins());
-
-	const auto& categories = window.getCategories();
 	msg.add<uint16_t>(static_cast<uint16_t>(categories.size()));
 	for (const auto& category : categories)
 	{
 		msg.addString(category->name);
-		msg.addString(category->parentName);
-		msg.add(category->highlighted ? CommonCode::True : CommonCode::False);
-		msg.addByte(1);
-		msg.addString(category->icon);
-		msg.add<uint16_t>(0);
-	}
-
-	writeToOutputBuffer(msg);
-}
-
-void ProtocolGame::sendStoreOffers(const BlackTek::StoreCategory& category)
-{
-	NetworkMessage msg;
-	msg.add(ServerCode::StoreOffers);
-	msg.addString(category.name);
-	msg.add<uint16_t>(static_cast<uint16_t>(category.products.size()));
-	for (const auto& product : category.products)
-	{
-		msg.add<uint32_t>(product.id);
-		msg.addString(product.name);
-		msg.addString(product.description);
-		msg.add<uint32_t>(product.price);
-		msg.addByte(product.state);
-		msg.add(product.enabled ? CommonCode::False : CommonCode::True);
-		msg.addByte(static_cast<uint8_t>(product.icons.size()));
-		for (const auto& icon : product.icons)
+		msg.addByte(std::to_underlying(category->state));
+		msg.addByte(static_cast<uint8_t>(std::min<size_t>(category->icons.size(), 255)));
+		for (const auto& icon : category->icons | std::views::take(255))
 		{
 			msg.addString(icon);
 		}
-		msg.add<uint16_t>(0); // no children
+		if (category->parent_name.empty())
+		{
+			msg.add<uint16_t>(0);
+		}
+		else
+		{
+			msg.addString(category->parent_name);
+		}
 	}
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendStorePurchaseResult(
-    bool               success,
-    const std::string& message,
-    uint32_t           newCoins,
-    uint32_t           newTransferableCoins)
+// the coin balance: the client waits for the "updating" flag to drop
+void ProtocolGame::sendStoreBalances()
 {
 	NetworkMessage msg;
-	msg.add(ServerCode::StorePurchaseResult);
-	msg.addByte(success ? 0x00 : 0x01);
-	msg.addString(message);
-	msg.add<uint32_t>(newCoins);
-	msg.add<uint32_t>(newTransferableCoins);
+	msg.add(ServerCode::CoinBalanceUpdating);
+	msg.addByte(0x00);
+	writeToOutputBuffer(msg);
+
+	NetworkMessage balance;
+	balance.add(ServerCode::CoinBalanceUpdating);
+	balance.addByte(0x01);
+	balance.add(ServerCode::CoinBalance);
+	balance.addByte(0x01);
+	balance.add<uint32_t>(player->getCoins() + player->getTransferableCoins());
+	balance.add<uint32_t>(player->getTransferableCoins());
+	balance.add<uint32_t>(0); // reserved for a character auction
+	writeToOutputBuffer(balance);
+}
+
+// one offer as the 12.x+ client lists it: a single sub-offer, then how it
+// is drawn (the client renders items, outfits and mounts itself)
+void ProtocolGame::addStoreOffer(NetworkMessage& msg, const BlackTek::StoreProduct& product, const std::vector<std::string>& reasons, const std::string& reason)
+{
+	using Kind = BlackTek::StoreProduct::Kind;
+	msg.addString(product.name);
+	msg.addByte(1);
+	msg.add<uint32_t>(product.id);
+	msg.add<uint16_t>(product.count);
+	msg.add<uint32_t>(product.price);
+	msg.addByte(std::to_underlying(product.coins));
+	const bool disabled = not reason.empty();
+	msg.addByte(disabled ? 1 : 0);
+	if (disabled)
+	{
+		const auto it = std::ranges::find(reasons, reason);
+		msg.addByte(0x01);
+		msg.add<uint16_t>(static_cast<uint16_t>(it != reasons.end() ? std::distance(reasons.begin(), it) : 0));
+	}
+	msg.addByte(std::to_underlying(product.state));
+
+	msg.addByte(std::to_underlying(product.kind));
+	uint8_t tryOn = 0;
+	switch (product.kind)
+	{
+		case Kind::Other:
+			msg.addString(product.icons.empty() ? std::string{} : product.icons.front());
+			break;
+		case Kind::Mount:
+		{
+			const auto* mount = g_game.mounts.getMountByID(product.mount_id);
+			msg.add<uint16_t>(mount ? mount->clientId : 0);
+			tryOn = 1;
+			break;
+		}
+		case Kind::Outfit:
+		{
+			msg.add<uint16_t>(player->getSex() == PLAYERSEX_FEMALE ? product.looktype_female : product.looktype_male);
+			const auto& outfit = player->getCurrentOutfit();
+			msg.addByte(outfit.lookHead);
+			msg.addByte(outfit.lookBody);
+			msg.addByte(outfit.lookLegs);
+			msg.addByte(outfit.lookFeet);
+			tryOn = 1;
+			break;
+		}
+		case Kind::Item:
+			msg.add<uint16_t>(static_cast<uint16_t>(Item::items.getModernClientId(product.item_id)));
+			break;
+	}
+	msg.addByte(tryOn);
+	msg.add<uint16_t>(0); // collection
+	msg.add<uint16_t>(0); // popularity
+	msg.add<uint32_t>(0); // new until
+	msg.addByte(0); // needs configuring
+	msg.add<uint16_t>(0); // products capacity
+}
+
+void ProtocolGame::sendStoreOffers(const std::string& name, const std::vector<const BlackTek::StoreProduct*>& products, uint32_t redirectId, bool search)
+{
+	const auto& store = BlackTek::Store::System::getInstance();
+	const auto* window = store.getWindow(player);
+	if (not window)
+	{
+		return;
+	}
+
+	// the client asks for the descriptions separately, but seeds them from these
+	for (const auto* product : products)
+	{
+		sendStoreOfferDescription(product->id, product->description);
+	}
+
+	std::vector<std::string> reasons;
+	std::vector<std::string> reasonOf;
+	for (const auto* product : products)
+	{
+		const auto* category = window->getCategoryByProduct(product->id);
+		std::string reason = category ? store.disabledReason(player, *category, *product) : std::string{};
+		if (not reason.empty() and std::ranges::find(reasons, reason) == reasons.end())
+		{
+			reasons.push_back(reason);
+		}
+		reasonOf.push_back(std::move(reason));
+	}
+
+	NetworkMessage msg;
+	msg.add(ServerCode::StoreOffers);
+	msg.addString(name);
+	msg.add<uint32_t>(redirectId);
+	msg.addByte(0); // window type
+	msg.addByte(0); // collections
+	msg.add<uint16_t>(0); // collection name
+	msg.add<uint16_t>(static_cast<uint16_t>(reasons.size()));
+	for (const auto& reason : reasons)
+	{
+		msg.addString(reason);
+	}
+	msg.add<uint16_t>(static_cast<uint16_t>(products.size()));
+	for (size_t index = 0; index < products.size(); ++index)
+	{
+		addStoreOffer(msg, *products[index], reasons, reasonOf[index]);
+	}
+	if (search)
+	{
+		msg.addByte(0); // not too many results
+	}
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendStoreHistory(const uint32_t page, const bool hasNextPage)
+// the front page: the offers flagged for it, then the banners
+void ProtocolGame::sendStoreHome(const std::vector<const BlackTek::StoreProduct*>& products)
+{
+	const auto& store = BlackTek::Store::System::getInstance();
+	const auto* window = store.getWindow(player);
+	if (not window)
+	{
+		return;
+	}
+
+	std::vector<std::string> reasons;
+	std::vector<std::string> reasonOf;
+	for (const auto* product : products)
+	{
+		const auto* category = window->getCategoryByProduct(product->id);
+		std::string reason = category ? store.disabledReason(player, *category, *product) : std::string{};
+		if (not reason.empty() and std::ranges::find(reasons, reason) == reasons.end())
+		{
+			reasons.push_back(reason);
+		}
+		reasonOf.push_back(std::move(reason));
+	}
+
+	const auto& config = store.getConfig();
+	NetworkMessage msg;
+	msg.add(ServerCode::StoreOffers);
+	msg.addString("Home");
+	msg.add<uint32_t>(0);
+	msg.addByte(0);
+	msg.addByte(0);
+	msg.add<uint16_t>(0);
+	msg.add<uint16_t>(static_cast<uint16_t>(reasons.size()));
+	for (const auto& reason : reasons)
+	{
+		msg.addString(reason);
+	}
+	msg.add<uint16_t>(static_cast<uint16_t>(products.size()));
+	for (size_t index = 0; index < products.size(); ++index)
+	{
+		addStoreOffer(msg, *products[index], reasons, reasonOf[index]);
+	}
+	msg.addByte(static_cast<uint8_t>(config.banners.size()));
+	for (const auto& banner : config.banners)
+	{
+		msg.addString(banner);
+		msg.addByte(0x04); // opens a category
+		msg.add<uint32_t>(0);
+		msg.addByte(0);
+		msg.addByte(0);
+	}
+	msg.addByte(config.banner_delay);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendStoreHistory(uint32_t page, uint32_t pages, const std::vector<BlackTek::Store::HistoryEntry>& entries)
 {
 	NetworkMessage msg;
 	msg.add(ServerCode::StoreHistory);
 	msg.add<uint32_t>(page);
-	msg.addByte(hasNextPage ? 0x01 : 0x00);
-	msg.add<uint32_t>(0); // entry count
+	msg.add<uint32_t>(pages);
+	msg.addByte(static_cast<uint8_t>(std::min<size_t>(entries.size(), 255)));
+	for (const auto& entry : entries | std::views::take(255))
+	{
+		msg.add<uint32_t>(0); // entry id
+		msg.add<uint32_t>(static_cast<uint32_t>(entry.created_at));
+		msg.addByte(std::to_underlying(entry.mode));
+		msg.add<int32_t>(entry.amount);
+		msg.addByte(std::to_underlying(entry.coins));
+		msg.addString(entry.description);
+		msg.addByte(0); // details
+	}
 	writeToOutputBuffer(msg);
 }
+
+void ProtocolGame::sendStorePurchaseResult(const std::string& message)
+{
+	NetworkMessage msg;
+	// 12.x+ reads the balance from the balance packets that follow, not from here
+	msg.add(ServerCode::StorePurchaseResult);
+	msg.addByte(0x00);
+	msg.addString(message);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendStoreError(BlackTek::Store::System::Error error, const std::string& message)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::StoreError);
+	msg.addByte(std::to_underlying(error));
+	msg.addString(message);
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendStoreOfferDescription(uint32_t offerId, const std::string& description)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::StoreOfferDescription);
+	msg.add<uint32_t>(offerId);
+	msg.addString(description);
+	writeToOutputBuffer(msg);
+}
+

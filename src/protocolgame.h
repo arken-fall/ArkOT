@@ -8,7 +8,7 @@
 #include "chat.h"
 #include "creature.h"
 #include "tasks.h"
-#include "storewindow.h"
+#include "store.h"
 #include "knowncreaturecache.h"
 #include "forge.h"
 #include "wheel.h"
@@ -41,34 +41,6 @@ struct TextMessage
 	TextMessage(MessageClasses type, std::string text) : type(type), text(std::move(text)) {}
 };
 
-namespace BlackTek {
-namespace Store {
-
-enum class OfferState : uint8_t
-{
-    None  = 0,
-    New   = 1,
-    Sale  = 2,
-    Timed = 3,
-};
-
-enum class OfferType : uint8_t
-{
-    Other      = 0,
-    NameChange = 1,
-};
-
-enum class StoreError : uint8_t
-{
-    Purchase    = 0,
-    Network     = 1,
-    History     = 2,
-    Transfer    = 3,
-    Information = 4,
-};
-
-} // namespace Store
-} // namespace BlackTek
 
 class ProtocolGame : public Protocol
 {
@@ -213,6 +185,7 @@ class ProtocolGame : public Protocol
 		void parseStoreBuyOffer(NetworkMessage& msg);
 		void parseStoreOpenHistory(NetworkMessage& msg);
 		void parseStoreRequestHistory(NetworkMessage& msg);
+		void parseStoreOfferDescription(NetworkMessage& msg);
 		void parseTransferCoins(NetworkMessage& msg);
 
 		//VIP methods
@@ -406,11 +379,16 @@ class ProtocolGame : public Protocol
 
 		//messages
 		void sendModalWindow(const ModalWindow& modalWindow);
-		void sendOpenStore(const PlayerPtr& player);
-		void sendStore(const BlackTek::StoreWindow& window);
-		void sendStoreOffers(const BlackTek::StoreCategory& category);
-		void sendStoreHistory(uint32_t page, bool hasNextPage);
-		void sendStorePurchaseResult(bool success, const std::string& message, uint32_t newCoins, uint32_t newTransferableCoins);
+		// 12.x+ store
+		void sendStoreCategories(const BlackTek::StoreWindow& window);
+		void sendStoreBalances();
+		void sendStoreOffers(const std::string& name, const std::vector<const BlackTek::StoreProduct*>& products, uint32_t redirectId, bool search);
+		void sendStoreHome(const std::vector<const BlackTek::StoreProduct*>& products);
+		void sendStoreHistory(uint32_t page, uint32_t pages, const std::vector<BlackTek::Store::HistoryEntry>& entries);
+		void sendStorePurchaseResult(const std::string& message);
+		void sendStoreError(BlackTek::Store::System::Error error, const std::string& message);
+		void sendStoreOfferDescription(uint32_t offerId, const std::string& description);
+		void addStoreOffer(NetworkMessage& msg, const BlackTek::StoreProduct& product, const std::vector<std::string>& reasons, const std::string& reason);
 
 		//Help functions
 

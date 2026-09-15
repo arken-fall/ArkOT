@@ -1,7 +1,16 @@
 [store]
-# Base URL the client uses to load store images.
-# Must end with a trailing slash.
-images_url = "http://127.0.0.1/images/store/"
+enabled = true
+
+# Where the client fetches category icons and the front page's banners.
+# Must end with a trailing slash; items, outfits and mounts need no image.
+images_url = "https://arkenfall.org/static/store/"
 
 # Number of coins in the premium coin package shown in the client UI.
 coin_package_size = 25
+
+# the front page's banners, under images_url, and the seconds between them
+banners = ["home/banner_realworld.png", "home/banner_wheel.png"]
+banner_delay = 10
+
+# transaction history lines per page
+history_page_size = 26

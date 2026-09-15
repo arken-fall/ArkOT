@@ -1231,6 +1231,11 @@ class LuaScriptInterface
 		static int luaPlayerGetForgeDustLevel(lua_State* L);
 		static int luaPlayerOpenForge(lua_State* L);
 		static int luaPlayerOpenWheel(lua_State* L);
+		static int luaPlayerGetCoins(lua_State* L);
+		static int luaPlayerGetTransferableCoins(lua_State* L);
+		static int luaPlayerAddCoins(lua_State* L);
+		static int luaPlayerRemoveCoins(lua_State* L);
+		static int luaPlayerOpenStore(lua_State* L);
 		static int luaPlayerGetWheelPoints(lua_State* L);
 		static int luaPlayerGetWheelStage(lua_State* L);
 		static int luaPlayerGetWheelBonus(lua_State* L);

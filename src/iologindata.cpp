@@ -6,9 +6,11 @@
 #include "prey.h"
 #include "wheel.h"
 
+
 #include "iologindata.h"
 #include "configmanager.h"
 #include "game.h"
+#include "player.h"
 #include "accountmanager.h"
 #include "console.h"
 
@@ -16,6 +18,18 @@
 
 extern ConfigManager g_config;
 extern Game g_game;
+
+namespace
+{
+	// the store's coins belong to the account; every character sees the same balance
+	void LoadCoins(const PlayerPtr& player)
+	{
+		if (const auto result = Database::getInstance().storeQuery(fmt::format("SELECT `coins`, `coins_transferable` FROM `accounts` WHERE `id` = {:d}", player->getAccount())))
+		{
+			player->setCoins(result->getNumber<uint32_t>("coins"), result->getNumber<uint32_t>("coins_transferable"));
+		}
+	}
+}
 
 #include <chrono>
 #include <thread>
@@ -541,6 +555,7 @@ bool IOLoginData::preloadPlayer(const PlayerPtr& player)
 	}
 	player->setGroup(group);
 	player->accountNumber = result->getNumber<uint32_t>("account_id");
+	LoadCoins(player);
 	player->accountType = static_cast<AccountType_t>(result->getNumber<uint16_t>("type"));
 	player->premiumEndsAt = result->getNumber<time_t>("premium_ends_at");
 	return true;
@@ -572,6 +587,7 @@ bool IOLoginData::loadPlayer(const PlayerPtr& player, DBResult_ptr result, std::
 	player->setGUID(result->getNumber<uint32_t>("id"));
 	player->name = result->getString("name");
 	player->accountNumber = accno;
+	LoadCoins(player);
 
 	player->accountType = acc.accountType;
 

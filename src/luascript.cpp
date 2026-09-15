@@ -6,6 +6,7 @@
 #include "bestiary.h"
 #include "prey.h"
 #include "wheel.h"
+#include "store.h"
 
 #include <boost/range/adaptor/reversed.hpp>
 #include <fmt/format.h>
@@ -2804,6 +2805,11 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getForgeDustLevel", luaPlayerGetForgeDustLevel);
 	registerMethod("Player", "openForge", luaPlayerOpenForge);
 	registerMethod("Player", "openWheel", luaPlayerOpenWheel);
+	registerMethod("Player", "getCoins", luaPlayerGetCoins);
+	registerMethod("Player", "getTransferableCoins", luaPlayerGetTransferableCoins);
+	registerMethod("Player", "addCoins", luaPlayerAddCoins);
+	registerMethod("Player", "removeCoins", luaPlayerRemoveCoins);
+	registerMethod("Player", "openStore", luaPlayerOpenStore);
 	registerMethod("Player", "getWheelPoints", luaPlayerGetWheelPoints);
 	registerMethod("Player", "getWheelStage", luaPlayerGetWheelStage);
 	registerMethod("Player", "getWheelBonus", luaPlayerGetWheelBonus);
@@ -7304,7 +7310,7 @@ int LuaScriptInterface::luaStoreWindowCreate(lua_State* L)
 	// StoreWindow(title)
 	auto title = getString(L, 2);
 	auto* window = new BlackTek::StoreWindow(std::string{ title });
-	window->fromLua = true;
+	window->from_lua = true;
 	pushUserdata<BlackTek::StoreWindow>(L, window);
 	setMetatable(L, -1, "StoreWindow");
 	return 1;
@@ -7326,29 +7332,15 @@ int LuaScriptInterface::luaStoreWindowAccountType(lua_State* L)
 
 int LuaScriptInterface::luaStoreWindowCoins(lua_State* L)
 {
-	// window:coins(balance, transferable)
-	auto* window = getUserdata<BlackTek::StoreWindow>(L, 1);
-	if (not window)
-	{
-		lua_pushnil(L);
-		return 1;
-	}
-	window->setCoins(getNumber<uint32_t>(L, 2), getNumber<uint32_t>(L, 3));
-	pushBoolean(L, true);
+	// window:coins(balance, transferable): coins now live on the account; kept so older store scripts still load
+	pushBoolean(L, getUserdata<BlackTek::StoreWindow>(L, 1) != nullptr);
 	return 1;
 }
 
 int LuaScriptInterface::luaStoreWindowSetCoins(lua_State* L)
 {
-	// window:setCoins(balance, transferable)
-	auto* window = getUserdata<BlackTek::StoreWindow>(L, 1);
-	if (not window)
-	{
-		lua_pushnil(L);
-		return 1;
-	}
-	window->setCoins(getNumber<uint32_t>(L, 2), getNumber<uint32_t>(L, 3));
-	pushBoolean(L, true);
+	// window:setCoins(balance, transferable): coins now live on the account; kept so older store scripts still load
+	pushBoolean(L, getUserdata<BlackTek::StoreWindow>(L, 1) != nullptr);
 	return 1;
 }
 
@@ -7368,8 +7360,8 @@ int LuaScriptInterface::luaStoreWindowOnOpen(lua_State* L)
 		pushBoolean(L, false);
 		return 1;
 	}
-	window->onOpenScriptId = id;
-	window->scriptInterface = scriptInterface;
+	window->on_open_script_id = id;
+	window->script_interface = scriptInterface;
 	pushBoolean(L, true);
 	return 1;
 }
@@ -7407,19 +7399,72 @@ int LuaScriptInterface::luaStoreWindowRegister(lua_State* L)
 // StoreCategory
 int LuaScriptInterface::luaStoreCategoryProduct(lua_State* L)
 {
-	// category:product(id, name, price, icon[, description])
+	// category:product(id, name, price, icon[, description[, options]])
+	// options: { item = serverItemId, count = n, outfit = { male = looktype, female = looktype, addons = n }, mount = id,
+	//            transferable = bool, home = bool, state = STORE_STATE_NEW, enabled = bool }
 	auto* category = getUserdata<BlackTek::StoreCategory>(L, 1);
 	if (not category)
 	{
 		lua_pushnil(L);
 		return 1;
 	}
-	auto id          = getNumber<uint32_t>(L, 2);
-	auto name        = std::string{ getString(L, 3) };
-	auto price       = getNumber<uint32_t>(L, 4);
-	auto icon        = std::string{ getString(L, 5) };
-	auto description = lua_gettop(L) >= 6 ? std::string{ getString(L, 6) } : std::string{};
-	category->addProduct(id, name, price, icon, description);
+
+	using Kind = BlackTek::StoreProduct::Kind;
+	using State = BlackTek::StoreProduct::State;
+	using Coins = BlackTek::StoreProduct::Coins;
+	const auto id = getNumber<uint32_t>(L, 2);
+	const std::string name{ getString(L, 3) };
+	const auto price = getNumber<uint32_t>(L, 4);
+	const std::string icon{ getString(L, 5) };
+	const std::string description = lua_gettop(L) >= 6 ? std::string{ getString(L, 6) } : std::string{};
+	auto& product = category->addProduct(id, name, price, icon, description);
+
+	if (lua_gettop(L) >= 7 and lua_istable(L, 7))
+	{
+		// getField leaves the value on the stack; every read pops it again
+		auto number = [&](int32_t table, const char* key) -> uint32_t
+		{
+			const uint32_t value = getField<uint32_t>(L, table, key);
+			lua_pop(L, 1);
+			return value;
+		};
+		auto flag = [&](const char* key, bool fallback) -> bool
+		{
+			lua_getfield(L, 7, key);
+			const bool value = lua_isnil(L, -1) ? fallback : lua_toboolean(L, -1) != 0;
+			lua_pop(L, 1);
+			return value;
+		};
+
+		product.item_id = static_cast<uint16_t>(number(7, "item"));
+		if (product.item_id != 0)
+		{
+			product.kind = Kind::Item;
+		}
+		if (const auto count = number(7, "count"); count != 0)
+		{
+			product.count = static_cast<uint16_t>(count);
+		}
+		product.mount_id = static_cast<uint8_t>(number(7, "mount"));
+		if (product.mount_id != 0)
+		{
+			product.kind = Kind::Mount;
+		}
+		lua_getfield(L, 7, "outfit");
+		if (lua_istable(L, -1))
+		{
+			product.kind = Kind::Outfit;
+			const int32_t outfitTable = lua_gettop(L);
+			product.looktype_male = static_cast<uint16_t>(number(outfitTable, "male"));
+			product.looktype_female = static_cast<uint16_t>(number(outfitTable, "female"));
+			product.addons = static_cast<uint8_t>(number(outfitTable, "addons"));
+		}
+		lua_pop(L, 1);
+		product.coins = flag("transferable", false) ? Coins::Transferable : Coins::Regular;
+		product.home = flag("home", false);
+		product.enabled = flag("enabled", true);
+		product.state = static_cast<State>(std::min<uint32_t>(number(7, "state"), 3));
+	}
 	pushBoolean(L, true);
 	return 1;
 }
@@ -7440,8 +7485,8 @@ int LuaScriptInterface::luaStoreCategoryOnPurchase(lua_State* L)
 		pushBoolean(L, false);
 		return 1;
 	}
-	category->onPurchaseScriptId = id;
-	category->scriptInterface    = scriptInterface;
+	category->on_purchase_script_id = id;
+	category->script_interface    = scriptInterface;
 	pushBoolean(L, true);
 	return 1;
 }
@@ -7462,8 +7507,8 @@ int LuaScriptInterface::luaStoreCategoryCanPurchase(lua_State* L)
 		pushBoolean(L, false);
 		return 1;
 	}
-	category->canPurchaseScriptId = id;
-	category->scriptInterface     = scriptInterface;
+	category->can_purchase_script_id = id;
+	category->script_interface     = scriptInterface;
 	pushBoolean(L, true);
 	return 1;
 }
@@ -12946,6 +12991,74 @@ int LuaScriptInterface::luaPlayerGetForgeDustLevel(lua_State* L)
 	} else {
 		lua_pushnil(L);
 	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetCoins(lua_State* L)
+{
+	// player:getCoins()
+	if (const auto player = getSharedPtr<Player>(L, 1)) {
+		lua_pushinteger(L, player->getCoins());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetTransferableCoins(lua_State* L)
+{
+	// player:getTransferableCoins()
+	if (const auto player = getSharedPtr<Player>(L, 1)) {
+		lua_pushinteger(L, player->getTransferableCoins());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddCoins(lua_State* L)
+{
+	// player:addCoins(amount[, transferable[, description]])
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	using Coins = BlackTek::StoreProduct::Coins;
+	const auto coins = getBoolean(L, 3, false) ? Coins::Transferable : Coins::Regular;
+	const std::string description = lua_gettop(L) >= 4 ? std::string{ getString(L, 4) } : std::string{ "Coins added to your account." };
+	pushBoolean(L, BlackTek::Store::System::getInstance().addCoins(player, getNumber<uint32_t>(L, 2), coins, description, BlackTek::Store::HistoryEntry::Mode::Gift));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveCoins(lua_State* L)
+{
+	// player:removeCoins(amount[, transferable[, description]])
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	using Coins = BlackTek::StoreProduct::Coins;
+	const auto coins = getBoolean(L, 3, false) ? Coins::Transferable : Coins::Regular;
+	const std::string description = lua_gettop(L) >= 4 ? std::string{ getString(L, 4) } : std::string{ "Coins removed from your account." };
+	pushBoolean(L, BlackTek::Store::System::getInstance().removeCoins(player, getNumber<uint32_t>(L, 2), coins, description));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerOpenStore(lua_State* L)
+{
+	// player:openStore()
+	const auto player = getSharedPtr<Player>(L, 1);
+	if (not player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	BlackTek::Store::System::getInstance().open(player);
+	pushBoolean(L, true);
 	return 1;
 }
 

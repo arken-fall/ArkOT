@@ -21,6 +21,7 @@
 #include "prey.h"
 #include "forge.h"
 #include "wheel.h"
+#include "store.h"
 #include "accountmanager.h"
 
 #include <array>
@@ -641,12 +642,18 @@ class Player final : public Creature
 		void checkSkullTicks(int64_t ticks);
 		void addOutfit(uint16_t lookType, uint8_t addons);
 		void sendModalWindow(const ModalWindow& modalWindow);
-		void sendOpenStore(const PlayerPtr& self) const { if (client) client->sendOpenStore(self); }
-		void sendStoreHistory(uint32_t page, bool hasNextPage) const { if (client) client->sendStoreHistory(page, hasNextPage); }
-		void sendStorePurchaseResult(bool success, const std::string& message, uint32_t newCoins, uint32_t newTransferableCoins) const
-		{
-			if (client) client->sendStorePurchaseResult(success, message, newCoins, newTransferableCoins);
-		}
+		// 12.x+ store: coins live on the account, so they are loaded with the character and written through on every change
+		[[nodiscard]] uint32_t getCoins() const noexcept													{ return coins; }
+		[[nodiscard]] uint32_t getTransferableCoins() const noexcept										{ return transferable_coins; }
+		void setCoins(uint32_t regular, uint32_t transferable) noexcept									{ coins = regular; transferable_coins = transferable; }
+		void sendStoreCategories(const BlackTek::StoreWindow& window) const								{ if (client) client->sendStoreCategories(window); }
+		void sendStoreBalances() const																	{ if (client) client->sendStoreBalances(); }
+		void sendStoreOffers(const std::string& name, const std::vector<const BlackTek::StoreProduct*>& products, uint32_t redirectId, bool search) const { if (client) client->sendStoreOffers(name, products, redirectId, search); }
+		void sendStoreHome(const std::vector<const BlackTek::StoreProduct*>& products) const			{ if (client) client->sendStoreHome(products); }
+		void sendStoreHistory(uint32_t page, uint32_t pages, const std::vector<BlackTek::Store::HistoryEntry>& entries) const { if (client) client->sendStoreHistory(page, pages, entries); }
+		void sendStorePurchaseResult(const std::string& message) const									{ if (client) client->sendStorePurchaseResult(message); }
+		void sendStoreError(BlackTek::Store::System::Error error, const std::string& message) const	{ if (client) client->sendStoreError(error, message); }
+		void sendStoreOfferDescription(uint32_t offerId, const std::string& description) const			{ if (client) client->sendStoreOfferDescription(offerId, description); }
 		void sendAddContainerItem(const ContainerConstPtr& container, ItemPtr& item) const;
 		void sendUpdateContainerItem(const ContainerConstPtr& container, uint16_t slot, const ItemConstPtr& newItem) const;
 		void sendRemoveContainerItem(const ContainerConstPtr& container, uint16_t slot);
@@ -1047,6 +1054,10 @@ class Player final : public Creature
 		// wheel of destiny: what the character chose, and the capacity it grants
 		BlackTek::Wheel::State wheel_state;
 		uint32_t wheel_capacity = 0;
+
+		// store coins, mirrored from the account
+		uint32_t coins = 0;
+		uint32_t transferable_coins = 0;
 		uint64_t lastQuestlogUpdate = 0;
 
 		uint64_t getLostExperience() const override { return skillLoss ? static_cast<uint64_t>(experience * getLostPercent()) : 0; }

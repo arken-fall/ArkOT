@@ -7,6 +7,7 @@
 #include "prey.h"
 #include "forge.h"
 #include "wheel.h"
+#include "store.h"
 
 #include "pugicast.h"
 
@@ -7396,18 +7397,22 @@ void Game::openPlayerStore(const uint32_t playerId)
 		return;
 	}
 
-	player->sendOpenStore(player);
+	BlackTek::Store::System::getInstance().open(player);
 }
 
-void Game::playerOpenStoreHistory(const uint32_t /* playerId */, const uint8_t /* entryType */)
+void Game::playerStoreBrowse(const uint32_t playerId, const uint8_t action, const std::string& text, const uint8_t subAction, const uint32_t offerId)
 {
+	using Action = BlackTek::Store::System::Action;
+	const auto player = getPlayerByID(playerId);
+	if (not player or action > std::to_underlying(Action::Search))
+	{
+		return;
+	}
+
+	BlackTek::Store::System::getInstance().browse(player, static_cast<Action>(action), text, subAction, offerId);
 }
 
-void Game::playerRequestStoreHistory(const uint32_t /* playerId */, const uint32_t /* page */)
-{
-}
-
-void Game::playerTransferCoins(const uint32_t playerId, const std::string& recipientName, const uint16_t amount)
+void Game::playerRequestStoreHistory(const uint32_t playerId, const uint32_t page, const uint8_t perPage)
 {
 	const auto player = getPlayerByID(playerId);
 	if (not player)
@@ -7415,17 +7420,10 @@ void Game::playerTransferCoins(const uint32_t playerId, const std::string& recip
 		return;
 	}
 
-	auto* window = g_storeManager.getWindowForAccountType(player->getAccountType());
-	const uint32_t currentCoins             = window ? window->getCoins()             : 0;
-	const uint32_t currentTransferableCoins = window ? window->getTransferableCoins() : 0;
-	player->sendStorePurchaseResult(false, "Coin transfers are not currently available.", currentCoins, currentTransferableCoins);
+	BlackTek::Store::System::getInstance().sendHistory(player, page, perPage);
 }
 
-void Game::playerPurchaseStoreOffer(
-    const uint32_t      playerId,
-    const uint32_t      offerId,
-    const uint8_t       offerType,
-    const std::string&  param)
+void Game::playerStoreOfferDescription(const uint32_t playerId, const uint32_t offerId)
 {
 	const auto player = getPlayerByID(playerId);
 	if (not player)
@@ -7433,42 +7431,29 @@ void Game::playerPurchaseStoreOffer(
 		return;
 	}
 
-	auto* window = g_storeManager.getWindowForAccountType(player->getAccountType());
-	if (not window)
+	BlackTek::Store::System::getInstance().sendDescription(player, offerId);
+}
+
+void Game::playerTransferCoins(const uint32_t playerId, const std::string& recipientName, const uint32_t amount)
+{
+	const auto player = getPlayerByID(playerId);
+	if (not player)
 	{
 		return;
 	}
 
-	for (const auto& category : window->getCategories())
+	BlackTek::Store::System::getInstance().transfer(player, recipientName, amount);
+}
+
+void Game::playerPurchaseStoreOffer(const uint32_t playerId, const uint32_t offerId, const uint8_t offerType, const std::string& param)
+{
+	const auto player = getPlayerByID(playerId);
+	if (not player)
 	{
-		const auto* product = category->getProductById(offerId);
-		if (not product)
-		{
-			continue;
-		}
-
-		if (not product->enabled)
-		{
-			player->sendStorePurchaseResult(false, "This offer is not available.", window->getCoins(), window->getTransferableCoins());
-			return;
-		}
-
-		std::string reason;
-		if (category->canPurchaseScriptId != -1 and not category->executeCanPurchase(player, offerId, reason))
-		{
-			player->sendStorePurchaseResult(false, reason, window->getCoins(), window->getTransferableCoins());
-			return;
-		}
-
-		bool purchased = true;
-		if (category->onPurchaseScriptId != -1)
-		{
-			purchased = category->executePurchase(player, offerId, offerType, param);
-		}
-
-		player->sendStorePurchaseResult(purchased, purchased ? "Purchase successful!" : "Purchase failed.", window->getCoins(), window->getTransferableCoins());
 		return;
 	}
+
+	BlackTek::Store::System::getInstance().purchase(player, offerId, offerType, param);
 }
 
 void Game::sendGuildMotd(const uint32_t playerId)

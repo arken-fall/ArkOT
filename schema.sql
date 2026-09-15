@@ -44,7 +44,10 @@ CREATE TABLE `accounts` (
     -- read (not written) by the opentibiabr login webservice; premium_ends_at
     -- stays the authoritative premium source for the game server
     `premdays` int NOT NULL DEFAULT '0',
-    `lastday` int UNSIGNED NOT NULL DEFAULT '0'
+    `lastday` int UNSIGNED NOT NULL DEFAULT '0',
+    -- store coins; the transferable ones may be handed to other accounts
+    `coins` int UNSIGNED NOT NULL DEFAULT '0',
+    `coins_transferable` int UNSIGNED NOT NULL DEFAULT '0'
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
 -- --------------------------------------------------------
@@ -579,6 +582,23 @@ CREATE TABLE `forge_history` (
     FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
+-- Table structure for table `store_history`
+--
+
+CREATE TABLE `store_history` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `account_id` int NOT NULL,
+  `mode` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `amount` int NOT NULL DEFAULT '0',
+  `coin_type` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `created` bigint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  INDEX `account_id` (`account_id`),
+  FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
 -- Table structure for table `player_wheel_slots`
 --
 

@@ -103,7 +103,9 @@ namespace BlackTek {
             // Reports & Debug
             BugReport = 0xE6,
             WheelGemAction = 0xE7, // 13.x+: the gem atelier; older clients sent a "thank you" report here
-            DebugAssert = 0xE8,
+            StoreOfferDescription = 0xE8, // 12.x+: the client asks for an offer's text; older clients sent debug asserts here
+            StoreEvent = 0xE9,
+            TransferCoins = 0xEF,
             // missing = 0xEE,
 
             // Quests
@@ -353,6 +355,10 @@ namespace BlackTek {
             ModalWindow = 0xFA,
 
             // Game Store
+            CoinBalance         = 0xDF,
+            StoreError          = 0xE0,
+            StoreOfferDescription = 0xEA,
+            CoinBalanceUpdating = 0xF2,
             StoreCategories     = 0xFB,
             StoreOffers         = 0xFC,
             StoreHistory        = 0xFD,

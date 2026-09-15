@@ -697,3 +697,50 @@ scrolls are an `ItemEvent` that calls `unlockWheelScroll`.
 forge's convergence prices and the atelier's gold silently failed for a
 character whose gold sits in the bank. `Player::payGold` spends the purse
 first and the bank for the rest; the forge and the wheel use it.
+
+## 2026-09-14 — Store: the 12.x+ protocol on a real coin economy
+
+**Shape.** BlackTek 2.0 already had a Lua store definition (`StoreWindow`,
+`StoreCategory`, `category:product`) with 10.98 packet writers and no
+coins. The model in `src/storewindow.h/.cpp` was extended (kind: other,
+mount, outfit, item; count, coin type, front-page flag, state, outfit
+looktypes, mount id) and a `BlackTek::Store::System` (`src/store.h/.cpp`)
+now owns the behaviour: browsing, purchase, delivery, transfers, history and
+the coins. `category:product(id, name, price, icon, description, options)`
+takes an options table (`item`, `count`, `outfit = { male, female, addons }`,
+`mount`, `transferable`, `home`, `state`, `enabled`); `window:coins` and
+`window:setCoins` are kept as no-ops so older scripts still load.
+
+**Coins.** `accounts.coins` and `accounts.coins_transferable` (migration 6
+→ version 7), mirrored onto the Player at login and written through on every
+change; `store_history` records each line (mode, amount, coin type, text).
+Lua: `player:getCoins`, `getTransferableCoins`, `addCoins(amount,
+transferable, description)`, `removeCoins`, `openStore`.
+
+**Wire (taken from the client's parser via Canary's writers).** Client
+0xFA open, 0xFB browse (u8 action: home, premium-boost + u8, category +
+string + string, useful-things + u8, offer + u32, search + string), 0xFC
+buy (u32 id, u8 product type, a string for types 1–4), 0xFD/0xFE history
+(u8 per page; u32 page + u8), 0xE8 offer description (u32), 0xE9 store
+events (ignored), 0xEF transfer (string, u32). Server 0xFB categories
+(name, state, icons, parent or u16 0), 0xFC offers (name, redirect, window
+type, collections, disable reasons, then per offer one sub-offer with id,
+count, price, coin type, disabled + reason index, state, then the draw type
+and its payload, try-on, collection, popularity, new-until, configure,
+capacity; "Home" adds the banners and delay; "Search" adds the
+too-many-results byte), 0xEA description, 0xFD history, 0xFE success (u8 0
++ text only on 12.x+; the balance travels separately), 0xE0 error, and the
+balance pair 0xF2 0x00 / 0xF2 0x01 + 0xDF 0x01 + three u32.
+
+**Found on the way.** The success packet must not carry coins on 12.x+: the
+client reads the trailing bytes as the next balance and shows garbage.
+`getField` leaves its value on the Lua stack; the options parser pops after
+every read.
+
+**Verified.** Headless 15.25 client on the real map: categories, front page
+with two banners, six consumables, a potion purchase into the store inbox,
+an outfit purchase that is greyed out with "You already own this outfit."
+on the next visit, mounts greyed for a character that owns them, a search,
+a 30-coin transfer to a character of another account, an eleven-line history
+and correct balances after every step; zero decode errors. Icons and
+banners are served from https://arkenfall.org/static/store/.
