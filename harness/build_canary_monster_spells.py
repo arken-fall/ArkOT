@@ -107,14 +107,25 @@ def free_words(text, taken):
 
 
 class Spell:
-    def __init__(self, path):
+    def __init__(self, path, library_areas=frozenset(), taken_entries=None):
         self.path = path
+        self.library_areas = library_areas
+        self.taken_entries = taken_entries if taken_entries is not None else set()
         self.text = path.read_text(errors="replace")
         self.name = spell_name_of(self.text)
-        self.entry = entry_name(self.name or path.stem)
+        self.entry = self.free_entry(entry_name(self.name or path.stem))
         self.properties = {}
         self.area = None
         self.notes = []
+
+    def free_entry(self, name):
+        """Two spell names can fold to one entry ("lloyd wave 2" and "lloyd wave2")."""
+        candidate, letter = name, ord("B")
+        while candidate in self.taken_entries:
+            candidate = f"{name}{chr(letter)}"
+            letter += 1
+        self.taken_entries.add(candidate)
+        return candidate
 
     @property
     def dynamic(self):
@@ -140,11 +151,16 @@ class Spell:
 
         named = (re.search(r"combat:setArea\(createCombatArea\((AREA_\w+)\)\)", self.text)
                  or re.search(r"^\s*(?:local\s+)?\w+\s*=\s*createCombatArea\((AREA_\w+)\)\s*$", self.text, re.M))
-        inline = re.search(r"^(?:local\s+)?(\w+)\s*=\s*\{\s*\n(\s*\{.*?\n)\}\s*$", self.text, re.M | re.S)
-        if named:
+        # a shape the spell declares itself is carried into the registry: the registry
+        # loads before any spell file, and two spells can spell the same name differently
+        own = None
+        if named and named.group(1) not in self.library_areas:
+            own = re.search(r"^" + named.group(1) + r" = \{\s*\n(\s*\{.*?\n)\}\s*$", self.text, re.M | re.S)
+        inline = own or re.search(r"^(?:local\s+)?(?:\w+)\s*=\s*\{\s*\n(\s*\{.*?\n)\}\s*$", self.text, re.M | re.S)
+        if named and named.group(1) in self.library_areas:
             self.area = f"createCombatArea({named.group(1)})"
-        elif re.search(r"combat:setArea\(|createCombatArea\(", self.text) and inline:
-            rows = [tidy_row(row) for row in inline.group(2).splitlines() if row.strip()]
+        elif (own or re.search(r"combat:setArea\(|createCombatArea\(", self.text)) and inline:
+            rows = [tidy_row(row) for row in inline.group(inline.re.groups) if False] or [tidy_row(row) for row in inline.group(inline.re.groups).splitlines() if row.strip()]
             self.area = "TABLE:" + "\n".join(rows)
 
     def registry_entry(self):
@@ -166,6 +182,7 @@ class Spell:
         text = re.sub(r"^\s*combat:setArea\(.*\)\s*\n", "", text, flags=re.M)
         if self.area and self.area.startswith("TABLE:"):
             text = re.sub(r"^(?:local\s+)?\w+\s*=\s*\{\s*\n\s*\{.*?\n\}\s*\n", "", text, flags=re.M | re.S, count=1)
+            text = re.sub(r"^\s*(?:local\s+)?\w+\s*=\s*createCombatArea\(AREA_\w+\)\s*\n", "", text, flags=re.M)
         if self.properties or self.area:
             text = text.replace("local combat = Combat()", f"local combat = Combat(MonsterCombats.{self.entry})", 1)
         return self.finish(text)
@@ -210,6 +227,8 @@ def main():
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
+    library_areas = set(re.findall(r"^(AREA_\w+) = \{", (ROOT / "data/scripts/lib/spell_lib.lua").read_text(), re.M))
+    taken_entries = set(re.findall(r"^\s{4}(\w+) = \{", Path(args.registry).read_text(), re.M))
     known_spells, taken_words = set(), set()
     for path in (ROOT / "data/scripts/spells").rglob("*.lua"):
         if out in path.parents:
@@ -225,7 +244,7 @@ def main():
 
     written, skipped, entries, areas, report = [], {}, [], [], []
     for path in sorted(source.rglob("*.lua")):
-        spell = Spell(path)
+        spell = Spell(path, library_areas, taken_entries)
         if not spell.name or spell.name.lower() in known_spells or spell.name.lower() not in wanted:
             continue
         blocked = [reason for reason, pattern in BLOCKERS.items() if re.search(pattern, spell.text)]

@@ -345,7 +345,7 @@ local _lloydWaveArea = createCombatArea({
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 })
 
-local _lloydWave2Area = createCombatArea({
+local _lloydWave2BArea = createCombatArea({
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0},
@@ -424,6 +424,22 @@ local _mitmahseekwaveArea = createCombatArea({
     {0, 0, 0, 1, 0, 0, 0},
     {0, 0, 0, 1, 0, 0, 0},
     {0, 0, 0, 3, 0, 0, 0}
+})
+
+local _nighthunterWaveArea = createCombatArea({
+    {0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1},
+    {0, 1, 1, 1, 0},
+    {0, 1, 1, 1, 0},
+    {0, 0, 3, 0, 0}
+})
+
+local _noxiousRipptorWaveArea = createCombatArea({
+    {0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 0},
+    {0, 1, 1, 1, 0},
+    {0, 0, 1, 0, 0},
+    {0, 0, 3, 0, 0}
 })
 
 local _omrafirWaveArea = createCombatArea({
@@ -540,6 +556,14 @@ local _lleechWavetArea = createCombatArea({
     {1, 1, 1},
     {0, 1, 0},
     {0, 3, 0}
+})
+
+local _sulphurSpouterWaveArea = createCombatArea({
+    {0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1},
+    {0, 1, 1, 1, 0},
+    {0, 1, 1, 1, 0},
+    {0, 0, 3, 0, 0}
 })
 
 local _energyWavetArea = createCombatArea({
@@ -1361,10 +1385,10 @@ MonsterCombats = {
         area         = _lloydWaveArea,
     },
 
-    LloydWave2 = {
+    LloydWave2B = {
         damageType   = Combat.DamageType.Energy,
         impactEffect = 179,
-        area         = _lloydWave2Area,
+        area         = _lloydWave2BArea,
     },
 
     LloydWave3 = {
@@ -1433,7 +1457,7 @@ MonsterCombats = {
     NighthunterWave = {
         damageType   = Combat.DamageType.Earth,
         impactEffect = CONST_ME_HITBYPOISON,
-        area         = createCombatArea(AREA_WAVE),
+        area         = _nighthunterWaveArea,
     },
 
     NightstalkerParalyze = {
@@ -1444,7 +1468,7 @@ MonsterCombats = {
     NoxiousRipptorWave = {
         damageType   = Combat.DamageType.Earth,
         impactEffect = CONST_ME_HITBYPOISON,
-        area         = createCombatArea(AREA_WAVE),
+        area         = _noxiousRipptorWaveArea,
     },
 
     OmrafirSummon = {
@@ -1557,7 +1581,7 @@ MonsterCombats = {
     SulphurSpouterWave = {
         damageType   = Combat.DamageType.Death,
         impactEffect = CONST_ME_MORTAREA,
-        area         = createCombatArea(AREA_WAVE),
+        area         = _sulphurSpouterWaveArea,
     },
 
     TenebrisSummon = {

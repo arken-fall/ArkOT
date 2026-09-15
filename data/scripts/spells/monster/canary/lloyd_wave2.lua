@@ -1,4 +1,4 @@
-local combat = Combat(MonsterCombats.LloydWave2)
+local combat = Combat(MonsterCombats.LloydWave2B)
 
 local spell = Spell(SPELL_INSTANT)
 
