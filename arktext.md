@@ -764,3 +764,36 @@ and the house pointer as well.
 same code layout, `addr2line` on the kernel's offset) named the function;
 the real client dragging into and inside the inbox on the fixed build,
 with the option on, leaves the server standing.
+
+## 2026-09-15 — Desync: creatures frozen on bordered and railed tiles
+
+**Symptom.** The real client logged `parseCreatureMove: no creature found to
+move` and `no thing at pos …, stackpos 1/2` around temple NPCs (Maealil,
+Kjesse, Cipfried). A creature that stepped off such a tile stayed drawn
+where it was while the real one walked on unseen, until the tile was sent
+again.
+
+**Cause.** Two ways the server and client stacked a tile differently, so the
+server's creature stackpos named a different thing on the client:
+
+- `harness/build_modern_ids.py` only mapped ids with an `items.toml` entry.
+  Unnamed borders such as 7942, 8893 and 20216 went out as gold coin 3031,
+  a common item on the client but a border (below creatures) on the server.
+- Legacy ids kept their 10.98 dat stack order where the 15.25 appearance
+  changed it: railings 5315-5320 are on-bottom in the dat and common in
+  15.25; archway 22993 and moist walls 14602/14603 the other way round.
+
+**Fix.** The generator also maps unnamed legacy ids whose appearance still
+exists (66 rows; the build_new_items.py block is kept, never renumbered).
+`Items::loadModernClientIds` takes top order from the mapped appearance for
+every non-ground item, not only generated ones. Modern clients are sent
+creature moves, turns and removals by creature id, which the client resolves
+regardless of the items beneath. A scan of realmap.otbm with the loader's
+rules finds no tile left where the two sides disagree; 120 tiles still hold
+an unmapped item, all of them common, so none shifts a stackpos.
+
+**Verified.** A harness moves Maealil across the 20216 tiles by
+`Creature:move` and a rat across railings. The previous build logged five
+move/remove errors and left both creatures frozen on the client; the fixed
+build logs none and the client's creature positions match the server's at
+every step.

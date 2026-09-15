@@ -4969,7 +4969,7 @@ void ProtocolGame::sendCreatureTurn(const CreatureConstPtr& creature, uint32_t s
 
 	NetworkMessage msg;
 	msg.add(ServerCode::UpdateTileThing);
-	if (stackPos >= 10)
+	if (stackPos >= 10 or usesModernLayout())
 	{
 		msg.add<SpecialCode>(SpecialCode::End);
 		msg.add<uint32_t>(creature->getID());
@@ -5336,7 +5336,12 @@ void ProtocolGame::sendRemoveTileCreature(const CreatureConstPtr& creature, cons
 {
     NetworkMessage msg;
 
-	if (stackpos < 10) // todo : change all of these 10 magic numbers into their own config constant, with possibly a hard max?
+	// modern clients find a creature by its id, which still holds when the two
+	// sides disagree about the items stacked beneath it
+	if (usesModernLayout() and not canSee(pos))
+		return;
+
+	if (stackpos < 10 and not usesModernLayout()) // todo : change all of these 10 magic numbers into their own config constant, with possibly a hard max?
 	{
 		if (not canSee(pos))
 		{
@@ -5621,7 +5626,7 @@ void ProtocolGame::sendMoveCreature(const CreatureConstPtr& creature, const Posi
 		{
 			NetworkMessage msg;
 			msg.add(ServerCode::MoveCreature);
-			if (oldStackPos < 10)
+			if (oldStackPos < 10 and not usesModernLayout())
 			{
 				msg.addPosition(oldPos);
 				msg.addByte(oldStackPos);

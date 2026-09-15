@@ -407,14 +407,25 @@ bool Items::loadModernClientIds(const std::string& path)
 		// one appearance, and the lowest server id is the canonical item
 		modernClientIdsReverse.try_emplace(appearanceId, static_cast<uint16_t>(serverId));
 
-		// generated items (past the legacy dat) carry no flags of their own,
-		// so they borrow the appearance's: the client already counts, picks
-		// up and walks around them by these
-		if (serverId > legacy_item_count and serverId < items.size())
+		const auto* app = appearances.getObject(appearanceId);
+		if (app and serverId < items.size())
 		{
-			if (const auto* app = appearances.getObject(appearanceId))
+			ItemType& type = items[serverId];
+
+			// the client stacks a tile by the appearance it is sent, so the server
+			// stacks by it too - otherwise every stackpos above this item points
+			// at a different thing on each side
+			if (not type.isGroundTile() and not app->ground)
 			{
-				ItemType& type = items[serverId];
+				type.alwaysOnTop = app->topOrder != 0;
+				type.alwaysOnTopOrder = app->topOrder;
+			}
+
+			// generated items (past the legacy dat) carry no flags of their own,
+			// so they borrow the appearance's: the client already counts, picks
+			// up and walks around them by these
+			if (serverId > legacy_item_count)
+			{
 				type.stackable = type.stackable or app->stackable;
 				type.pickupable = type.pickupable or app->pickupable;
 				type.moveable = type.moveable and app->moveable;
@@ -425,11 +436,6 @@ bool Items::loadModernClientIds(const std::string& path)
 				type.useable = type.useable or app->useable;
 				type.forceUse = type.forceUse or app->forceUse;
 				type.isHangable = type.isHangable or app->hangable;
-				if (app->topOrder != 0 and not type.alwaysOnTop)
-				{
-					type.alwaysOnTop = true;
-					type.alwaysOnTopOrder = app->topOrder;
-				}
 			}
 		}
 	}

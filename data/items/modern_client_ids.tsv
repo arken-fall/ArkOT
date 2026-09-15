@@ -3524,6 +3524,7 @@
 4325	4390	name-verified	dead serpent spawn
 4326	4391	name-verified	lifeless nettle
 4327	4392	name-verified	lifeless nettle
+4375	2557	otb-only	
 4394	4854	name-verified	red carpet
 4395	4855	name-verified	red carpet
 4396	4856	name-verified	red carpet
@@ -4810,6 +4811,7 @@
 5727	5727	name-verified	dead seagull
 5728	5728	name-verified	dead seagull
 5729	5729	name-verified	dead seagull
+5730	4833	otb-only	
 5731	5731	name-verified	hole
 5732	5732	name-verified	closed door
 5733	5733	name-verified	closed door
@@ -6347,6 +6349,7 @@
 7284	7284	name-verified	slain ice golem
 7285	7285	name-verified	slain ice golem
 7286	7286	name-verified	nilsor's waterskin
+7288	7288	otb-only	
 7289	7289	name-verified	frost charm
 7290	7290	name-verified	shard
 7291	7291	name-verified	frozen demon
@@ -6642,6 +6645,7 @@
 7582	227	name-verified	fine vase
 7583	228	otb-only	elven vase
 7584	230	name-verified	ship cabin wall
+7585	233	otb-only	
 7586	234	name-verified	remains of a spider egg
 7587	235	name-verified	bag
 7588	236	name-verified	strong health potion
@@ -6998,6 +7002,7 @@
 7939	875	name-verified	mining helmet
 7940	877	otb-only	blocked cave entrance
 7941	878	name-verified	wooden floor
+7942	879	otb-only	
 7943	880	name-verified	shallow water
 7944	881	name-verified	shallow water
 7945	882	name-verified	shallow water
@@ -7117,6 +7122,7 @@
 8076	2498	name-verified	bed
 8077	2508	name-verified	hammock
 8078	2510	name-verified	hammock
+8093	2557	otb-only	
 8109	3129	otb-only	some special leaves
 8110	3218	name-verified	present
 8111	130	name-verified	exploding cookie
@@ -7168,6 +7174,7 @@
 8168	4747	name-verified	earth
 8169	4748	name-verified	earth
 8170	4824	name-verified	stairs
+8172	4833	otb-only	
 8174	5065	name-verified	burning wall
 8175	5498	name-verified	straw mat
 8176	5538	name-verified	cask of brown ale
@@ -7866,6 +7873,7 @@
 8890	8062	name-verified	robe of the underworld
 8891	8063	name-verified	paladin armor
 8892	8064	name-verified	ethno coat
+8893	8065	otb-only	
 8894	8066	name-verified	mysterious machine
 8895	8067	name-verified	mysterious machine
 8896	8068	name-verified	mysterious machine
@@ -8994,6 +9002,7 @@
 10020	9611	name-verified	dragon claw
 10021	6530	name-verified	worn soft boots
 10022	9020	name-verified	worn firewalker boots
+10023	9044	otb-only	
 10024	9105	name-verified	crystal ball
 10025	9106	name-verified	molten wax
 10026	9107	name-verified	special polish
@@ -9087,6 +9096,7 @@
 10117	9199	otb-only	wormhole
 10118	9200	otb-only	wormhole
 10119	9201	name-verified	heated worm punisher
+10121	9203	otb-only	
 10122	9204	name-verified	old pirate poem
 10123	9205	name-verified	pirate treasure map
 10124	9206	name-verified	champion's cup
@@ -10065,6 +10075,7 @@
 11102	10185	otb-only	lever
 11103	10186	name-verified	scrying ball
 11104	10187	otb-only	shattered crystal ball
+11105	10188	otb-only	
 11106	10189	name-verified	flask of extra greasy oil
 11107	10190	name-verified	dead draken warmaster
 11108	10191	name-verified	dead draken warmaster
@@ -10362,6 +10373,7 @@
 11400	3215	name-verified	phoenix egg
 11401	3997	name-verified	tibiora's box
 11402	4010	name-verified	tibiora's box
+11403	4014	otb-only	
 11404	4015	otb-only	dead serpent spawn
 11405	4019	otb-only	dead serpent spawn
 11406	4023	otb-only	dead draken
@@ -11240,6 +11252,7 @@
 12291	2302	name-verified	big table
 12292	11336	otb-only	large cocoon
 12293	11337	otb-only	tentacle
+12294	11338	otb-only	
 12295	11339	name-verified	unworked sacred wood
 12296	11340	otb-only	big table
 12297	11341	name-verified	sacred earth
@@ -12252,6 +12265,24 @@
 13331	12344	name-verified	dead crustacea gigantica
 13332	3205	otb-only	crystal
 13333	7315	otb-only	brooch
+13360	2557	otb-only	
+13361	12372	otb-only	
+13362	12373	otb-only	
+13363	12374	otb-only	
+13364	12375	otb-only	
+13365	12376	otb-only	
+13366	12377	otb-only	
+13367	12378	otb-only	
+13395	4833	otb-only	
+13422	9044	otb-only	
+13427	9203	otb-only	
+13444	12372	otb-only	
+13445	12373	otb-only	
+13446	12374	otb-only	
+13447	12375	otb-only	
+13448	12376	otb-only	
+13449	12377	otb-only	
+13450	12378	otb-only	
 13472	12483	name-verified	pharaoh banner
 13473	12484	otb-only	strange sand
 13474	12485	otb-only	archway
@@ -12343,6 +12374,7 @@
 13560	12570	name-verified	fan doll of queen eloise
 13561	12572	name-verified	dragon goblet
 13562	12573	otb-only	sheep
+13563	12574	otb-only	
 13564	12575	name-verified	whinona
 13565	12576	name-verified	meandi
 13566	12577	name-verified	impward
@@ -12644,6 +12676,7 @@
 13862	12720	name-verified	dead thornfire wolf
 13863	12721	otb-only	muddy water
 13864	12722	name-verified	bucket of bog water
+13865	12723	otb-only	
 13866	12724	name-verified	heavy stone
 13867	12725	otb-only	stone pile
 13868	12727	name-verified	greasy stone
@@ -12710,6 +12743,7 @@
 13929	12790	name-verified	peeing orc
 13930	12791	otb-only	unconscious orc
 13931	12792	name-verified	elite orc guard
+13932	12793	otb-only	
 13933	12794	name-verified	recharging tarantula trap
 13934	12796	otb-only	energy barrier
 13935	12798	otb-only	energy barrier
@@ -12761,6 +12795,17 @@
 13981	12846	name-verified	wooden floor
 13982	169	otb-only	green cheese
 13983	12571	name-verified	fan doll of queen eloise
+14041	2557	otb-only	
+14069	4833	otb-only	
+14096	9044	otb-only	
+14101	9203	otb-only	
+14120	12372	otb-only	
+14121	12373	otb-only	
+14122	12374	otb-only	
+14123	12375	otb-only	
+14124	12376	otb-only	
+14125	12377	otb-only	
+14126	12378	otb-only	
 14182	13595	name-verified	grotto
 14187	13697	otb-only	grotto
 14188	13698	otb-only	grotto
@@ -14101,6 +14146,7 @@
 15652	14259	otb-only	machine
 15791	1210	name-verified	chess board
 15792	1211	name-verified	chess board
+15804	3204	otb-only	
 15820	2317	name-verified	counter
 15821	2318	name-verified	counter
 15822	2320	name-verified	counter
@@ -14155,6 +14201,17 @@
 16110	14767	name-verified	majestic shield
 16111	14768	name-verified	thorn spitter
 16112	14769	name-verified	spellbook of ancient arcana
+16204	2557	otb-only	
+16232	4833	otb-only	
+16259	9044	otb-only	
+16264	9203	otb-only	
+16282	12372	otb-only	
+16283	12373	otb-only	
+16284	12374	otb-only	
+16285	12375	otb-only	
+16286	12376	otb-only	
+16287	12377	otb-only	
+16288	12378	otb-only	
 16619	15276	name-verified	miniature house
 16620	9395	name-verified	claw of 'the noxious spawn'
 16621	9393	name-verified	claw of 'the noxious spawn'
@@ -15439,6 +15496,9 @@
 18520	16255	name-verified	gnomish voucher type cb
 18521	16256	name-verified	gnomish voucher type ca1
 18522	16257	name-verified	gnomish voucher type ca2
+18523	16259	otb-only	
+18524	16260	otb-only	
+18525	16261	otb-only	
 18526	16262	name-verified	dragon eye
 18527	16263	name-verified	dragon eye
 18528	16264	name-verified	prismatic ring
@@ -16859,6 +16919,7 @@
 20213	17933	name-verified	wooden gable
 20214	17934	name-verified	wooden gable
 20215	17935	name-verified	wooden gable
+20216	879	otb-only	
 20217	17937	name-verified	wooden floor
 20218	17938	name-verified	elevator
 20219	17939	name-verified	elevator
@@ -16888,6 +16949,7 @@
 20245	17965	name-verified	cord
 20246	17966	name-verified	cord
 20248	17968	otb-only	ice
+20250	17970	otb-only	
 20252	17972	name-verified	canopy bed kit
 20254	17974	name-verified	venorean cabinet kit
 20255	17975	name-verified	venorean wardrobe kit
@@ -18200,6 +18262,7 @@
 21725	19391	name-verified	furious frock
 21726	19392	name-verified	aligned opticording sphere
 21727	19393	name-verified	stone tablet
+21728	19394	otb-only	
 21731	19397	name-verified	memory box
 21732	19398	name-verified	memory box
 21739	19405	otb-only	archway
@@ -18756,6 +18819,7 @@
 22359	20025	name-verified	flowing water
 22360	20026	otb-only	moss
 22361	20027	otb-only	moss
+22362	20028	otb-only	
 22363	20029	name-verified	broken dream
 22364	20030	name-verified	dream sand
 22365	20031	name-verified	half-buried face
@@ -20509,6 +20573,7 @@
 24304	21935	name-verified	grass
 24305	21936	name-verified	lapis-crested vase
 24306	21937	name-verified	remains of a lapis vase
+24307	21938	otb-only	
 24309	21940	name-verified	destroyed machinery
 24310	21941	name-verified	destroyed machinery
 24311	21942	name-verified	destroyed machinery
@@ -21540,6 +21605,7 @@
 26012	23356	name-verified	rift wall
 26013	23357	name-verified	rift wall
 26016	23360	otb-only	strange colours
+26017	23361	otb-only	
 26018	23362	otb-only	strange colours
 26019	23363	otb-only	dark floor
 26020	23364	otb-only	hole
