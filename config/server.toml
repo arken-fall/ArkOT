@@ -11,7 +11,7 @@ motd        = "Welcome to The Black Tek Server!"
 [world]
 # Valid values: "pvp", "no-pvp", "pvp-enforced"
 type            = "pvp"
-map_name        = "realmap"
+map_name        = "canary"
 map_author      = "Unknown"
 assets_dat_path = "data/items/assets.dat"
 # protobuf appearances from a modern (13.40+) client; optional - used to
