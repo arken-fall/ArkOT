@@ -969,3 +969,21 @@ error on every think.
 with no decode errors; a Candy Horror (race chocolate) killed by a GM left
 corpse 48267 and splash 2016 with fluid 50 on its tile; the only Lua errors
 left at boot are the 16 known primal pack beast and Soul War registrations.
+
+## 2026-09-15 — The npc a shop window belongs to
+
+**Symptom.** Trading with an npc opened a window titled "Unknown" with a
+broken picture where the npc's outfit belongs, though the shop itself worked.
+
+**Cause.** 12.x+ clients bind that window to a creature through a packet of
+their own (0x1C: opening flag, the npc ids speaking in it, and any dialog
+buttons). Nothing sent it, so the client fell back to its "multiple npcs"
+placeholder and the name "Unknown". The name already travels in the shop
+packet, but this client's parser reads and discards it.
+
+**Fix.** ProtocolGame::sendNpcChatWindow names the npc a shop belongs to and
+sendCloseNpcChatWindow closes it; sendShop and sendCloseShop send them to
+modern clients, so every shop keeps working for legacy ones.
+
+**Verified.** On the rig, greeting Frodo and asking to trade gives a window
+the client titles "Frodo", with his outfit rather than the placeholder.

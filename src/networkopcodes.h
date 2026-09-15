@@ -270,6 +270,7 @@ namespace BlackTek {
             EmptyInventory = 0x79,
 
             // Shop
+            NpcChatWindow = 0x1C, // 12.x+ names the npc a shop or dialog belongs to
             NpcShop = 0x7A,
             SaleItemList = 0x7B,
             CloseNpcShop = 0x7C,

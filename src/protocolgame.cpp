@@ -2355,8 +2355,33 @@ void ProtocolGame::sendContainer(uint8_t cid, const ContainerConstPtr& container
 	writeToOutputBuffer(msg);
 }
 
+void ProtocolGame::sendNpcChatWindow(const NpcPtr& npc)
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::NpcChatWindow);
+	msg.add(CommonCode::Zero); // the window is opening
+	msg.add(CommonCode::True); // one npc speaks in it
+	msg.add<uint32_t>(npc->getID());
+	msg.add(CommonCode::Zero); // no dialog buttons of our own
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendCloseNpcChatWindow()
+{
+	NetworkMessage msg;
+	msg.add(ServerCode::NpcChatWindow);
+	msg.add(CommonCode::True); // anything but zero closes it
+	writeToOutputBuffer(msg);
+}
+
 void ProtocolGame::sendShop(const NpcPtr& npc, const ShopInfoList& itemList)
 {
+	// modern clients title the shop window from the npc this names, and draw its outfit
+	if (usesModernLayout())
+	{
+		sendNpcChatWindow(npc);
+	}
+
 	NetworkMessage msg;
 	msg.add(ServerCode::NpcShop);
 	msg.addString(npc->getName());
@@ -2382,6 +2407,11 @@ void ProtocolGame::sendShop(const NpcPtr& npc, const ShopInfoList& itemList)
 
 void ProtocolGame::sendCloseShop()
 {
+	if (usesModernLayout())
+	{
+		sendCloseNpcChatWindow();
+	}
+
 	NetworkMessage msg;
 	msg.add(ServerCode::CloseNpcShop);
 	writeToOutputBuffer(msg);
