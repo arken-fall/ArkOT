@@ -3949,7 +3949,9 @@ void Game::playerRequestTrade(const uint32_t playerId, const Position& pos, uint
 	}
 
 	if (g_config.GetBoolean(ConfigManager::ONLY_INVITED_CAN_MOVE_HOUSE_ITEMS)) {
-		if (tradeItem->getTile()->isHouseTile()) {
+		// an item offered out of the store inbox stands on no tile
+		const auto tradeTile = tradeItem->getTile();
+		if (tradeTile and tradeTile->isHouseTile()) {
 			ItemPtr topContainerItem = tradeItem;
 			while (auto containerOwner = topContainerItem->getContainerParent())
 			{
@@ -3958,7 +3960,8 @@ void Game::playerRequestTrade(const uint32_t playerId, const Position& pos, uint
 
 			const bool nested = (topContainerItem != tradeItem);
 			const bool topParentIsPlayer = (not nested) and static_cast<bool>(topContainerItem->getLocation().player);
-			if (not topParentIsPlayer and not tradeItem->getTile()->getHouse()->isInvited(player))
+			const auto house = tradeTile->getHouse();
+			if (not topParentIsPlayer and house and not house->isInvited(player))
 			{
 				player->sendCancelMessage(RETURNVALUE_PLAYERISNOTINVITED);
 				return;

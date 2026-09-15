@@ -595,12 +595,14 @@ ReturnValue ItemContainer::canAddItemStandard(int32_t index, const ItemPtr& item
 
 	const bool nested = (topContainerItem != ownerItem);
 
+	// the store inbox and other system containers stand on no tile at all
 	if (actor and g_config.GetBoolean(ConfigManager::ONLY_INVITED_CAN_MOVE_HOUSE_ITEMS))
 	{
-		if (topContainerItem->getTile()->isHouseTile())
+		if (const auto tile = topContainerItem->getTile(); tile and tile->isHouseTile())
 		{
 			const bool topParentIsPlayer = (not nested) and static_cast<bool>(topContainerItem->getLocation().player);
-			if (not topParentIsPlayer and not topContainerItem->getTile()->getHouse()->isInvited(actor->getPlayer()))
+			const auto house = tile->getHouse();
+			if (not topParentIsPlayer and house and not house->isInvited(actor->getPlayer()))
 				return RETURNVALUE_PLAYERISNOTINVITED;
 		}
 	}

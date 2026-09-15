@@ -744,3 +744,23 @@ on the next visit, mounts greyed for a character that owns them, a search,
 a 30-coin transfer to a character of another account, an eleven-line history
 and correct balances after every step; zero decode errors. Icons and
 banners are served from https://arkenfall.org/static/store/.
+
+## 2026-09-14 — Crash: dragging into the store inbox
+
+**Symptom.** The local rig segfaulted about ninety seconds after a starter
+kit was bought; the symbol build resolved the address to
+`ItemContainer::canAddItemStandard`, a read at offset 0x18 of a null
+pointer right after `Item::getTile()`.
+
+**Cause.** With `only_invited_can_move_items` on, the container's add check
+does `topContainerItem->getTile()->isHouseTile()` when a player is the
+actor. The store inbox (and any system container) has no parent and stands
+on no tile, so the first drag into it, or into a container inside it, read
+through a null tile. The trade request had the same shape for an item
+offered out of the inbox. Both now take the tile into a local and test it,
+and the house pointer as well.
+
+**Verified.** A symbol build of the same commit (`premake symbols "On"`,
+same code layout, `addr2line` on the kernel's offset) named the function;
+the real client dragging into and inside the inbox on the fixed build,
+with the option on, leaves the server standing.
