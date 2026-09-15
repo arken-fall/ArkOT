@@ -818,3 +818,44 @@ still delivers a store item, for things that should stay in the inbox.
 ultimate health potions bought and dragged from the store inbox into the
 backpack all moved (twelve items, none marked), while a crystal coin marked
 as a store item by hand stayed in the inbox.
+
+## 2026-09-15 — Quest log: the quests the real map already carries
+
+**Survey.** Every quest in Canary main (d245c95) was checked against ArkOT:
+51 quest-log quests and 63 script-only ones, scored on how many of their
+literal script coordinates exist on realmap.otbm, which NPCs and creatures
+exist, and whether the pack already brought scripts or storages for them.
+53 are partly here (pack scripts), 36 have their map but no scripts, and 25
+need map regions the 2020 map does not have (11.x-15.x content such as Cults
+of Tibia, Soul War, Kilmaresh, Rotten Blood). ArkOT's quest log held none of
+the 51; data/quests/quests.toml was BlackTek's example, whose storages
+100-105 collide with real pack storages (Travelling Trader is 101).
+
+**Storages.** Canary renumbered its storages under Storage.Quest.U<version>
+(The Ancient Tombs start: 12100 in the pack, 40401 in Canary) and split
+several questlines into per-mission storages. The pack predates both, and
+matches no otservbr-global revision of 051-storages.lua, but otservbr-global's
+2019 data/lib/core/quests.lua (eb7b07d7bb) still names the pack's storages:
+289 of its 366 references resolve against the pack.
+
+**Generator.** harness/build_quest_log.py reads Canary's catalog and that
+2019 log with a small Lua table parser, resolves every mission storage to the
+pack's number by name, and writes data/quests/<quest>.toml from whichever log
+resolves more of the quest's missions. Missions whose storage the pack lacks
+are left out; the report lists them, plus any value ArkOT's scripts write to a
+storage that no mission state covers. 32 quests were written (21 from
+Canary's text, 11 from the 2019 log). Five still have uncovered values to
+walk by hand: Bigfoot's Burden (QuestLine 13, 14), The Ice Islands (Barbarian
+Test values 1-7 and 3), The Shattered Isles (The Errand 3, 4), The Explorer
+Society (62, 63, 65) and Wrath of the Emperor (Mission03 6).
+
+**Loader.** Quests::loadFromToml restarted quest ids at 1 in every file, so a
+second file gave the client duplicate quest ids. Files are now gathered, sorted
+by name and loaded with one running id, so a quest keeps its id between boots.
+
+**Verified.** On the real client with the Explorer Society questline at 9 and
+The Inquisition's first mission at 3, the quest log lists both, and their
+quest lines read "Return the prepared butterfly to Explorer Society
+representative." and "You investigated 2 of 5 guards in Thais."
+Missions sharing one questline storage drop out of the log once passed
+(the 2019 log's own behaviour); worth revisiting quest by quest.
