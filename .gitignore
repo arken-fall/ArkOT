@@ -45,6 +45,12 @@ blacktek.log
 
 # the real map ships packed; unpack with: 7z x data/world/realmap.7z -odata/world
 /data/world/realmap.otbm
+# Canary's world, regenerated from its release map by harness/build_canary_map.py
+/data/world/canary.otbm
+/data/world/canary-spawn.xml
+/data/world/canary-spawn.xml.converted
+/data/world/canary-house.xml
+/data/world/canary-zones.tsv
 # engine output from the legacy spawn converter
 /data/world/converted/
 /Black-Tek-Server.debug

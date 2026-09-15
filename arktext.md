@@ -859,3 +859,44 @@ quest lines read "Return the prepared butterfly to Explorer Society
 representative." and "You investigated 2 of 5 guards in Thais."
 Missions sharing one questline storage drop out of the log once passed
 (the 2019 log's own behaviour); worth revisiting quest by quest.
+
+## 2026-09-15 — Canary's world map, converted
+
+**Why.** Josh chose Canary's own world (release v3.6.1, otservbr.otbm,
+184.8 MB, July 2026) over the 2020 real map: it carries every region the
+newer quests need and matches Canary main's quest scripts coordinate for
+coordinate. A 14.12 conversion on OTLand was passed over because its item
+ids come from a third-party extended items.otb that clashes with ArkOT's
+generated 15.25 items.
+
+**What differs.** The map is OTBM version 4 and names items by client
+(appearance) id; its data node points at separate monster and npc spawn
+files and a zone file, and 476 tiles carry zone nodes. Every item attribute
+it uses (action and unique ids, text, teleport destinations, depot ids,
+house doors, counts, charges) is one BlackTek already reads, and 23,851 of
+its 23,852 item ids have a server id in modern_client_ids.tsv (one stray
+item, id 2141, is dropped).
+
+**Converter.** harness/build_canary_map.py rewrites the release into a map
+the existing loader reads, so the engine is unchanged: version 2, server
+ids, one TFS spawn file merged from Canary's monster and npc spawns, the
+house file, and a zones sidecar (zone id, name, position). It runs in about
+45 seconds:
+
+    python3 harness/build_canary_map.py --otbm otservbr.otbm \
+        --canary ~/Documents/canary --out data/world/canary.otbm
+
+The generated files are gitignored.
+
+**Local boot.** map_name = "canary": 17,972,761 tiles and 23,359,570 items
+in 27 s, 12.8 GB resident; the spawn converter made 16,691 zones from 52,903
+spawn blocks; 66,715 monsters and 803 NPCs up. A GM toured Thais, Issavi,
+Marapur, Moonfall, Gnomprona and Silvertides on the real client with no
+client errors.
+
+**Still missing before it can go live.** 342 of the map's 897 monster
+types and 179 of its 956 NPC names are not in ArkOT (190 NPC spawns and
+about 16,600 monster spawns fail to place). Canary's towns are numbered
+differently (Thais is 8, the real map's is 2) and its houses are its own, so
+players' towns, positions and house ownership need a migration. VM 321 has
+16 GB; this map alone takes 12.8 GB.
