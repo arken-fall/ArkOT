@@ -50,6 +50,7 @@ namespace BlackTek
 		Kind		kind = Kind::Other;
 		bool		enabled = true;
 		bool		home = false; // shown on the front page
+		bool		movable = false; // delivered without the store item mark, so it can leave the inbox
 		uint16_t	item_id = 0; // server item id for Kind::Item
 		uint16_t	count = 1; // items handed over, or charges
 		uint16_t	looktype_male = 0; // Kind::Outfit

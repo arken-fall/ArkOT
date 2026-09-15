@@ -797,3 +797,24 @@ an unmapped item, all of them common, so none shifts a stackpos.
 move/remove errors and left both creatures frozen on the client; the fixed
 build logs none and the client's creature positions match the server's at
 every step.
+
+## 2026-09-15 — Store purchases stuck in the store inbox
+
+**Symptom.** A starter kit bought in the store arrived in the store inbox,
+but nothing in it could be dragged into a backpack.
+
+**Cause.** Every delivery was marked as a store item (`setStoreItem(true)`
+in both the engine's item offers and the kit script). BlackTek lets a store
+item rest only in the store inbox, a depot chest or, wrapped, on a house
+tile, so the backpack, the player's slots and the floor all refused it.
+Canary keeps the same rule and marks only offers that are not `movable`.
+
+**Fix.** Products take a `movable = true` option (Canary's name); a movable
+item is delivered to the inbox without the store item mark. The kits,
+supplies and consumables shelves are movable; an offer without the option
+still delivers a store item, for things that should stay in the inbox.
+
+**Verified.** On the real client: a knight kit, a backpack and a hundred
+ultimate health potions bought and dragged from the store inbox into the
+backpack all moved (twelve items, none marked), while a crystal coin marked
+as a store item by hand stayed in the inbox.

@@ -6,7 +6,9 @@
 -- options may carry item = <server item id>, count = n,
 -- outfit = { male = looktype, female = looktype, addons = n }, mount = id,
 -- transferable = true (priced in transferable coins), home = true (front
--- page), state = STORE_STATE_NEW, enabled = false.
+-- page), movable = true (the item may leave the store inbox; without it the
+-- item is a store item and stays in the inbox, a depot or a house),
+-- state = STORE_STATE_NEW, enabled = false.
 
 STORE_STATE_NONE = 0
 STORE_STATE_NEW = 1
@@ -16,7 +18,9 @@ STORE_STATE_TIMED = 3
 local store = StoreWindow("Arkenfall Store")
 store:accountType(ACCOUNT_TYPE_NORMAL)
 
--- hands a list of { itemId, count } to the store inbox; stacks split at 100
+-- hands a list of { itemId, count } to the store inbox; stacks split at 100.
+-- Kit contents are ordinary items, so they are not marked as store items and
+-- can be carried out of the inbox.
 local function giveToInbox(player, items)
 	local inbox = player:getStoreInbox()
 	if not inbox then
@@ -28,14 +32,12 @@ local function giveToInbox(player, items)
 		if itemType:isStackable() then
 			while count > 0 do
 				local batch = math.min(count, 100)
-				local item = inbox:addItem(itemId, batch, -1, FLAG_NOLIMIT)
-				if item then item:setStoreItem(true) end
+				inbox:addItem(itemId, batch, -1, FLAG_NOLIMIT)
 				count = count - batch
 			end
 		else
 			for _ = 1, count do
-				local item = inbox:addItem(itemId, 1, -1, FLAG_NOLIMIT)
-				if item then item:setStoreItem(true) end
+				inbox:addItem(itemId, 1, -1, FLAG_NOLIMIT)
 			end
 		end
 	end
@@ -93,7 +95,7 @@ local supplyList = {
 }
 for _, entry in ipairs(supplyList) do
 	local id, name, price, itemId, count, description, home = table.unpack(entry)
-	supplies:product(id, name, price, "", description, { item = itemId, count = count, home = home == true })
+	supplies:product(id, name, price, "", description, { item = itemId, count = count, movable = true, home = home == true })
 end
 
 -- Premium time
@@ -172,7 +174,7 @@ local consumableList = {
 }
 for _, entry in ipairs(consumableList) do
 	local id, name, price, itemId, count, description = table.unpack(entry)
-	consumables:product(id, name, price, "", description, { item = itemId, count = count })
+	consumables:product(id, name, price, "", description, { item = itemId, count = count, movable = true })
 end
 
 -- Outfits and mounts: the engine adds them to the character

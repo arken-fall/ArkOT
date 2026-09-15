@@ -7401,7 +7401,7 @@ int LuaScriptInterface::luaStoreCategoryProduct(lua_State* L)
 {
 	// category:product(id, name, price, icon[, description[, options]])
 	// options: { item = serverItemId, count = n, outfit = { male = looktype, female = looktype, addons = n }, mount = id,
-	//            transferable = bool, home = bool, state = STORE_STATE_NEW, enabled = bool }
+	//            transferable = bool, home = bool, movable = bool, state = STORE_STATE_NEW, enabled = bool }
 	auto* category = getUserdata<BlackTek::StoreCategory>(L, 1);
 	if (not category)
 	{
@@ -7462,6 +7462,7 @@ int LuaScriptInterface::luaStoreCategoryProduct(lua_State* L)
 		lua_pop(L, 1);
 		product.coins = flag("transferable", false) ? Coins::Transferable : Coins::Regular;
 		product.home = flag("home", false);
+		product.movable = flag("movable", false);
 		product.enabled = flag("enabled", true);
 		product.state = static_cast<State>(std::min<uint32_t>(number(7, "state"), 3));
 	}

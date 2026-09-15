@@ -305,7 +305,10 @@ namespace BlackTek::Store
 					{
 						return false;
 					}
-					item->setStoreItem(true);
+					// a store item may only rest in the store inbox, a depot or a house
+					if (not product.movable)
+						item->setStoreItem(true);
+
 					const auto target = inbox ? BlackTek::ItemLocation{ .containerItem = inbox->getOwner() } : BlackTek::ItemLocation{ .player = player };
 					if (g_game.internalAddItem(target, item, INDEX_ANYWHERE, FLAG_NOLIMIT) != RETURNVALUE_NOERROR)
 					{
