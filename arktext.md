@@ -987,3 +987,35 @@ modern clients, so every shop keeps working for legacy ones.
 
 **Verified.** On the rig, greeting Frodo and asking to trade gives a window
 the client titles "Frodo", with his outfit rather than the placeholder.
+
+## 2026-09-15 — Canary's monster spells, and a potion that drained mana
+
+**Spells.** The ported monsters cast 164 spells by name that BlackTek had no
+script for. harness/build_canary_monster_spells.py brings over the 124 that
+need nothing new, in BlackTek's own shape rather than Canary's: a spell's
+base combat becomes an entry in MonsterCombats (damageType, impactEffect,
+distanceEffect, area, and the blockedByArmor / aggressive style flags), and
+the spell file is `local combat = Combat(MonsterCombats.X)` with its
+conditions attached as hirintror_skill_reducer already did. An inline area
+table becomes a local createCombatArea above the registry, as the
+hand-written entries do. A spell that builds several combats, or one per
+value in a loop, stays self-contained with Canary's setParameter and
+setFormula calls rewritten to BlackTek's setters
+(setDamageType / setImpactEffect / setDistanceEffect / setMinMaxFormula).
+Five area shapes Canary uses (AREA_CIRCLE1X1, AREA_RING1_BURST3,
+AREA_WAVE11, AREA_WAVE12, AREA_SQUAREWAVE5_NAGA) joined spell_lib.
+Where Canary's ### spell word collided with one of ours, the ported spell
+takes the next free number.
+
+The other 32 wait on engine features BlackTek does not have: chain combat,
+CONDITION_ROOTED and CONDITION_FEARED, damage callbacks, and three that use
+Canary-only calls or constants Canary itself spells wrong.
+
+**Potions.** A mana potion ran `doTargetCombat(..., ManaDrain, 75, 125)`,
+which in BlackTek's combat is a drain: drinking one emptied the player's
+mana instead of filling it. Mana potions now use `addMana`, as the engine's
+own scripts do. Health potions were always right (they heal).
+
+**Verified.** All 124 spells load with no Lua errors (the only ones left at
+boot are the 16 known primal pack beast and Soul War registrations), and a
+mana potion drunk by a non-GM character took mana from 100 to 225.

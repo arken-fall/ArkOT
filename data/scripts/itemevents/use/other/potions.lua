@@ -158,7 +158,8 @@ potionItem.onUse = function(player, item, fromPosition, target, toPosition, isHo
 		end
 
 		if potion.mana then
-			doTargetCombat(player, target, Combat.DamageType.ManaDrain, potion.mana[1], potion.mana[2])
+			-- a mana drain takes mana away; a potion gives it back
+			target:addMana(math.random(potion.mana[1], potion.mana[2]))
 		end
 
 		if potion.antidote then
