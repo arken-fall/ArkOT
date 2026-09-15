@@ -900,3 +900,41 @@ about 16,600 monster spawns fail to place). Canary's towns are numbered
 differently (Thais is 8, the real map's is 2) and its houses are its own, so
 players' towns, positions and house ownership need a migration. VM 321 has
 16 GB; this map alone takes 12.8 GB.
+
+## 2026-09-15 — Canary's monsters, first pass
+
+**Why.** Canary's world spawns 897 monster types; 342 of them, and 839 of
+Canary's 1,655 types overall, were not defined in ArkOT, so about 16,600 map
+spawns stayed empty and many quest bosses did not exist.
+
+**Converter.** harness/build_canary_monsters.py ports every Canary monster
+BlackTek lacks (by name) into data/scripts/monsters/monsters/canary/, keeping
+Canary's folders. Canary and BlackTek register monsters through the same
+revscript table, so the script rewrites only what differs: the bestiary
+block (BESTY_RACE_X constants, capitalised keys), targetDistance /
+staticAttackChance / runHealth at the top level, the summon block, loot
+names and client item ids (through Canary's items.xml and
+modern_client_ids.tsv), outfit lookTypeEx, and spell speedChange /
+outfitMonster / outfitItem / condition totalDamage. Callbacks BlackTek does
+not bind (onSpawn, onPlayerAttack) are commented out and listed.
+
+**Zones.** The engine turns a map's legacy spawn XML into zones once, marks
+the XML as converted and loads the output only on that boot; later boots
+read data/world/<map>-zones. The converted Canary spawns now live in
+data/world/canary-zones (16 floor files and the legacy flag regions), as the
+real map's do in data/world/realmap-zones.
+
+**Verified.** Locally on the Canary map: 1,685 monster types, 16,704 zones,
+83,286 monsters and 803 NPCs, where the unported set placed 66,715 monsters.
+The real client saw Burning Gladiators, Cobra Assassins, Gazer Spectres, Bony
+Sea Devils, Candy Horrors and Brachiodemons at their spawns without errors.
+
+**Left for the next passes.** 164 named monster spells these monsters cast
+have no BlackTek script yet (156 have a Canary script), several need engine
+work first: magic effects above 255 (BlackTek stores effects as 8-bit values
+though 15.25 sends 16-bit ones), CONDITION_ROOTED / CONDITION_FEARED, chain
+combat callbacks and a few area shapes. Races ink, chocolate and candy fall
+back with a warning. Eleven primal pack beasts register but not their
+"(Primal)" variants (RegisterPrimalPackBeast, from the Primal Ordeal quest
+lib), and five Soul War bosses need that quest's lib; both come with their
+quests. 48 loot entries name items BlackTek does not have.

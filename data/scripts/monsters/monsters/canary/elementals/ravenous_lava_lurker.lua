@@ -1,0 +1,116 @@
+local mType = Game.createMonsterType("Ravenous Lava Lurker")
+local monster = {}
+
+monster.description = "a ravenous lava lurker"
+monster.experience = 4000
+monster.outfit = {
+	lookType = 1041,
+	lookHead = 0,
+	lookBody = 0,
+	lookLegs = 0,
+	lookFeet = 0,
+	lookAddons = 0,
+	lookMount = 0,
+}
+
+monster.raceId = 1569
+monster.bestiary = {
+	race = "Elemental",
+	class = "Elemental",
+	toKill = 1000,
+	firstUnlock = 50,
+	secondUnlock = 500,
+	charmPoints = 25,
+	stars = 3,
+	occurrence = 0,
+	locations = "Gnome Deep Hub in the Gnomish area.",
+}
+
+monster.health = 5000
+monster.maxHealth = 5000
+monster.race = "fire"
+monster.corpse = 11317
+monster.speed = 58
+monster.manaCost = 0
+
+monster.changeTarget = {
+	interval = 5000,
+	chance = 8,
+}
+
+monster.strategiesTarget = {
+	nearest = 70,
+	health = 10,
+	damage = 10,
+	random = 10,
+}
+
+monster.flags = {
+	summonable = false,
+	attackable = true,
+	hostile = true,
+	convinceable = false,
+	pushable = false,
+	rewardBoss = false,
+	illusionable = false,
+	canPushItems = false,
+	canPushCreatures = true,
+	staticAttackChance = 90,
+	targetDistance = 1,
+	runHealth = 0,
+	healthHidden = false,
+	isBlockable = false,
+	canWalkOnEnergy = false,
+	canWalkOnFire = true,
+	canWalkOnPoison = false,
+	isPreyExclusive = true,
+}
+monster.targetDistance = 1
+monster.staticAttackChance = 90
+monster.runHealth = 0
+
+monster.light = {
+	level = 5,
+	color = 192,
+}
+
+monster.voices = {
+	interval = 5000,
+	chance = 10,
+}
+
+monster.loot = {}
+
+monster.attacks = {
+	{ name = "melee", interval = 2000, chance = 100, minDamage = 0, maxDamage = -215 },
+	{ name = "ravennouslavalurkerwave", interval = 2000, chance = 25, minDamage = -90, maxDamage = -120, target = false },
+	{ name = "ravennouslavalurkertarget", interval = 2000, chance = 20, minDamage = -82, maxDamage = -95, target = true },
+}
+
+monster.defenses = {
+	defense = 33,
+	armor = 45,
+	mitigation = 0.91,
+}
+
+monster.elements = {
+	{ type = COMBAT_PHYSICALDAMAGE, percent = 0 },
+	{ type = COMBAT_ENERGYDAMAGE, percent = 0 },
+	{ type = COMBAT_EARTHDAMAGE, percent = 0 },
+	{ type = COMBAT_FIREDAMAGE, percent = 0 },
+	{ type = COMBAT_LIFEDRAIN, percent = 0 },
+	{ type = COMBAT_MANADRAIN, percent = 0 },
+	{ type = COMBAT_DROWNDAMAGE, percent = 0 },
+	{ type = COMBAT_ICEDAMAGE, percent = 0 },
+	{ type = COMBAT_HOLYDAMAGE, percent = 0 },
+	{ type = COMBAT_DEATHDAMAGE, percent = 0 },
+}
+
+monster.immunities = {
+	{ type = "paralyze", condition = false },
+	{ type = "outfit", condition = false },
+	{ type = "invisible", condition = true },
+	{ type = "bleed", condition = false },
+}
+
+mType:register(monster)
