@@ -1457,6 +1457,105 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(CONST_ME_RAGIAZ_BONECAPSULE)
 	registerEnum(CONST_ME_CRITICAL_DAMAGE)
 	registerEnum(CONST_ME_PLUNGING_FISH)
+	registerEnum(CONST_ME_BLUE_ENERGY_SPARK)
+	registerEnum(CONST_ME_ORANGE_ENERGY_SPARK)
+	registerEnum(CONST_ME_GREEN_ENERGY_SPARK)
+	registerEnum(CONST_ME_PINK_ENERGY_SPARK)
+	registerEnum(CONST_ME_WHITE_ENERGY_SPARK)
+	registerEnum(CONST_ME_YELLOW_ENERGY_SPARK)
+	registerEnum(CONST_ME_MAGIC_POWDER)
+	registerEnum(CONST_ME_PIXIE_EXPLOSION)
+	registerEnum(CONST_ME_PIXIE_COMING)
+	registerEnum(CONST_ME_PIXIE_GOING)
+	registerEnum(CONST_ME_STORM)
+	registerEnum(CONST_ME_STONE_STORM)
+	registerEnum(CONST_ME_BLUE_GHOST)
+	registerEnum(CONST_ME_PINK_VORTEX)
+	registerEnum(CONST_ME_TREASURE_MAP)
+	registerEnum(CONST_ME_PINK_BEAM)
+	registerEnum(CONST_ME_GREEN_FIREWORKS)
+	registerEnum(CONST_ME_ORANGE_FIREWORKS)
+	registerEnum(CONST_ME_PINK_FIREWORKS)
+	registerEnum(CONST_ME_BLUE_FIREWORKS)
+	registerEnum(CONST_ME_SUPREME_CUBE)
+	registerEnum(CONST_ME_BLACK_BLOOD)
+	registerEnum(CONST_ME_PRISMATIC_SPARK)
+	registerEnum(CONST_ME_THAIAN)
+	registerEnum(CONST_ME_THAIAN_GHOST)
+	registerEnum(CONST_ME_GHOST_SMOKE)
+	registerEnum(CONST_ME_WATER_BLOCK_FLOATING)
+	registerEnum(CONST_ME_WATER_BLOCK)
+	registerEnum(CONST_ME_ROOTS)
+	registerEnum(CONST_ME_GHOSTLY_SCRATCH)
+	registerEnum(CONST_ME_GHOSTLY_BITE)
+	registerEnum(CONST_ME_BIG_SCRATCH)
+	registerEnum(CONST_ME_SLASH)
+	registerEnum(CONST_ME_BITE)
+	registerEnum(CONST_ME_CHIVALRIOUS_CHALLENGE)
+	registerEnum(CONST_ME_DIVINE_DAZZLE)
+	registerEnum(CONST_ME_ELECTRICALSPARK)
+	registerEnum(CONST_ME_PURPLETELEPORT)
+	registerEnum(CONST_ME_REDTELEPORT)
+	registerEnum(CONST_ME_ORANGETELEPORT)
+	registerEnum(CONST_ME_GREYTELEPORT)
+	registerEnum(CONST_ME_LIGHTBLUETELEPORT)
+	registerEnum(CONST_ME_FATAL)
+	registerEnum(CONST_ME_DODGE)
+	registerEnum(CONST_ME_HOURGLASS)
+	registerEnum(CONST_ME_DAZZLING)
+	registerEnum(CONST_ME_SPARKLING)
+	registerEnum(CONST_ME_FERUMBRAS_1)
+	registerEnum(CONST_ME_GAZHARAGOTH)
+	registerEnum(CONST_ME_MAD_MAGE)
+	registerEnum(CONST_ME_HORESTIS)
+	registerEnum(CONST_ME_DEVOVORGA)
+	registerEnum(CONST_ME_FERUMBRAS_2)
+	registerEnum(CONST_ME_WHITE_SMOKE)
+	registerEnum(CONST_ME_WHITE_SMOKES)
+	registerEnum(CONST_ME_WATER_DROP)
+	registerEnum(CONST_ME_AVATAR_APPEAR)
+	registerEnum(CONST_ME_DIVINE_GRENADE)
+	registerEnum(CONST_ME_DIVINE_EMPOWERMENT)
+	registerEnum(CONST_ME_WATER_FLOATING_THRASH)
+	registerEnum(CONST_ME_AGONY)
+	registerEnum(CONST_ME_LOOT_HIGHLIGHT)
+	registerEnum(CONST_ME_MELTING_CREAM)
+	registerEnum(CONST_ME_REAPER)
+	registerEnum(CONST_ME_POWERFUL_HEARTS)
+	registerEnum(CONST_ME_CREAM)
+	registerEnum(CONST_ME_GENTLE_BUBBLE)
+	registerEnum(CONST_ME_STARBURST)
+	registerEnum(CONST_ME_SIRUP)
+	registerEnum(CONST_ME_CACAO)
+	registerEnum(CONST_ME_CANDY_FLOSS)
+	registerEnum(CONST_ME_HITAREA_GREEN)
+	registerEnum(CONST_ME_HITAREA_RED)
+	registerEnum(CONST_ME_HITAREA_BLUE)
+	registerEnum(CONST_ME_HITAREA_ORANGE)
+	registerEnum(CONST_ME_WHIRLWIND_BLOW_WHITE)
+	registerEnum(CONST_ME_WHIRLWIND_BLOW_GREEN)
+	registerEnum(CONST_ME_WHIRLWIND_BLOW_PINK)
+	registerEnum(CONST_ME_PULSE_WHITE)
+	registerEnum(CONST_ME_PULSE_GREEN)
+	registerEnum(CONST_ME_PULSE_PINK)
+	registerEnum(CONST_ME_CLAW_WHITE)
+	registerEnum(CONST_ME_CLAW_GREEN)
+	registerEnum(CONST_ME_CLAW_PINK)
+	registerEnum(CONST_ME_BLOW_WHITE)
+	registerEnum(CONST_ME_BLOW_GREEN)
+	registerEnum(CONST_ME_BLOW_BLUE)
+	registerEnum(CONST_ME_BLOW_PINK)
+	registerEnum(CONST_ME_OUTBURST_WHITE)
+	registerEnum(CONST_ME_OUTBURST_GREEN)
+	registerEnum(CONST_ME_OUTBURST_YELLOW)
+	registerEnum(CONST_ME_INK_EXPLOSION)
+	registerEnum(CONST_ME_PAPER_PLANE)
+	registerEnum(CONST_ME_WOODEN_STAKES)
+	registerEnum(CONST_ME_FIRE_SPARKLES)
+	registerEnum(CONST_ME_OPENING_MAGIC_BOOK)
+	registerEnum(CONST_ME_GRAY_ELECTRIC_SPARK)
+	registerEnum(CONST_ME_GREEN_ELECTRIC_SPARK)
+	registerEnum(CONST_ME_PURPLE_ELECTRIC_SPARK)
 
 	registerEnum(CONST_ANI_NONE)
 	registerEnum(CONST_ANI_SPEAR)
@@ -1509,6 +1608,12 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(CONST_ANI_ENVENOMEDARROW)
 	registerEnum(CONST_ANI_GLOOTHSPEAR)
 	registerEnum(CONST_ANI_SIMPLEARROW)
+	registerEnum(CONST_ANI_LEAFSTAR)
+	registerEnum(CONST_ANI_DIAMONDARROW)
+	registerEnum(CONST_ANI_SPECTRALBOLT)
+	registerEnum(CONST_ANI_ROYALSTAR)
+	registerEnum(CONST_ANI_CANDYCANE)
+	registerEnum(CONST_ANI_CHERRYBOMB)
 	registerEnum(CONST_ANI_WEAPONTYPE)
 
 	registerEnum(CONST_PROP_BLOCKSOLID)
@@ -4412,7 +4517,7 @@ int LuaScriptInterface::luaDoTargetCombat(lua_State* L)
 	const uint16_t combatType = static_cast<uint16_t>(getNumber<CombatType_t>(L, 3));
 	const int32_t minDmg      = getNumber<int32_t>(L, 4);
 	const int32_t maxDmg      = getNumber<int32_t>(L, 5);
-	const uint8_t effect      = getNumber<uint8_t>(L, 6, CONST_ME_NONE);
+	const uint16_t effect     = getNumber<uint16_t>(L, 6, CONST_ME_NONE);
 	const bool blockArmor     = getBoolean(L, 8, false);
 	const bool blockShield    = getBoolean(L, 9, false);
 
@@ -18724,7 +18829,7 @@ int LuaScriptInterface::luaCombatSetImpactEffect(lua_State* L)
 		return 1;
 	}
 
-	combat->SetImpactEffect(getNumber<uint8_t>(L, 2));
+	combat->SetImpactEffect(getNumber<uint16_t>(L, 2));
 	pushBoolean(L, true);
 	return 1;
 }
@@ -21070,6 +21175,12 @@ int LuaScriptInterface::luaMonsterTypeRace(lua_State* L)
 				monsterType->info.race = RACE_FIRE;
 			} else if (race == "energy") {
 				monsterType->info.race = RACE_ENERGY;
+			} else if (race == "ink") {
+				monsterType->info.race = RACE_INK;
+			} else if (race == "chocolate") {
+				monsterType->info.race = RACE_CHOCOLATE;
+			} else if (race == "candy") {
+				monsterType->info.race = RACE_CANDY;
 			} else {
 				std::cout << "[Warning - Monsters::loadMonster] Unknown race type " << race << "." << std::endl;
 				lua_pushnil(L);

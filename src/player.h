@@ -856,7 +856,7 @@ class Player final : public Creature
 		void sendAccountManagerTextWindow(uint32_t id, const std::string& text) const				{ if (client) client->sendAccountManagerTextBox(id, text); }
 		void sendCreatePrivateChannel(uint16_t channelId, const std::string& channelName) const		{ if (client) client->sendCreatePrivateChannel(channelId, channelName); }
 		void sendIcons() const																		{ if (client) client->sendIcons(getClientIcons()); }
-		void sendMagicEffect(const Position& pos, uint8_t type) const								{ if (client) client->sendMagicEffect(pos, type); }
+		void sendMagicEffect(const Position& pos, uint16_t type) const								{ if (client) client->sendMagicEffect(pos, type); }
 		void sendPingBack() const																	{ if (client) client->sendPingBack(); }
 		void sendBasicData() const																	{ if (client) client->sendBasicData(); }
 		void sendUnjustifiedStats() const															{ if (client) client->sendUnjustifiedStats(); }

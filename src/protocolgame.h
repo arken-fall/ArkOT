@@ -75,7 +75,7 @@ class ProtocolGame : public Protocol
 		// (see setSharedModernLayout); the per-connection writers below
 		// branch on usesModernLayout() instead.
 		static void AddCreatureHealth(NetworkMessage& msg, const CreatureConstPtr& creature);
-		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type);
+		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint16_t type);
 		static void AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type);
 		static void AddTextMessage(NetworkMessage& msg, const TextMessage& message);
 
@@ -93,7 +93,7 @@ class ProtocolGame : public Protocol
 
 		void authenticateAndLogin(std::string accountName, std::string password, std::string characterName, std::string token, uint32_t tokenTime, OperatingSystem_t operatingSystem, std::string sessionKey);
 
-		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type, bool modernLayout);
+		static void AddMagicEffect(NetworkMessage& msg, const Position& pos, uint16_t type, bool modernLayout);
 		static void AddDistanceShoot(NetworkMessage& msg, const Position& from, const Position& to, uint8_t type, bool modernLayout);
 		static void AddTextMessage(NetworkMessage& msg, const TextMessage& message, bool modernLayout);
 
@@ -216,7 +216,7 @@ class ProtocolGame : public Protocol
 		void sendFYIBox(const std::string& message);
 
 		void sendDistanceShoot(const Position& from, const Position& to, uint8_t type);
-		void sendMagicEffect(const Position& pos, uint8_t type);
+		void sendMagicEffect(const Position& pos, uint16_t type);
 		void sendCreatureHealth(const CreatureConstPtr& creature);
 		void sendSkills();
 		void sendPing();

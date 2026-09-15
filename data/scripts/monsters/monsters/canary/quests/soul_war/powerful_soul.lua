@@ -103,25 +103,26 @@ monster.immunities = {
 }
 
 local transformTimeCount = 0
-mType.onThink = function(monster, interval)
-	transformTimeCount = transformTimeCount + interval
-	if transformTimeCount == 8000 then
-		CreateGoshnarsGreedMonster("Weak Soul", GreedMonsters[monster:getName()])
-		monster:remove()
-		local boss = Creature("Goshnar's Greed")
-		if boss then
-			for elementType, reflectPercent in pairs(SoulWarReflectDamageMap) do
-				boss:addReflectElement(elementType, reflectPercent)
-			end
-			boss:addDefense(10)
-			boss:setMaxHealth(boss:getMaxHealth() + 10000)
-			boss:addHealth(10000)
-		end
-		transformTimeCount = 0
-	end
-end
+-- Canary-only, not available in BlackTek:
+-- mType.onThink = function(monster, interval)
+-- 	transformTimeCount = transformTimeCount + interval
+-- 	if transformTimeCount == 8000 then
+-- 		CreateGoshnarsGreedMonster("Weak Soul", GreedMonsters[monster:getName()])
+-- 		monster:remove()
+-- 		local boss = Creature("Goshnar's Greed")
+-- 		if boss then
+-- 			for elementType, reflectPercent in pairs(SoulWarReflectDamageMap) do
+-- 				boss:addReflectElement(elementType, reflectPercent)
+-- 			end
+-- 			boss:addDefense(10)
+-- 			boss:setMaxHealth(boss:getMaxHealth() + 10000)
+-- 			boss:addHealth(10000)
+-- 		end
+-- 		transformTimeCount = 0
+-- 	end
+-- end
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monster)
 -- 	transformTimeCount = 0
 -- end

@@ -320,8 +320,8 @@ namespace BlackTek
     const uint8_t Augments::ParseRaceType(std::string_view raceType) noexcept 
     {
         // Note : If you add values to the list you must increase the size manually
-        // current size is : 6
-        constexpr std::array<std::pair<std::string_view, RaceType_t>, 6> static_map { 
+        // current size is : 9
+        constexpr std::array<std::pair<std::string_view, RaceType_t>, 9> static_map { 
         {
             {"none",            RACE_NONE},
             {"venom",           RACE_VENOM},
@@ -329,6 +329,9 @@ namespace BlackTek
             {"undead",          RACE_UNDEAD},
             {"fire",            RACE_FIRE},
             {"energy",          RACE_ENERGY},
+            {"ink",             RACE_INK},
+            {"chocolate",       RACE_CHOCOLATE},
+            {"candy",           RACE_CANDY},
         } };
 
         for (const auto& [key, value] : static_map)

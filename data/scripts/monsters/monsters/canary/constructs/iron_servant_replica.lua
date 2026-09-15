@@ -127,7 +127,7 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monster)
 -- 	local chance = math.random(100)
 -- 	if Game.getStorageValue(Storage.Quest.U11_02.ForgottenKnowledge.MechanismDiamond) >= 1 and Game.getStorageValue(Storage.Quest.U11_02.ForgottenKnowledge.MechanismGolden) >= 1 then

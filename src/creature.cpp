@@ -703,6 +703,18 @@ bool Creature::dropCorpse(const CreaturePtr& lastHitCreature, const CreaturePtr&
 				splash = Item::CreateItem(ITEM_FULLSPLASH, FLUID_BLOOD);
 				break;
 
+			case RACE_INK:
+				splash = Item::CreateItem(ITEM_FULLSPLASH, FLUID_INK);
+				break;
+
+			case RACE_CHOCOLATE:
+				splash = Item::CreateItem(ITEM_FULLSPLASH, FLUID_CHOCOLATE);
+				break;
+
+			case RACE_CANDY:
+				splash = Item::CreateItem(ITEM_FULLSPLASH, FLUID_CANDY);
+				break;
+
 			default:
 				splash = nullptr;
 				break;

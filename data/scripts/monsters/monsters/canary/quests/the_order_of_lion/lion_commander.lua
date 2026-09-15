@@ -131,7 +131,7 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monster, spawnPosition)
 -- 	for i = 1, 5 do
 -- 		local sum = Game.createMonster(monster:getType():getSummonList()[math.random(1, #monster:getType():getSummonList())].name, monster:getPosition(), true)

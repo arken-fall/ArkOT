@@ -117,7 +117,7 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monsterCallback)
 -- 	addEvent(function(monsterId)
 -- 		local eventMonster = Monster(monsterId)

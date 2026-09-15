@@ -209,7 +209,7 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monster, spawnPosition)
 -- 	if monster:getType():isRewardBoss() then
 -- 		-- reset global storage state to default / ensure sqm's reset for the next team

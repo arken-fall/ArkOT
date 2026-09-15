@@ -331,9 +331,8 @@ namespace BlackTek
 	struct NoticeData
 	{
 		TextColor_t color = TEXTCOLOR_NONE;
-		MagicEffectClasses effect = CONST_ME_NONE;
 		FluidTypes_t fluid = FLUID_NONE;
-		uint8_t padding = 0;
+		MagicEffectClasses effect = CONST_ME_NONE;
 	};
 
 	template<ByteLike T1, ByteLike T2, ByteLike T3 = FluidTypes_t>
@@ -342,9 +341,8 @@ namespace BlackTek
 		NoticeData data
 		{
 			.color = static_cast<TextColor_t>(color),
-			.effect = static_cast<MagicEffectClasses>(effect),
 			.fluid = static_cast<FluidTypes_t>(fluid),
-			.padding = 0
+			.effect = static_cast<MagicEffectClasses>(effect)
 		};
 		return std::bit_cast<uint32_t>(data);
 	}
@@ -354,9 +352,8 @@ namespace BlackTek
 	struct HealNoticeData
 	{
 		TextColor_t        color   = TEXTCOLOR_NONE;
-		MagicEffectClasses effect  = CONST_ME_NONE;
 		Combat::Config     stat    = Combat::Config::PlaceHolder;
-		uint8_t            padding = 0;
+		MagicEffectClasses effect  = CONST_ME_NONE;
 	};
 
 	struct HealNotice
@@ -372,9 +369,8 @@ namespace BlackTek
 		HealNoticeData data
 		{
 			.color   = static_cast<TextColor_t>(color),
-			.effect  = static_cast<MagicEffectClasses>(effect),
 			.stat    = static_cast<Combat::Config>(stat),
-			.padding = 0
+			.effect  = static_cast<MagicEffectClasses>(effect)
 		};
 		return std::bit_cast<uint32_t>(data);
 	}
@@ -3784,7 +3780,7 @@ namespace BlackTek
 			g_game.addMagicEffect(target_position, CONST_ME_BLOCKHIT);
 	}
 
-	uint8_t Combat::immunity_block_effect() const noexcept
+	uint16_t Combat::immunity_block_effect() const noexcept
 	{
 		switch (damage_type)
 		{
@@ -4525,6 +4521,9 @@ namespace BlackTek
 			case (DamageType::Physical << 8) | RACE_UNDEAD:		return PackNotice(TEXTCOLOR_LIGHTGREY, CONST_ME_HITAREA);
 			case (DamageType::Physical << 8) | RACE_FIRE:		return PackNotice(TEXTCOLOR_ORANGE, CONST_ME_DRAWBLOOD);
 			case (DamageType::Physical << 8) | RACE_ENERGY:		return PackNotice(TEXTCOLOR_ELECTRICPURPLE, CONST_ME_ENERGYHIT);
+			case (DamageType::Physical << 8) | RACE_INK:			return PackNotice(TEXTCOLOR_LIGHTGREY, CONST_ME_HITAREA, FLUID_INK);
+			case (DamageType::Physical << 8) | RACE_CHOCOLATE:	return PackNotice(TEXTCOLOR_LIGHTGREY, CONST_ME_CACAO, FLUID_CHOCOLATE);
+			case (DamageType::Physical << 8) | RACE_CANDY:		return PackNotice(TEXTCOLOR_DARKRED, CONST_ME_SIRUP, FLUID_CANDY);
 			case (DamageType::Energy << 8):						return PackNotice(TEXTCOLOR_ELECTRICPURPLE, CONST_ME_ENERGYHIT);
 			case (DamageType::Earth << 8):						return PackNotice(TEXTCOLOR_LIGHTGREEN, CONST_ME_GREEN_RINGS);
 			case (DamageType::Water << 8):						return PackNotice(TEXTCOLOR_LIGHTBLUE, CONST_ME_LOSEENERGY);

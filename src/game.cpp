@@ -6688,7 +6688,7 @@ void Game::addCreatureHealth(const SpectatorVec& spectators, const CreatureConst
 	}
 }
 
-void Game::addMagicEffect(const Position& position, const uint8_t effect, std::span<const CreaturePtr> spectators)
+void Game::addMagicEffect(const Position& position, const uint16_t effect, std::span<const CreaturePtr> spectators)
 {
 	if (spectators.empty())
 		return;
@@ -6705,14 +6705,14 @@ void Game::addMagicEffect(const Position& position, const uint8_t effect, std::s
 	}
 }
 
-void Game::addMagicEffect(const Position& position, const uint8_t effect)
+void Game::addMagicEffect(const Position& position, const uint16_t effect)
 {
 	SpectatorVec spectators;
 	map.getSpectators(spectators, position, true, true);
 	addMagicEffect(spectators, position, effect);
 }
 
-void Game::addMagicEffect(const SpectatorVec& spectators, const Position& position, const uint8_t effect)
+void Game::addMagicEffect(const SpectatorVec& spectators, const Position& position, const uint16_t effect)
 {
 	const auto players = spectators.players();
 

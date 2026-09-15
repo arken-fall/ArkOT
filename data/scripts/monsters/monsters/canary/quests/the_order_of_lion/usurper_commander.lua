@@ -133,7 +133,7 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monster, spawnPosition)
 -- 	local sum
 -- 	for i = 1, 5 do

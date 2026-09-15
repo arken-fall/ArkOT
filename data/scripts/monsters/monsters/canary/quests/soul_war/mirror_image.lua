@@ -145,7 +145,7 @@ monster.events = {
 	"MirrorImageTransform",
 }
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onPlayerAttack = function(monster, attackerPlayer)
 -- 	logger.info("Player {}, attacking monster {}", attackerPlayer:getName(), monster:getName())
 -- 

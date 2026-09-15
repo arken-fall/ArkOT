@@ -165,13 +165,14 @@ local zonePositions = zone:getPositions()
 
 local accumulatedTime = 0
 local desiredInterval = 40000
-mType.onThink = function(monster, interval)
-	accumulatedTime = accumulatedTime + interval
-	-- Execute only after 40 seconds
-	if accumulatedTime >= desiredInterval then
-		monster:createSoulWarWhiteTiles(SoulWarQuest.levers.goshnarsMalice.boss.position, zonePositions)
-		accumulatedTime = 0
-	end
-end
+-- Canary-only, not available in BlackTek:
+-- mType.onThink = function(monster, interval)
+-- 	accumulatedTime = accumulatedTime + interval
+-- 	-- Execute only after 40 seconds
+-- 	if accumulatedTime >= desiredInterval then
+-- 		monster:createSoulWarWhiteTiles(SoulWarQuest.levers.goshnarsMalice.boss.position, zonePositions)
+-- 		accumulatedTime = 0
+-- 	end
+-- end
 
 mType:register(monster)

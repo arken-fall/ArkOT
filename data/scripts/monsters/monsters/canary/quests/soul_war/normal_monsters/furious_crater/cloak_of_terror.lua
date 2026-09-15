@@ -184,8 +184,9 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
-mType.onThink = function(monster, interval)
-	monster:tryTeleportToPlayer("I am your terror!")
-end
+-- Canary-only, not available in BlackTek:
+-- mType.onThink = function(monster, interval)
+-- 	monster:tryTeleportToPlayer("I am your terror!")
+-- end
 
 mType:register(monster)

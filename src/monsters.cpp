@@ -134,6 +134,9 @@ static RaceType_t parseRaceType(std::string_view str)
 	if (str == "undead") return RACE_UNDEAD;
 	if (str == "fire")   return RACE_FIRE;
 	if (str == "energy") return RACE_ENERGY;
+	if (str == "ink")    return RACE_INK;
+	if (str == "chocolate") return RACE_CHOCOLATE;
+	if (str == "candy")  return RACE_CANDY;
 	return RACE_BLOOD;
 }
 

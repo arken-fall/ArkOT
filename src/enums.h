@@ -183,6 +183,9 @@ enum RaceType_t : uint8_t {
 	RACE_UNDEAD,
 	RACE_FIRE,
 	RACE_ENERGY,
+	RACE_INK,
+	RACE_CHOCOLATE,
+	RACE_CANDY,
 };
 
 // this should be "DamageType" or something more fitting than CombatType

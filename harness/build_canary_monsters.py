@@ -180,7 +180,7 @@ class Monster:
             entries[key] = spell
         return entries
 
-    def convert(self, known_spells):
+    def convert(self, known_spells, known_methods):
         pieces = []
         cursor = 0
         extra = []
@@ -233,13 +233,19 @@ class Monster:
         pieces.append(self.text[cursor:])
         text = "".join(pieces)
 
-        def unbound(match):
-            self.note("Callbacks BlackTek does not bind (commented out)", match.group(1))
-            body = match.group(0)
-            return "-- Canary-only callback, not bound by BlackTek:\n" + "\n".join("-- " + line for line in body.splitlines())
+        def callback(match):
+            name, body = match.group(1), match.group(0)
+            if name not in BOUND_CALLBACKS:
+                self.note("Callbacks BlackTek does not bind (commented out)", name)
+            else:
+                unknown = sorted({method for method in re.findall(r"[a-zA-Z_]\w*:(\w+)\(", body) if method not in known_methods})
+                if not unknown:
+                    return body
+                self.note("Callbacks calling methods BlackTek lacks (commented out)", f"{name} uses {', '.join(unknown)}")
+            return "-- Canary-only, not available in BlackTek:\n" + "\n".join("-- " + line for line in body.splitlines())
 
         # a callback runs from its assignment to the `end` at column 0 that closes it
-        text = re.sub(r"^mType\.(\w+) = function\b.*?^end\b", lambda m: m.group(0) if m.group(1) in BOUND_CALLBACKS else unbound(m), text, flags=re.M | re.S)
+        text = re.sub(r"^mType\.(\w+) = function\b.*?^end\b", callback, text, flags=re.M | re.S)
         return text
 
 
@@ -265,6 +271,15 @@ def main():
     for path in (ROOT / "data/scripts/spells").rglob("*.lua"):
         known_spells.update(name.lower() for name in re.findall(r'spell:name\("([^"]+)"\)', path.read_text(errors="replace")))
 
+    # methods a callback may call: what the engine registers, plus what BlackTek's own Lua defines
+    known_methods = set(re.findall(r'registerMethod\("[A-Za-z]+",\s*"(\w+)"', (ROOT / "src/luascript.cpp").read_text(errors="replace")))
+    for path in (ROOT / "data").rglob("*.lua"):
+        if out in path.parents:
+            continue
+        text = path.read_text(errors="replace")
+        known_methods.update(re.findall(r"function \w+[:.](\w+)\(", text))
+        known_methods.update(re.findall(r"^\s*(\w+)\s*=\s*function", text, re.M))
+
     report = {}
     written = 0
     wanted = {name.lower() for name in args.only} if args.only else None
@@ -277,7 +292,7 @@ def main():
         monster = Monster(path, items, report)
         target = out / path.relative_to(source)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(monster.convert(known_spells))
+        target.write_text(monster.convert(known_spells, known_methods))
         known.add(monster.name.lower())
         written += 1
 

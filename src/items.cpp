@@ -160,6 +160,9 @@ const gtl::flat_hash_map<std::string, RaceType_t> RaceTypesMap = {
 	{"undead", RACE_UNDEAD},
 	{"fire", RACE_FIRE},
 	{"energy", RACE_ENERGY},
+	{"ink", RACE_INK},
+	{"chocolate", RACE_CHOCOLATE},
+	{"candy", RACE_CANDY},
 };
 
 const gtl::flat_hash_map<std::string, WeaponType_t> WeaponTypesMap = {
@@ -193,6 +196,9 @@ const gtl::flat_hash_map<std::string, FluidTypes_t> FluidTypesMap = {
 	{"swamp", FLUID_SWAMP},
 	{"tea", FLUID_TEA},
 	{"mead", FLUID_MEAD},
+	{"ink", FLUID_INK},
+	{"candy", FLUID_CANDY},
+	{"chocolate", FLUID_CHOCOLATE},
 };
 
 bool Items::addItemSkill(uint32_t item_id, std::string_view skill_name, const std::shared_ptr<CustomSkill>& skill)

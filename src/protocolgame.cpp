@@ -5180,12 +5180,12 @@ void ProtocolGame::AddDistanceShoot(NetworkMessage& msg, const Position& from, c
 	msg.addByte(type);
 }
 
-void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type)
+void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint16_t type)
 {
 	AddMagicEffect(msg, pos, type, shared_modern_layout);
 }
 
-void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint8_t type, bool modernLayout)
+void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint16_t type, bool modernLayout)
 {
 	msg.add(ServerCode::MagicEffect);
 	msg.addPosition(pos);
@@ -5200,7 +5200,8 @@ void ProtocolGame::AddMagicEffect(NetworkMessage& msg, const Position& pos, uint
 	}
 	else
 	{
-		msg.addByte(type);
+		// legacy clients read a single byte, so they never see an effect past 255
+		msg.addByte(static_cast<uint8_t>(type));
 	}
 }
 
@@ -5226,7 +5227,7 @@ void ProtocolGame::sendDistanceShoot(const Position& from, const Position& to, u
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendMagicEffect(const Position& pos, uint8_t type)
+void ProtocolGame::sendMagicEffect(const Position& pos, uint16_t type)
 {
 	if (not canSee(pos)) {
 		return;
@@ -6091,6 +6092,9 @@ namespace
 			case FLUID_COCONUTMILK: return 15;
 			case FLUID_TEA: return 16;
 			case FLUID_MEAD: return 17;
+			case FLUID_INK: return 18;
+			case FLUID_CANDY: return 19;
+			case FLUID_CHOCOLATE: return 20;
 			default: return 0;
 		}
 	}

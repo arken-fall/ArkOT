@@ -938,3 +938,34 @@ back with a warning. Eleven primal pack beasts register but not their
 "(Primal)" variants (RegisterPrimalPackBeast, from the Primal Ordeal quest
 lib), and five Soul War bosses need that quest's lib; both come with their
 quests. 48 loot entries name items BlackTek does not have.
+
+## 2026-09-15 — 15.x magic effects, missiles, and three new bloods
+
+**Why.** Canary's monsters and spells use effects the 15.25 client knows and
+BlackTek had no name for, and three races it does not define. Effect ids
+now run past 255 (cacao is 270, the electric sparks reach 303) while the
+engine carried them in a byte, even though the modern protocol has always
+written them as a u16.
+
+**Changed.** MagicEffectClasses is a uint16_t and gains Canary's 99 newer
+effects with their name lookups and Lua constants; ShootType_t gains the
+five newer missiles. Every place an effect travelled as a byte follows:
+Game::addMagicEffect, ProtocolGame::AddMagicEffect / sendMagicEffect,
+Player::sendMagicEffect, Combat's impact effect and immunity_block_effect,
+and two Lua bindings. The packed hit and heal notices stay 32 bits by
+putting the wider effect last. Legacy clients still get a single byte.
+
+Races ink, chocolate and candy are parsed everywhere a race is read
+(monsters, Lua, items, augments), spill FLUID_INK / FLUID_CANDY /
+FLUID_CHOCOLATE on death and on a physical hit, with Canary's colours and
+effects, and those fluids are sent to modern clients as 18, 19 and 20.
+
+**Monster port follow-up.** The converter now also comments out a bound
+callback whose body calls a method BlackTek does not have (17 of them, all
+Soul War helpers such as tryTeleportToPlayer), instead of leaving it to
+error on every think.
+
+**Verified.** On the rig: effects 270, 303 and 210 sent to the real client
+with no decode errors; a Candy Horror (race chocolate) killed by a GM left
+corpse 48267 and splash 2016 with fluid 50 on its tile; the only Lua errors
+left at boot are the 16 known primal pack beast and Soul War registrations.

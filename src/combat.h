@@ -527,7 +527,7 @@ namespace BlackTek
 		[[nodiscard]] uint32_t collect_notice_data(const CreaturePtr& target) const noexcept;
 		[[nodiscard]] uint32_t collect_heal_notice_data() const noexcept;
 		[[nodiscard]] static constexpr OriginNotice collect_origin_notice(Origin o) noexcept;
-		[[nodiscard]] uint8_t immunity_block_effect() const noexcept;
+		[[nodiscard]] uint16_t immunity_block_effect() const noexcept;
 		[[nodiscard]] std::expected<uint32_t, BlockType> block(const CreaturePtr& attacker, const PlayerPtr& target) noexcept;
 		[[nodiscard]] std::expected<uint32_t, BlockType> block(const CreaturePtr& attacker, const MonsterPtr& target) noexcept;
 		void block_batch(const CreaturePtr& attacker, std::span<const CreaturePtr> targets, std::span<uint32_t> out_damages, std::span<BlockType> out_block_types) noexcept;
@@ -641,7 +641,7 @@ namespace BlackTek
 
 		void SetDamageType(uint16_t type) noexcept { damage_type = type; }
 		void SetDamage(uint32_t new_damage) noexcept { damage = new_damage; }
-		void SetImpactEffect(uint8_t effect) noexcept { impactEffect = effect; }
+		void SetImpactEffect(uint16_t effect) noexcept { impactEffect = effect; }
 		void SetDistanceEffect(uint8_t effect) noexcept { distanceEffect = effect; }
 		void SetBlockType(uint8_t block_type) noexcept { blockType = block_type; }
 		void SetItemId(uint16_t item) noexcept { itemId = item; }
@@ -649,7 +649,7 @@ namespace BlackTek
 		[[nodiscard]] bool GetConfig(Config flag) const noexcept { return config.test(flag); }
 		[[nodiscard]] uint16_t GetDamageType() const noexcept { return damage_type; }
 		[[nodiscard]] uint32_t GetDamage() const noexcept { return damage; }
-		[[nodiscard]] uint8_t GetImpactEffect() const noexcept { return impactEffect; }
+		[[nodiscard]] uint16_t GetImpactEffect() const noexcept { return impactEffect; }
 		[[nodiscard]] uint8_t GetDistanceEffect() const noexcept { return distanceEffect; }
 		[[nodiscard]] uint8_t GetBlockType() const noexcept { return blockType; }
 		[[nodiscard]] uint16_t GetItemId() const noexcept { return itemId; }
@@ -755,7 +755,7 @@ namespace BlackTek
 		static inline Metrics::StrikeCapture metrics_cap{};
 		uint8_t blockType = BlockType::NoBlock;
 		uint8_t origin = Origin::None;
-		uint8_t impactEffect = CONST_ME_NONE;
+		uint16_t impactEffect = CONST_ME_NONE;
 		uint8_t distanceEffect = CONST_ANI_NONE;
 
 		

@@ -172,15 +172,16 @@ monster.immunities = {
 }
 
 local firstTime = 0
-mType.onThink = function(monster, interval)
-	firstTime = firstTime + interval
-	-- Run only 15 seconds before creation
-	if firstTime >= 15000 then
-		monster:goshnarsDefenseIncrease("greedy-maw-action")
-	end
-end
+-- Canary-only, not available in BlackTek:
+-- mType.onThink = function(monster, interval)
+-- 	firstTime = firstTime + interval
+-- 	-- Run only 15 seconds before creation
+-- 	if firstTime >= 15000 then
+-- 		monster:goshnarsDefenseIncrease("greedy-maw-action")
+-- 	end
+-- end
 
--- Canary-only callback, not bound by BlackTek:
+-- Canary-only, not available in BlackTek:
 -- mType.onSpawn = function(monsterCallback)
 -- 	firstTime = 0
 -- end
