@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Flickering Soul" script="Flickering Soul.lua" walkinterval="0" floorchange="0">
+	<health now="100" max="100" />
+	<look type="1219" head="6" body="26" legs="26" feet="6" />
+</npc>

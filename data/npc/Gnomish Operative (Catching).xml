@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Gnomish Operative (Catching)" script="Gnomish Operative (Catching).lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="493" head="120" body="104" legs="76" feet="38" />
+</npc>

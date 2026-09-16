@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Captain Haba (Open Sea)" script="Captain Haba (Open Sea).lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="98" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="bait,8297,50" />
+	</parameters>
+</npc>

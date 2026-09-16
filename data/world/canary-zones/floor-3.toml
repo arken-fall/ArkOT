@@ -930,9 +930,9 @@ range = { start = "32624:31919:3", end = "32629:31927:3" }
 spawn_type = "npc"
 policy = "fixed"
 npcs = [
-    { position = "3:2:0", name = "Humnog, the guard" },
+    { position = "3:2:0", name = "Humnog, The Guard" },
     { position = "2:4:0", name = "Emperor Kruzak" },
-    { position = "3:6:0", name = "Hemor, the guard" },
+    { position = "3:6:0", name = "Hemor, The Guard" },
 ]
 
 [ConvertedSpawn_z3_8488]

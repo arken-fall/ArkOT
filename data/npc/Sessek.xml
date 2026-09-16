@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Sessek" script="Sessek.lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="339" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="banana,2676,6;coconut,2678,8;cookie,2687,2;fish,2667,5;jalapeno pepper,8844,4;mango,5097,10;melon,2682,12;orange,2675,5;peas,12639,3;pineapple,12415,14;roll,2690,2;vial of coconut milk,2006,6;vial of fruit juice,2006,6;vial of tea,2006,6;vial of water,2006,6;vial of wine,2006,6" />
+	</parameters>
+</npc>

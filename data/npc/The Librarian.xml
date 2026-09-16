@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="The Librarian" script="The Librarian.lua" walkinterval="0" floorchange="0">
+	<health now="100" max="100" />
+	<look type="1065" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="atlas,6108,150;black book,1972,20;brown book,1971,20;document,1968,20;greeting card,6387,40;grey small book,1973,20;inkwell,2600,20;parchment,1967,15;parchment,1969,15;scroll,1949,10;valentine's card,6538,40" />
+		<parameter key="shop_sellable" value="Inkwell black,33439,720;blue book,1978,40;book page,33440,640;bunch of reed,34978,25;gemmed book,1976,150;glowing rune,33441,350;green book,1965,30;inkwell,2600,15;orange book,1977,60;parchment,1967,10;quill,33438,1100;silken bookmark,33437,1300" />
+	</parameters>
+</npc>

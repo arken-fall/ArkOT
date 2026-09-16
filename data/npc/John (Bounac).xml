@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="John (Bounac)" script="John (Bounac).lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="1245" head="40" legs="99" feet="28" addons="3" />
+</npc>

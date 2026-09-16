@@ -230,13 +230,19 @@ def merge_spawns(monster_file, npc_file, target):
     spawns = ET.Element("spawns")
     counts = {"monster": 0, "npc": 0}
     names = {"monster": set(), "npc": set()}
+    # the engine opens data/npc/<name>.xml by the spawn's spelling, and a few of
+    # ArkOT's own npc files capitalise differently than Canary's spawns
+    defined = {path.stem.lower(): path.stem for path in (ROOT / "data/npc").glob("*.xml")}
     for path, kind in ((monster_file, "monster"), (npc_file, "npc")):
         for group in ET.parse(path).getroot():
             spawn = ET.SubElement(spawns, "spawn", {key: group.get(key) for key in ("centerx", "centery", "centerz", "radius")})
             for creature in group:
-                ET.SubElement(spawn, kind, dict(creature.attrib))
+                attributes = dict(creature.attrib)
+                if kind == "npc":
+                    attributes["name"] = defined.get(attributes.get("name", "").lower(), attributes.get("name"))
+                ET.SubElement(spawn, kind, attributes)
                 counts[kind] += 1
-                names[kind].add(creature.get("name"))
+                names[kind].add(attributes.get("name"))
     ET.indent(spawns, "\t")
     ET.ElementTree(spawns).write(target, encoding="unicode", xml_declaration=True)
     return counts, names

@@ -25378,8 +25378,8 @@ range = { start = "33152:31223:7", end = "33160:31232:7" }
 spawn_type = "npc"
 policy = "fixed"
 npcs = [
-    { position = "6:2:0", name = "Zurak" },
-    { position = "2:7:0", name = "Zurak" },
+    { position = "6:2:0", name = "zurak" },
+    { position = "2:7:0", name = "zurak" },
 ]
 
 [ConvertedSpawn_z7_8984]

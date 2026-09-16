@@ -1019,3 +1019,34 @@ own scripts do. Health potions were always right (they heal).
 **Verified.** All 124 spells load with no Lua errors (the only ones left at
 boot are the 16 known primal pack beast and Soul War registrations), and a
 mana potion drunk by a non-GM character took mana from 100 to 225.
+
+## 2026-09-15 — Canary's npcs, so the new towns are not empty
+
+**Why.** Canary's map spawns 956 npcs and ArkOT defined 777 of them: 179
+spawns failed, which is why Issavi, Marapur, Moonfall and the other newer
+towns stood empty.
+
+**Converter.** harness/build_canary_npcs.py writes each missing npc the way
+BlackTek keeps them, splitting Canary's single file in two: the body becomes
+data/npc/<name>.xml (outfit, health, walk interval, floorchange, and a shop
+as module_shop with shop_buyable / shop_sellable, whose client ids are
+resolved to server ids), and the dialog becomes data/npc/scripts/<name>.lua
+around the TFS npc system both projects inherited, so keywords, greetings and
+voices carry over as Canary wrote them. A npc registered under a spawn suffix
+("A Dead Bureaucrat (1)") keeps that name in the XML so the spawns find it.
+
+Left commented out, and listed in the report: Canary's dialog callbacks,
+which take the npc and creature where this system takes a creature id, and
+lines reading Canary's renumbered Storage.Quest entries. Both belong with the
+quests, which are not ported yet. `registerHealKeyword`, which four healer
+npcs call, is now in data/npc/lib/npcsystem/custommodules.lua.
+
+**Spawn names.** Six npcs ArkOT already had are spelled differently in
+Canary's spawns (Baa'Leal vs Baa'leal, Zurak vs zurak). The engine opens
+data/npc/<name>.xml by the spawned spelling, so build_canary_map.py now
+writes the spelling ArkOT's own files use, and the zone files were rebuilt
+from the corrected spawn file.
+
+**Verified.** On the rig: no npc XML or Lua errors at boot, 949 npcs spawned
+where the unported set managed 803, and a normal (non-GM) character greeted
+Iptar-Sin in Issavi, who answered by name and offered to heal.

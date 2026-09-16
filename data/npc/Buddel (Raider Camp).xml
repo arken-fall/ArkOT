@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Buddel (Raider Camp)" script="Buddel (Raider Camp).lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="143" head="19" body="57" legs="22" feet="20" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_sellable" value="compass,11219,45" />
+	</parameters>
+</npc>

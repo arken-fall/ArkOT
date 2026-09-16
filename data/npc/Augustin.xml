@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Augustin" script="Augustin.lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="1316" head="57" body="38" legs="21" feet="21" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="bounty talisman,49830,5000;black pearl,2144,560;bronze goblet,5807,2000;ruby necklace,2133,3560;silver goblet,5806,3000;small amethyst,2150,400;small diamond,2145,600;small emerald,2149,500;small ruby,2147,500;small sapphire,2146,500;wedding ring,2121,990;white pearl,2143,320" />
+		<parameter key="shop_sellable" value="alptramun's toothbrush,34167,270000;amber,36320,20000;amber with a bug,36318,41000;amber with a dragonfly,36319,56000;ancient coin,30497,350;ancient lich bone,35570,28000;angel figurine,36284,36000;bar of gold,15515,10000;beast's nightmare-cushion,34170,630000;black pearl,2144,280;blue crystal shard,18413,1500;blue crystal splinter,18418,400;blue gem,2158,5000;broken longbow,37484,130;broken ring of ending,13877,4000;broken visor,22518,1900;brown crystal splinter,18417,400;carnisylvan bark,39243,230;carnisylvan finger,39242,250;cobra crest,35655,650;coral brooch,30498,750;crunor idol,34277,30000;cyan crystal fragment,18419,800;damaged armor plates,33664,280;demonic essence,6500,1000;diamond,36428,15000;dragon figurine,34275,45000;skull coin,36278,12000;small amethyst,2150,200;small diamond,2145,300;small emerald,2149,250;small enchanted amethyst,7762,200;small enchanted emerald,7761,250;small enchanted ruby,7760,250;small enchanted sapphire,7759,250;small ruby,2147,250;small sapphire,2146,250;small topaz,9970,200;Soul Orb,5944,25;Talon,2151,320;tiger eye,31050,350;unicorn figurine,34276,50000;violet crystal shard,18414,1500;Violet Gem,2153,10000;Watermelon Tourmaline,37129,230000;Watermelon Tourmaline,37128,30000;white silk flower,37338,9000;wedding ring,2121,100;White Gem,36427,12000;white pearl,2143,160;White Silk Flower,37338,9000;Yellow Gem,2154,1000" />
+	</parameters>
+</npc>

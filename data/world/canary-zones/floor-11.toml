@@ -76,7 +76,7 @@ range = { start = "32777:31599:11", end = "32781:31603:11" }
 spawn_type = "npc"
 policy = "fixed"
 npcs = [
-    { position = "2:2:0", name = "Larfion The Shaman" },
+    { position = "2:2:0", name = "Larfion the Shaman" },
 ]
 
 [ConvertedSpawn_z11_67]

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Ferryman Kamil (Meluna)" script="Ferryman Kamil (Meluna).lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="132" body="71" legs="76" feet="115" addons="3" />
+</npc>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Tonar" script="Tonar.lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100" />
+	<look type="146" body="66" legs="124" addons="2" />
+</npc>

@@ -740,7 +740,7 @@ range = { start = "33042:32621:4", end = "33046:32625:4" }
 spawn_type = "npc"
 policy = "fixed"
 npcs = [
-    { position = "2:2:0", name = "Baa'Leal" },
+    { position = "2:2:0", name = "Baa'leal" },
 ]
 
 [ConvertedSpawn_z4_5096]

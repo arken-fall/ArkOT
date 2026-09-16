@@ -954,7 +954,7 @@ range = { start = "33101:32518:2", end = "33105:32522:2" }
 spawn_type = "npc"
 policy = "fixed"
 npcs = [
-    { position = "2:2:0", name = "Nah'Bob" },
+    { position = "2:2:0", name = "Nah'bob" },
 ]
 
 [ConvertedSpawn_z2_9028]
