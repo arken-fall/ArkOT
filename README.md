@@ -45,10 +45,10 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 | Market | Partial | Full 15.25 flow, but every item goes out with tier 0 even though forge tiers exist. |
 | Cyclopedia | Partial | All request types answered; the combat pages still send ~57 hard-coded zeros. |
 | Legacy 10.98 listeners | Retired | `game_port = 0`, and the legacy `ProtocolLogin`/`ProtocolOld` pair is not registered on a modern server; starting both generations is refused. |
-| Multi-world identity | Partial | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Live with two public worlds, `ArkOT` and `ArkOT Test`, since 2026-09-16. |
+| Multi-world identity | Done | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Live with two public worlds, `ArkOT` and `ArkOT Test`, since 2026-09-16. |
 | In-binary login | Partial | `ProtocolLoginModern` serves the world list on 7171, the only port a 15.25 client will take it on. `harness/login_client.py` gets a world list from it; no real client has reached it. Production doesn't use it: the shipped client logs in over HTTP, which the website answers for every world. |
-| Account-wide bans | Partial | A ban bars the account on every world and names its issuer. An expired ban is retired once, however many worlds notice. Verified live across two worlds. |
-| One session per account | Partial | An account may be online on one world at a time; Gamemaster-and-above accounts and `allow_clones` are exempt. Fails closed, and survives a crashed world within 45 s. Exercised live across two worlds, including a killed world and a frozen one, and on the production host with a real client. |
+| Account-wide bans | Done | A ban bars the account on every world and names its issuer. An expired ban is retired once, however many worlds notice. Verified live across two worlds. |
+| One session per account | Done | An account may be online on one world at a time; Gamemaster-and-above accounts and `allow_clones` are exempt. Fails closed, and survives a crashed world within 45 s. Exercised live across two worlds, including a killed world and a frozen one, and on the production host with a real client. |
 
 ## World content
 
