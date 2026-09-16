@@ -290,18 +290,8 @@ def load_canary_storages(path):
     return found
 
 
-def resolve(name, canary, pack, pack_folded, ported):
-    """Canary storage reference -> (storage name, number) or None.
-
-    A quest the port brought over writes Canary's own numbers, so the log has to
-    watch those same numbers or it will never see the quest start. Where the
-    server kept its own numbering for a quest the 10.98 pack already had, the
-    name is resolved against that table instead, as before.
-    """
-    own = re.sub(r"^Storage\.", "", name)
-    if own in ported:
-        return own, ported[own]
-
+def pack_name(name, pack, pack_folded):
+    """The 10.98 pack's own name for a Canary storage, if it has one."""
     relative = canary_relative(name)
     candidates = [relative]
     root, _, leaf = relative.partition(".")
@@ -309,10 +299,32 @@ def resolve(name, canary, pack, pack_folded, ported):
         candidates.append(f"{ROOT_ALIASES[root]}.{leaf}")
     for candidate in candidates:
         if candidate in pack:
-            return candidate, pack[candidate]
+            return candidate
         folded = pack_folded.get(candidate.lower())
         if folded:
-            return folded, pack[folded]
+            return folded
+    return None
+
+
+def resolve(name, canary, pack, pack_folded, ported, written_names=()):
+    """Canary storage reference -> (storage name, number) or None.
+
+    The same quest step has two numbers here: Canary's, which the ported quest
+    scripts write, and the pack's, which the npcs that came with the 10.98 pack
+    still write. A log entry watching the number nothing writes never shows the
+    quest, so the one this server actually writes wins; where both or neither
+    are written, Canary's own numbering does, since the map is Canary's.
+    """
+    own = re.sub(r"^Storage\.", "", name)
+    theirs = own if own in ported else None
+    ours = pack_name(name, pack, pack_folded)
+
+    if theirs and theirs not in written_names and ours in written_names:
+        return ours, pack[ours]
+    if theirs:
+        return theirs, ported[theirs]
+    if ours:
+        return ours, pack[ours]
     return None
 
 
@@ -349,9 +361,9 @@ def normalise(quest):
     return quest
 
 
-def resolved_missions(quest, canary, pack, pack_folded, ported):
+def resolved_missions(quest, canary, pack, pack_folded, ported, written_names):
     return sum(1 for mission in quest["missions"].values()
-               if isinstance(mission.get("storageid"), Ref) and resolve(mission["storageid"].name, canary, pack, pack_folded, ported))
+               if isinstance(mission.get("storageid"), Ref) and resolve(mission["storageid"].name, canary, pack, pack_folded, ported, written_names))
 
 
 def title_key(name):
@@ -359,10 +371,11 @@ def title_key(name):
 
 
 def build_quest(quest, source, canary, pack, pack_folded, ported, written):
+    written_names = set(written)
     report = {"file": source, "name": quest.get("name"), "kept": [], "dropped": [], "disagree": [], "dynamic": []}
 
     start = quest.get("startstorageid")
-    start_resolved = resolve(start.name, canary, pack, pack_folded, ported) if isinstance(start, Ref) else None
+    start_resolved = resolve(start.name, canary, pack, pack_folded, ported, written_names) if isinstance(start, Ref) else None
     if not start_resolved:
         report["dropped"].append(f"start storage {getattr(start, 'name', start)}")
         return None, report
@@ -377,7 +390,7 @@ def build_quest(quest, source, canary, pack, pack_folded, ported, written):
     for number in sorted(k for k in missions if isinstance(k, int)):
         mission = missions[number]
         storage = mission.get("storageid")
-        resolved = resolve(storage.name, canary, pack, pack_folded, ported) if isinstance(storage, Ref) else None
+        resolved = resolve(storage.name, canary, pack, pack_folded, ported, written_names) if isinstance(storage, Ref) else None
         if not resolved:
             report["dropped"].append(f"{mission.get('name')} ({getattr(storage, 'name', storage)})")
             continue
@@ -468,7 +481,7 @@ def main():
         quest = normalise(Parser(path.read_text(errors="replace")).find_assignment("quest"))
         source = f"Canary {path.name}"
         older = legacy.get(title_key(quest["name"]))
-        if older and resolved_missions(older, canary, pack, pack_folded, ported) > resolved_missions(quest, canary, pack, pack_folded, ported):
+        if older and resolved_missions(older, canary, pack, pack_folded, ported, set(written)) > resolved_missions(quest, canary, pack, pack_folded, ported, set(written)):
             quest, source = older, "otservbr-global 2019 quests.lua"
         toml, report = build_quest(quest, source, canary, pack, pack_folded, ported, written)
         reports.append(report)
