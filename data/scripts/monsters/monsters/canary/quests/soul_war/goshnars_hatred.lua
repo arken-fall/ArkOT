@@ -162,7 +162,7 @@ monster.immunities = {
 
 mType.onDisappear = function(monster, creature)
 	if creature:getName() == "Goshnar's Hatred" then
-		for _, monsterName in pairs(SoulWarQuest.burningHatredMonsters) do
+		for _, monsterName in pairs({ "Ashes of Burning Hatred", "Spark of Burning Hatred", "Flame of Burning Hatred", "Blaze of Burning Hatred" }) do
 			local ashesCreature = Creature(monsterName)
 			if ashesCreature then
 				ashesCreature:remove()

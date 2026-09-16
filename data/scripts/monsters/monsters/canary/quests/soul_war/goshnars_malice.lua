@@ -160,8 +160,8 @@ monster.immunities = {
 	{ type = "bleed", condition = false },
 }
 
-local zone = Zone.getByName("boss.goshnar's-malice")
-local zonePositions = zone:getPositions()
+-- local zone = Zone.getByName("boss.goshnar's-malice")
+-- local zonePositions = zone:getPositions()
 
 local accumulatedTime = 0
 local desiredInterval = 40000

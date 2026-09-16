@@ -140,7 +140,7 @@ monster.attacks = {
 		effect = CONST_ME_GROUNDSHAKER,
 		target = false,
 	},
-	{ name = "cruelty transform elemental", interval = Ref(SoulWarQuest.goshnarsCrueltyWaveInterval) * 1000, chance = 50 },
+	{ name = "cruelty transform elemental", interval = 7 * 1000, chance = 50 },
 }
 
 monster.defenses = {

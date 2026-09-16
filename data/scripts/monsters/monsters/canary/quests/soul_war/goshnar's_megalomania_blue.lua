@@ -144,8 +144,8 @@ monster.immunities = {
 
 local intervalBetweenExecutions = 10000
 
-local zone = Zone.getByName("boss.goshnar's-megalomania-purple")
-local zonePositions = zone:getPositions()
+-- local zone = Zone.getByName("boss.goshnar's-megalomania-purple")
+-- local zonePositions = zone:getPositions()
 
 -- Canary-only, not available in BlackTek:
 -- mType.onThink = function(monsterCallback, interval)

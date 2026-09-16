@@ -125,7 +125,7 @@ monster.attacks = {
 		target = true,
 	},
 	{ name = "soulwars fear", interval = 35000, chance = 100, target = true },
-	{ name = "megalomania transform elemental", interval = Ref(SoulWarQuest.goshnarsCrueltyWaveInterval) * 1000, chance = 50 },
+	{ name = "megalomania transform elemental", interval = 7 * 1000, chance = 50 },
 	{
 		name = "combat",
 		interval = 30000,
@@ -186,8 +186,8 @@ monster.immunities = {
 
 local intervalBetweenExecutions = 10000
 
-local zone = Zone.getByName("boss.goshnar's-megalomania-purple")
-local zonePositions = zone:getPositions()
+-- local zone = Zone.getByName("boss.goshnar's-megalomania-purple")
+-- local zonePositions = zone:getPositions()
 
 -- Canary-only, not available in BlackTek:
 -- mType.onThink = function(monsterCallback, interval)

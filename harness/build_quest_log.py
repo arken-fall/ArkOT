@@ -171,17 +171,53 @@ class Parser:
             self.take()
             result = -self.value()
         elif kind == "name":
+            start = self.peek()[2]
             parts = [self.take()[1]]
-            while (self.peek()[1] == "." and self.peek(1)[0] == "name") or (self.peek()[1] == "[" and self.peek(1)[0] == "number" and self.peek(2)[1] == "]"):
+            while ((self.peek()[1] in (".", ":") and self.peek(1)[0] == "name")
+                   or (self.peek()[1] == "[" and self.peek(1)[0] == "number" and self.peek(2)[1] == "]")):
                 if self.take()[1] == "[":
                     parts.append(self.take()[1])
                     self.take("]")
                 else:
                     parts.append(self.take()[1])
-            result = Ref(".".join(parts))
+            result = self.call(start) if self.opens_arguments() else Ref(".".join(parts))
         else:
             raise ValueError(f"unexpected {token!r}")
         return self.continuation(result)
+
+    def opens_arguments(self):
+        # Lua lets a call drop its parentheses around one string or table argument
+        return self.peek()[1] in ("(", "{") or self.peek()[0] in ("string", "longstring")
+
+    def call(self, start):
+        """A call inside a data table is kept as written: `kv.scoped("quest"):scoped("soul-war")` is code, not a value."""
+        end = self.arguments()
+        # a call may be called again on what it returned, as far as the chain runs
+        while self.peek()[1] in (".", ":") and self.peek(1)[0] == "name":
+            self.take()
+            self.take()
+            if not self.opens_arguments():
+                break
+            end = self.arguments()
+        return Raw(self.text[start:end])
+
+    def arguments(self):
+        """Take one call's arguments, and answer where they end."""
+        opener = self.peek()[1]
+        if opener not in ("(", "{"):
+            _, token, at = self.take()
+            return at + len(token)
+
+        closer = ")" if opener == "(" else "}"
+        depth = 0
+        while True:
+            _, token, at = self.take()
+            if token == opener:
+                depth += 1
+            elif token == closer:
+                depth -= 1
+                if depth == 0:
+                    return at + len(token)
 
     def continuation(self, result):
         # string concatenation and simple arithmetic keep the parse moving

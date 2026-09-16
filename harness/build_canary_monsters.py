@@ -107,6 +107,51 @@ class Items:
         return self.server.get(client_id) if client_id is not None else None
 
 
+def quest_library(canary):
+    """The tables Canary's quest libs hold, by name.
+
+    A boss written for a quest reads that quest's own numbers out of a lib -
+    SoulWarQuest.goshnarsCrueltyWaveInterval is how often the cruelty wave
+    fires - and the lib itself is a quest system of its own, built on a key
+    value store BlackTek has no counterpart for. The plain numbers and name
+    lists in it carry over though, so they are read here and written into the
+    monster where it asked for them.
+    """
+    tables = {}
+    for path in sorted((canary / "data-otservbr-global/lib/quests").glob("*.lua")):
+        text = path.read_text(errors="replace")
+        parser = Parser(text)
+        tokens = parser.tokens
+        index = 0
+        while index + 2 < len(tokens):
+            kind, word, start = tokens[index]
+            opens_file = start == 0 or text[text.rfind("\n", 0, start) + 1:start] == ""
+            if kind == "name" and opens_file and tokens[index + 1][1] == "=" and tokens[index + 2][1] == "{":
+                parser.index = index + 2
+                try:
+                    tables[word] = parser.value()
+                except Exception:
+                    break
+                index = parser.index
+            else:
+                index += 1
+    return tables
+
+
+def plain(value):
+    """The Lua for a number, a string or a list of them - nothing that needs the quest's own code.
+
+    A list is written on the one line it replaces, since it stands where the
+    monster wrote the name it read the list by.
+    """
+    if isinstance(value, (int, float, str)):
+        return lua(value)
+    if isinstance(value, dict) and value and set(value) == set(range(1, len(value) + 1)):
+        if all(isinstance(item, (int, float, str)) for item in value.values()):
+            return "{ " + ", ".join(lua(item) for item in value.values()) + " }"
+    return None
+
+
 def statements(text):
     """Yield (key, value, start, end) for every top-level `monster.<key> = <value>`."""
     parser = Parser(text)
@@ -180,7 +225,7 @@ class Monster:
             entries[key] = spell
         return entries
 
-    def convert(self, known_spells, known_methods):
+    def convert(self, known_spells, known_methods, library):
         pieces = []
         cursor = 0
         extra = []
@@ -246,7 +291,48 @@ class Monster:
 
         # a callback runs from its assignment to the `end` at column 0 that closes it
         text = re.sub(r"^mType\.(\w+) = function\b.*?^end\b", callback, text, flags=re.M | re.S)
-        return text
+        return self.quest_lines(text, library)
+
+    def quest_lines(self, text, library):
+        """Give a quest boss the numbers its quest lib held, and drop what the lib alone could give.
+
+        What is left after that is a zone the lib draws itself and a function
+        the key value store backs, neither of which arrives with the map, so
+        those lines are commented out - and with them every later line that
+        reads a local they defined, which would only find nil.
+        """
+        def resolve(path):
+            node = library
+            for part in path.split("."):
+                if not isinstance(node, dict):
+                    return None
+                node = node.get(part)
+            return node
+
+        lines, dead = [], set()
+        for line in text.splitlines():
+            if line.lstrip().startswith("--"):
+                lines.append(line)
+                continue
+
+            unported = "Zone.getByName(" in line
+            for path in re.findall(r"\b(\w+Quest(?:\.\w+)+)", line):
+                written = plain(resolve(path))
+                if written is None:
+                    unported = True
+                    continue
+                line = line.replace(f"Ref({path})", written).replace(path, written)
+                self.note("Numbers read out of a Canary quest lib", path)
+            if not unported:
+                unported = any(re.search(rf"\b{re.escape(name)}\b", line) for name in dead)
+
+            if unported:
+                for name in re.findall(r"^\s*local (\w+)", line):
+                    dead.add(name)
+                self.note("Lines needing a Canary quest lib (commented out)", line.strip()[:70])
+                line = "-- " + line
+            lines.append(line)
+        return "\n".join(lines) + ("\n" if text.endswith("\n") else "")
 
 
 def main():
@@ -261,6 +347,7 @@ def main():
     source = canary / "data-otservbr-global/monster"
     out = Path(args.out)
     items = Items(canary)
+    library = quest_library(canary)
 
     known = set()
     for path in (ROOT / "data/scripts/monsters").rglob("*.lua"):
@@ -292,7 +379,7 @@ def main():
         monster = Monster(path, items, report)
         target = out / path.relative_to(source)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(monster.convert(known_spells, known_methods))
+        target.write_text(monster.convert(known_spells, known_methods, library))
         known.add(monster.name.lower())
         written += 1
 
