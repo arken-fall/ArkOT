@@ -102,6 +102,10 @@ namespace BlackTek::Store
 			System() = default;
 
 			bool deliver(const PlayerPtr& player, const StoreCategory& category, const StoreProduct& product, uint8_t productType, const std::string& param) const;
+			// the debit on its own, with no history row written: for a caller that
+			// may still have to undo the debit and decides the row once it knows
+			// the outcome. removeCoins is this plus the row.
+			bool spend(const PlayerPtr& player, uint32_t amount, StoreProduct::Coins coins) const;
 			void record(uint32_t accountId, HistoryEntry::Mode mode, int32_t amount, StoreProduct::Coins coins, const std::string& description) const;
 			[[nodiscard]] std::vector<const StoreProduct*> search(const StoreWindow& window, std::string_view text) const;
 

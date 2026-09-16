@@ -338,10 +338,10 @@ namespace BlackTek::Store
 		// to land before the product does: refused after delivery, it would hand
 		// the product out for nothing to an account that spent the same coins in
 		// another world. SpendDelta is a pure function of the cached balance and
-		// the price, and nothing between here and removeCoins touches either, so
-		// this is the exact pair removeCoins applies and the exact pair to undo.
+		// the price, and nothing between here and the debit touches either, so
+		// this is the exact pair spend applies and the exact pair to undo.
 		const CoinDelta spent = SpendDelta(player, product->price, product->coins);
-		if (not removeCoins(player, product->price, product->coins, product->name))
+		if (not spend(player, product->price, product->coins))
 		{
 			player->sendStoreError(Error::Purchase, "Your purchase could not be completed.");
 			return;
@@ -350,8 +350,11 @@ namespace BlackTek::Store
 		if (not deliver(player, *category, *product, productType, param))
 		{
 			// the coins left the row but the product never arrived, so put them
-			// back through the same guarded write. No history row: a purchase
-			// that was undone is not a transaction the player made.
+			// back through the same guarded write. The debit is recorded only
+			// after delivery has succeeded, so an undone purchase leaves nothing
+			// behind in the history: neither a charge nor a compensation for it,
+			// because a purchase that was undone is not a transaction the player
+			// made.
 			if (not ApplyCoinDelta(player, -spent.regular, -spent.transferable))
 			{
 				Console::Database::Error("Store::System::purchase: account {:d} was debited {:d} {:s} coins for '{:s}' and the refund was refused; the balance needs a manual correction",
@@ -360,6 +363,11 @@ namespace BlackTek::Store
 			player->sendStoreError(Error::Purchase, "Your purchase could not be completed.");
 			return;
 		}
+
+		// the product landed, so the debit is now a transaction the player made:
+		// exactly the row removeCoins writes for its own callers, written here
+		// instead so that the history follows the outcome rather than the debit
+		record(player->getAccount(), Mode::Normal, -static_cast<int32_t>(product->price), product->coins, product->name);
 
 		player->sendStorePurchaseResult(fmt::format("You have purchased {:s}.", product->name));
 		player->sendStoreBalances();
@@ -506,8 +514,10 @@ namespace BlackTek::Store
 		return true;
 	}
 
-	// a regular price is paid from the regular coins first, then from the transferable ones
-	bool System::removeCoins(const PlayerPtr& player, uint32_t amount, Coins coins, const std::string& description) const
+	// a regular price is paid from the regular coins first, then from the
+	// transferable ones. The debit alone: a caller whose spend may still be
+	// undone writes the history row itself, once it knows the outcome
+	bool System::spend(const PlayerPtr& player, uint32_t amount, Coins coins) const
 	{
 		if (not player or amount == 0 or BalanceFor(player, coins) < amount)
 		{
@@ -517,8 +527,15 @@ namespace BlackTek::Store
 		// the split is chosen from the cached balance, but the write is guarded
 		// against the row's own columns, so a cache that outran the database costs
 		// the player a refused purchase rather than a negative balance
-		const CoinDelta spend = SpendDelta(player, amount, coins);
-		if (not ApplyCoinDelta(player, spend.regular, spend.transferable))
+		const CoinDelta debit = SpendDelta(player, amount, coins);
+		return ApplyCoinDelta(player, debit.regular, debit.transferable);
+	}
+
+	// the debit plus its history row, for every caller whose spend is final the
+	// moment the coins leave the row
+	bool System::removeCoins(const PlayerPtr& player, uint32_t amount, Coins coins, const std::string& description) const
+	{
+		if (not spend(player, amount, coins))
 		{
 			return false;
 		}
