@@ -206,7 +206,7 @@ local config = {
 			completeText = {
 				"You have found the source of power which strengthened the minotaurs. Thanks a lot! Here your reward.",
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.Minotaurs.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.Minotaurs.Mission,
 			value = 5,
 			rewardExp = 25000,
 		},
@@ -219,7 +219,7 @@ local config = {
 				"Thanks a lot. As I already supposed the museum is just a disguise. ...",
 				'You found out the true meaning. As you have described their cult object the AM on the floor might stand for "Aurea Manus". Here is your reward for your effort.',
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.MotA.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.MotA.Mission,
 			value = 14,
 			rewardExp = 50000,
 		},
@@ -232,7 +232,7 @@ local config = {
 				"The Penitent, thats what they called him? If their spiritual leader and creator of this following changed so radically...",
 				"Something far more dangerous must have stood behind this.",
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.Barkless.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.Barkless.Mission,
 			value = 6,
 			rewardExp = 50000,
 		},
@@ -243,7 +243,7 @@ local config = {
 			completeText = {
 				"That was no god - yet you rid the world of a being which, without the help of one, would not even have been here in the first place. Nicely done.",
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.Orcs.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.Orcs.Mission,
 			value = 2,
 			rewardExp = 25000,
 		},
@@ -255,7 +255,7 @@ local config = {
 				"Thanks a lot. You have revealed the mystery of this cult and killed the sandking. ...",
 				"The signature AM you have seen, could stand for 'Aeterna Exsistentia' regarding the eternal life. As a reward I give this to you.",
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.Life.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.Life.Mission,
 			value = 9,
 			rewardExp = 50000,
 		},
@@ -267,7 +267,7 @@ local config = {
 			completeText = {
 				"So the leader of these... Misguided was actually controlled and not the other way round? Whatever is behind all this, that's some first-rate irony right there.",
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.Misguided.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.Misguided.Mission,
 			value = 4,
 			rewardExp = 50000,
 		},
@@ -279,7 +279,7 @@ local config = {
 			completeText = {
 				"Zathroth wasn't behind this after all. That's good... what's not good is that we have to deal with an unknown power now, let's hope for the best.",
 			},
--- 			storage = Storage.Quest.U11_40.CultsOfTibia.Humans.Mission,
+			storage = Storage.Quest.U11_40.CultsOfTibia.Humans.Mission,
 			value = 2,
 			rewardExp = 25000,
 		},
@@ -299,18 +299,18 @@ local rewardExperience = {}
 -- 	end
 -- 
 -- 	if MsgContains(message, "missions") then
--- -- 		if player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) > 2 then
+-- 		if player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) > 2 then
 -- 			npcHandler:say("You have already fulfilled your job to my full satisfaction. The cults are investigated and the final boss is eliminated. I have nothing more for you to do. Fare you well!", npc, creature)
 -- 			npcHandler:setTopic(playerId, 0)
 -- 		elseif
--- -- 			player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Minotaurs.Mission) == 6
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Life.Mission) == 10
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.MotA.Mission) == 15
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Barkless.Mission) == 7
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Misguided.Mission) == 5
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Orcs.Mission) == 3
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Humans.Mission) == 3
--- -- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) < 2
+-- 			player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Minotaurs.Mission) == 6
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Life.Mission) == 10
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.MotA.Mission) == 15
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Barkless.Mission) == 7
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Misguided.Mission) == 5
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Orcs.Mission) == 3
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Humans.Mission) == 3
+-- 			and player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) < 2
 -- 		then
 -- 			npcHandler:say({
 -- 				"Your actions have weakened the worldly anchors of the enemy and unveiled the source they use to strengthen their cults. ...",
@@ -318,11 +318,11 @@ local rewardExperience = {}
 -- 				"But be warned, you will need a group twice as great compared to those with which you defeated the cults. Go now, with my blessings.",
 -- 			}, npc, creature)
 -- 			npcHandler:setTopic(playerId, 0)
--- -- 			if player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) < 1 then
--- -- 				player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission, 1)
--- -- 				player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.AccessDoor, 1)
+-- 			if player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) < 1 then
+-- 				player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission, 1)
+-- 				player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.AccessDoor, 1)
 -- 			end
--- -- 		elseif player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) == 2 then
+-- 		elseif player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission) == 2 then
 -- 			npcHandler:say({
 -- 				"You have done our world a great favour and reason enough to be proud of yourself. ...",
 -- 				"Although we could not rout out each and every cult and they will soon find another source to fuel their evil, we have dealt the enemy a vital blow that will take time and resources to recouperate from. ...",
@@ -358,8 +358,8 @@ local rewardExperience = {}
 -- 			if player:getStorageValue(storage[playerId]) < 1 then
 -- 				npcHandler:say("Very nice! Come back if you have found what's going on in this cult.", npc, creature)
 -- 				player:setStorageValue(storage[playerId], 1)
--- -- 				if player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Questline) < 1 then
--- -- 					player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.Questline, 1)
+-- 				if player:getStorageValue(Storage.Quest.U11_40.CultsOfTibia.Questline) < 1 then
+-- 					player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.Questline, 1)
 -- 				end
 -- 				npcHandler:setTopic(playerId, 2)
 -- 			elseif player:getStorageValue(storage[playerId]) > 0 then
@@ -386,7 +386,7 @@ local rewardExperience = {}
 -- 			player:sendTextMessage(MESSAGE_EXPERIENCE, "You gained 50000 experience points.")
 -- 			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You gained a mystery box.")
 -- 			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You gained a " .. item .. ".")
--- -- 			player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission, 3)
+-- 			player:setStorageValue(Storage.Quest.U11_40.CultsOfTibia.FinalBoss.Mission, 3)
 -- 			npcHandler:say("Here's your reward. Thank you and farewell!", npc, creature)
 -- 			npcHandler:setTopic(playerId, 0)
 -- 		end

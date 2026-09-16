@@ -12,7 +12,9 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
-keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "You are not ready yet." }, condition)
+local function addTravelKeyword(keyword, text, cost, destination, action, condition)
+	if condition then
+		keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "You are not ready yet." }, condition)
 	end
 
 	local travelKeyword = keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = text, cost = cost, discount = "postman" })

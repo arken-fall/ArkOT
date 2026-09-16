@@ -7,7 +7,9 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
-keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "No, no, no, you even are no barb....barba...er.. one of us!!!! Talk to the Jarl first!" }, condition)
+local function addTravelKeyword(keyword, text, destination, randomDestination, randomNumber, condition, ringCheck, ringRemove)
+	if condition then
+		keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "No, no, no, you even are no barb....barba...er.. one of us!!!! Talk to the Jarl first!" }, condition)
 	end
 	if ringCheck then
 		local ring = keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "Ohh, you got a nice ring there! Ya don't have to pay if you gimme the ring and I promise you I will bring you to the correct spot!*HICKS* Alright?" }, ringCheck)
@@ -33,7 +35,7 @@ addTravelKeyword("svargrond", "You know a town nicer than this? NICER DICER! Apr
 end, function()
 	return math.random(5) > 1
 end, function(player)
--- 	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
+	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
 end, function(player)
 	return player:getItemCount(3097) > 0
 end, function(player)
@@ -44,7 +46,7 @@ addTravelKeyword("okolnir", "It's nice there. Except of the ice dragons which ar
 end, function()
 	return math.random(5) > 1
 end, function(player)
--- 	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
+	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
 end, function(player)
 	return player:getItemCount(3097) > 0
 end, function(player)
@@ -55,7 +57,7 @@ addTravelKeyword("tyrsung", "*HICKS* Big, big island east of here. Venorian hunt
 end, function()
 	return math.random(5) > 1
 end, function(player)
--- 	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
+	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
 end, function(player)
 	return player:getItemCount(3097) > 0
 end, function(player)
@@ -66,7 +68,7 @@ addTravelKeyword("camp", "Both of you look like you could defend yourself! If yo
 end, function()
 	return math.random(5) > 1
 end, function(player)
--- 	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
+	return player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) ~= 8
 end, function(player)
 	return player:getItemCount(3097) > 0
 end, function(player)

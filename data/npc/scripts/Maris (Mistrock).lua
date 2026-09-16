@@ -7,7 +7,8 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
-local travelKeyword = keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "Do you want go to " .. text .. " for |TRAVELCOST|?", cost = cost })
+local function addTravelKeyword(keyword, text, cost, destination)
+	local travelKeyword = keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "Do you want go to " .. text .. " for |TRAVELCOST|?", cost = cost })
 	travelKeyword:addChildKeyword({ "yes" }, StdModule.travel, { npcHandler = npcHandler, premium = false, cost = cost, destination = destination })
 	travelKeyword:addChildKeyword({ "no" }, StdModule.say, { npcHandler = npcHandler, text = "Alright then!", reset = true })
 end
@@ -31,8 +32,8 @@ keywordHandler:addKeyword(
 	},
 	nil,
 	function(player)
--- 		if player:getStorageValue(Storage.Quest.U8_4.TheHiddenCityOfBeregar.WayToBeregar) ~= 1 then
--- 			player:setStorageValue(Storage.Quest.U8_4.TheHiddenCityOfBeregar.WayToBeregar, 1)
+		if player:getStorageValue(Storage.Quest.U8_4.TheHiddenCityOfBeregar.WayToBeregar) ~= 1 then
+			player:setStorageValue(Storage.Quest.U8_4.TheHiddenCityOfBeregar.WayToBeregar, 1)
 		end
 	end
 )

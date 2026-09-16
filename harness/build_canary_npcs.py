@@ -169,12 +169,33 @@ class Npc:
                 said.append(f"\t{{text = '{text}'}}")
         return said
 
+    def dialog_start(self):
+        """The first keyword, or the top level statement that holds it.
+
+        A npc that hands its travel keywords to a helper writes the first
+        addKeyword inside that helper, so the slice opens at the helper's own
+        line - the nearest line at or above it that begins in the first column -
+        or the dialog would start on a block with no head and never parse.
+        """
+        keyword = self.text.find("keywordHandler:addKeyword")
+        if keyword < 0:
+            return -1
+        lines = self.text.splitlines(keepends=True)
+        offsets, offset = [], 0
+        for line in lines:
+            offsets.append(offset)
+            offset += len(line)
+        found = max(index for index, start in enumerate(offsets) if start <= keyword)
+        for index in range(found, -1, -1):
+            if lines[index].strip() and not lines[index][0].isspace():
+                return offsets[index]
+        return offsets[found]
+
     def dialog(self):
         """Everything from the first keyword to the npc's registration, as Canary wrote it."""
-        start = self.text.find("keywordHandler:addKeyword")
+        start = self.dialog_start()
         if start < 0:
             return ""
-        start = self.text.rfind("\n", 0, start) + 1
         end = self.text.find("npcHandler:addModule(FocusModule")
         if end < 0:
             end = self.text.find("npcType:register")
@@ -183,7 +204,12 @@ class Npc:
         def comment(match):
             self.notes.append("callback commented out: " + match.group(0).splitlines()[0].strip())
             return "\n".join("-- " + line for line in match.group(0).splitlines())
-        body = re.sub(r"^local function \w+\(.*?^end\b", comment, body, flags=re.M | re.S)
+        # only the functions the npc hands to setCallback: a travel or greeting
+        # helper of the npc's own takes its own arguments and carries over as written
+        callbacks = set(re.findall(r"^npcHandler:setCallback\([^,]+,\s*(\w+)\s*\)", body, flags=re.M))
+        if callbacks:
+            body = re.sub(rf"^local function (?:{'|'.join(sorted(callbacks))})\(.*?^end\b", comment,
+                          body, flags=re.M | re.S)
         body = re.sub(r"^npcHandler:setCallback\(.*?\)\s*$", comment, body, flags=re.M)
         # npcConfig and npcType belong to Canary's side of the split: the body is XML here
         body = re.sub(r"^npcConfig\.\w+ = \{.*?^\}\s*$\n?", "", body, flags=re.M | re.S)
@@ -191,13 +217,6 @@ class Npc:
         body = re.sub(r"^npcType\.\w+ = function\b[^\n]*\bend\s*$\n?", "", body, flags=re.M)
         body = re.sub(r"^npcType\.\w+ = function\b.*?^end\b\n?", "", body, flags=re.M | re.S)
         body = re.sub(r"^npcType[:.]\w+\(.*?\)\s*$\n?", "", body, flags=re.M)
-
-        # Canary renumbered its storages under Storage.Quest; those lines belong
-        # with the quest itself, which is not ported yet
-        def storage(match):
-            self.notes.append("line using a Canary storage commented out: " + match.group(0).strip()[:60])
-            return "-- " + match.group(0)
-        body = re.sub(r"^[^\n]*\bStorage\.Quest\.[^\n]*$", storage, body, flags=re.M)
         return body.strip()
 
     def script(self):

@@ -7,7 +7,9 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
-keywordHandler:addKeyword({ keyword }, StdModule.say, {
+local function addTravelKeyword(keyword, text, cost, discount, destination, condition, action)
+	if condition then
+		keywordHandler:addKeyword({ keyword }, StdModule.say, {
 			npcHandler = npcHandler,
 			text = {
 				"Well, you might be just the hero they need there. To tell you the truth, some our most reliable ore mines have started to run low. ...",
