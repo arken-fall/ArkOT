@@ -13,6 +13,7 @@
 #include "player.h"
 #include "accountmanager.h"
 #include "console.h"
+#include "world.h"
 
 #include <fmt/format.h>
 
@@ -103,16 +104,48 @@ bool IOLoginData::loginserverAuthentication(const std::string& name, const std::
 	account.accountType = static_cast<AccountType_t>(result->getNumber<int32_t>("type"));
 	account.premiumEndsAt = result->getNumber<time_t>("premium_ends_at");
 
-	if (g_config.GetBoolean(ConfigManager::ENABLE_ACCOUNT_MANAGER) and account.id != AccountManager::ID) {
-		account.characters.push_back(AccountManager::NAME);
+	// Every world's `players` table lives on this same MySQL instance, so one
+	// query per world, schema-qualified from the registry, assembles the whole
+	// list off this one connection. One query per world rather than a UNION:
+	// a single missing or unreadable schema would null a UNION's entire result
+	// set, hiding every other world's characters along with it.
+	const auto worlds = BlackTek::World::Registry::GetInstance().All();
+	const bool offerAccountManager = g_config.GetBoolean(ConfigManager::ENABLE_ACCOUNT_MANAGER) and account.id != AccountManager::ID;
+
+	for (const auto& world : worlds)
+	{
+		// the account manager exists in every world process, so it is offered on every world
+		if (offerAccountManager)
+		{
+			account.characters.push_back(CharacterEntry{ .name = AccountManager::NAME, .world = world.id });
+		}
+
+		// storeQuery reports "no rows" and "the query failed" the same way, as a
+		// null result, so the count is asked for first: COUNT(*) always yields a
+		// row when the schema is readable. That keeps "this account has nobody
+		// here", which is ordinary, from logging as a broken world, and sizes the
+		// one growth this loop performs.
+		const auto counted = db.storeQuery(fmt::format("SELECT COUNT(*) AS `total` FROM `{:s}`.`players` WHERE `account_id` = {:d} AND `deletion` = 0", world.schema, account.id));
+
+		if (not counted)
+		{
+			BlackTek::Console::Database::Warn("IOLoginData::loginserverAuthentication: could not read schema '{:s}' of world '{:s}' (id {:d}); it contributes no characters to account {:d}'s list.", world.schema, world.name, world.id, account.id);
+		}
+
+		else if (const auto total = counted->getNumber<uint32_t>("total"); total > 0)
+		{
+			account.characters.reserve(account.characters.size() + total);
+
+			if (const auto names = db.storeQuery(fmt::format("SELECT `name` FROM `{:s}`.`players` WHERE `account_id` = {:d} AND `deletion` = 0 ORDER BY `name` ASC", world.schema, account.id)))
+			{
+				do
+				{
+					account.characters.push_back(CharacterEntry{ .name = std::string{names->getString("name")}, .world = world.id });
+				} while (names->next());
+			}
+		}
 	}
 
-	result = db.storeQuery(fmt::format("SELECT `name` FROM `players` WHERE `account_id` = {:d} AND `deletion` = 0 ORDER BY `name` ASC", account.id));
-	if (result) {
-		do {
-			account.characters.emplace_back(result->getString("name"));
-		} while (result->next());
-	}
 	return true;
 }
 

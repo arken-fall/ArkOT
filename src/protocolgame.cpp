@@ -26,6 +26,7 @@
 #include "iomarket.h"
 #include "ban.h"
 #include "scheduler.h"
+#include "world.h"
 
 #include <ranges>
 #include <fmt/format.h>
@@ -530,6 +531,23 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	if (hasFeature(ProtocolFeature::SequenceChecksum))
 	{
 		setChecksumMode(ChecksumMode::Sequence);
+	}
+
+	// 13.40+ clients announce the world they think they dialled before any
+	// framed traffic; a mismatch means the login source routed them wrong.
+	// Checked here rather than in Connection because XTEA is established by
+	// this point, so the refusal below is framed exactly as the client expects
+	// instead of being a silent close. A client that sent no preamble at all
+	// (the harness, legacy clients) announces nothing and is never refused.
+	if (const auto connection = getConnection())
+	{
+		const auto announced = connection->GetWorldLine();
+		if (not announced.empty() and not BlackTek::World::IsLocalWorld(announced))
+		{
+			BlackTek::Console::Net::Warn("ProtocolGame::onRecvFirstMessage: rejected a client announcing world '{:s}' on world '{:s}'.", announced, BlackTek::World::Local().name);
+			disconnectClient(fmt::format("This is {:s}. Please pick that world in your client's world list.", BlackTek::World::Local().name));
+			return;
+		}
 	}
 
 	if (operatingSystem >= CLIENTOS_OTCLIENT_LINUX)

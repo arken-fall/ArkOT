@@ -46,6 +46,15 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 			return transportGeneration == BlackTek::Network::TransportGeneration::Modern;
 		}
 
+		// A login-protocol client opens with a plaintext world-name line that is
+		// normally EMPTY, so its first byte is the '\n' itself - which no two-byte
+		// sniff can tell apart from a length header's low byte. Protocols whose
+		// port guarantees that line say so here, and Connection consumes it up
+		// front instead of guessing at it.
+		[[nodiscard]] bool requiresWorldLine() const noexcept {
+			return world_line_required;
+		}
+
 		//Use this function for autosend messages only
 		OutputMessage_ptr getOutputBuffer(int32_t size);
 
@@ -82,6 +91,10 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 			transportGeneration = generation;
 		}
 
+		void setWorldLineRequired(bool value) noexcept {
+			world_line_required = value;
+		}
+
 		void setChecksumMode(BlackTek::Network::ChecksumMode mode) {
 			checksumMode = mode;
 		}
@@ -114,6 +127,9 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 		bool encryptionEnabled = false;
 		bool checksumEnabled = true;
 		bool rawMessages = false;
+		// Transport knowledge, not protocol state: whether this protocol's client
+		// always announces a world-name line before its first framed packet.
+		bool world_line_required = false;
 };
 
 #endif

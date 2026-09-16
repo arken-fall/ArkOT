@@ -2220,7 +2220,6 @@ void LuaScriptInterface::registerFunctions()
 	registerEnumIn("configKeys", ConfigManager::SERVER_SAVE_CLEAN_MAP);
 	registerEnumIn("configKeys", ConfigManager::SERVER_SAVE_CLOSE);
 	registerEnumIn("configKeys", ConfigManager::SERVER_SAVE_SHUTDOWN);
-	registerEnumIn("configKeys", ConfigManager::ONLINE_OFFLINE_CHARLIST);
 	registerEnumIn("configKeys", ConfigManager::LUA_ITEM_DESC);
 	registerEnumIn("configKeys", ConfigManager::CHECK_DUPLICATE_STORAGE_KEYS);
 

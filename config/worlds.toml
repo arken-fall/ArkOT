@@ -1,0 +1,47 @@
+# The world list this deployment serves. Deploy this SAME file to every world.
+#
+# Every world process reads the whole list, then finds its own row by matching
+# [world].id from config/server.toml. That row is cross-checked against the rest
+# of this process's configuration, so a world can never advertise another
+# world's address, port or database:
+#
+#   address  must equal  config/server.toml   [network].ip
+#   port     must equal  config/server.toml   [network].game_port_modern
+#   schema   must equal  config/database.toml [mysql].database
+#
+# A mismatch, a duplicate id or name, a missing required field, or an id that
+# this file does not declare, all refuse the boot with a specific message.
+#
+# Field reference:
+#   id       - the world-id byte the login protocol puts on the wire (0..255)
+#   name     - EXACTLY what the client is told the world is called; the client
+#              echoes it back as the plaintext preamble on the game connection.
+#              This is the login source's world name (the login webservice's
+#              SERVER_NAME), NOT config/server.toml's [identity].name.
+#   address  - what the client dials for that world's game server
+#   port     - what the client dials; that world's game_port_modern
+#   schema   - that world's MySQL database, on the shared MySQL instance.
+#              Every world's schema must live on ONE MySQL instance, since a
+#              single connection serves them all.
+#
+# Deleting this file is supported: a process with no config/worlds.toml
+# synthesises the single world described by its own configuration and boots
+# exactly as it did before this file existed.
+
+[[world]]
+id      = 0
+name    = "BlackTek"
+address = "127.0.0.1"
+port    = 7183
+schema  = "blacktek"
+
+# A second world is declared by adding another [[world]] block. Uncomment and
+# adjust this one once that world's schema exists and its process is deployed
+# with [world].id = 1, its own game_port_modern and its own [mysql].database.
+#
+# [[world]]
+# id      = 1
+# name    = "BlackTek-Hardcore"
+# address = "127.0.0.1"
+# port    = 7283
+# schema  = "blacktek_world_1"

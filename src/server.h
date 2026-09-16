@@ -6,8 +6,12 @@
 
 #include "connection.h"
 #include "signals.h"
+#include "console.h"
 
+#include <expected>
 #include <memory>
+#include <string>
+#include <utility>
 #include <gtl/phmap.hpp>
 
 class Protocol;
@@ -48,6 +52,20 @@ class Service final : public ServiceBase
 class ServicePort : public std::enable_shared_from_this<ServicePort>
 {
 	public:
+		// Either the port is accepting, or the reason it is not, so a caller can
+		// say what went wrong instead of only that something did.
+		using BindResult = std::expected<void, std::string>;
+
+		// What open() should do with a bind it could not complete. A listener
+		// that was accepting once and then failed is worth reopening on a timer;
+		// a bind that never succeeded at all is a permanent, silent outage if it
+		// is only retried, so that case is reported back to the caller instead.
+		enum class BindFailure : uint8_t
+		{
+			Report,
+			Retry
+		};
+
 		explicit ServicePort(boost::asio::io_context& io_context) : io_context(io_context) {}
 		~ServicePort();
 
@@ -56,7 +74,7 @@ class ServicePort : public std::enable_shared_from_this<ServicePort>
 		ServicePort& operator=(const ServicePort&) = delete;
 
 		static void openAcceptor(const std::weak_ptr<ServicePort>& weak_service, uint16_t port);
-		void open(uint16_t port);
+		[[nodiscard]] BindResult open(uint16_t port, BindFailure onFailure = BindFailure::Retry);
 		void close() const;
 		bool is_single_socket() const;
 		std::string get_protocol_names() const;
@@ -88,11 +106,21 @@ class ServiceManager
 		ServiceManager(const ServiceManager&) = delete;
 		ServiceManager& operator=(const ServiceManager&) = delete;
 
+		// Either the service is listening, or the reason it is not. Discarding
+		// this is how a dead listener used to hide behind an ONLINE banner.
+		using AddResult = std::expected<void, std::string>;
+
 		void run();
 		void stop();
 
+		// Drops every listener registered so far. A boot that refuses after some
+		// ports already bound would otherwise still satisfy is_running(), and be
+		// announced as ONLINE. Only valid before run(), while nothing is yet
+		// executing io_context handlers; stop() is the counterpart once running.
+		void AbandonListeners();
+
 		template <typename ProtocolType>
-		bool add(uint16_t port);
+		[[nodiscard]] AddResult add(uint16_t port);
 
 		bool is_running() const {
 			return acceptors.empty() == false;
@@ -110,33 +138,53 @@ class ServiceManager
 };
 
 template <typename ProtocolType>
-bool ServiceManager::add(uint16_t port)
+ServiceManager::AddResult ServiceManager::add(uint16_t port)
 {
-	if (port == 0) {
-		std::cout << "ERROR: No port provided for service " << ProtocolType::protocol_name() << ". Service disabled." << std::endl;
-		return false;
+	if (port == 0)
+	{
+		auto reason = fmt::format("no port provided for service {:s}, service disabled", ProtocolType::protocol_name());
+		BlackTek::Console::Net::Error("ServiceManager::add: {:s}.", reason);
+		return std::unexpected(std::move(reason));
 	}
 
-	ServicePort_ptr service_port;
+	ServicePort_ptr servicePort;
 
 	auto foundServicePort = acceptors.find(port);
 
-	if (foundServicePort == acceptors.end()) {
-		service_port = std::make_shared<ServicePort>(io_context);
-		service_port->open(port);
-		acceptors[port] = service_port;
-	} else {
-		service_port = foundServicePort->second;
+	if (foundServicePort == acceptors.end())
+	{
+		servicePort = std::make_shared<ServicePort>(io_context);
 
-		if (service_port->is_single_socket() || ProtocolType::server_sends_first) {
-			std::cout << "ERROR: " << ProtocolType::protocol_name() <<
-			          " and " << service_port->get_protocol_names() <<
-			          " cannot use the same port " << port << '.' << std::endl;
-			return false;
+		// A startup bind is not retried: the listener would stay dead for the
+		// whole run, so the reason travels back to the caller and the port is
+		// never registered, keeping is_running() honest about what is accepting.
+		if (auto bound = servicePort->open(port, ServicePort::BindFailure::Report); not bound)
+		{
+			return std::unexpected(std::move(bound.error()));
+		}
+
+		acceptors[port] = servicePort;
+	}
+	else
+	{
+		servicePort = foundServicePort->second;
+
+		if (servicePort->is_single_socket() or ProtocolType::server_sends_first)
+		{
+			auto reason = fmt::format("{:s} and {:s} cannot use the same port {:d}", ProtocolType::protocol_name(), servicePort->get_protocol_names(), port);
+			BlackTek::Console::Net::Error("ServiceManager::add: {:s}.", reason);
+			return std::unexpected(std::move(reason));
 		}
 	}
 
-	return service_port->add_service(std::make_shared<Service<ProtocolType>>());
+	if (not servicePort->add_service(std::make_shared<Service<ProtocolType>>()))
+	{
+		auto reason = fmt::format("{:s} cannot share port {:d} with {:s}", ProtocolType::protocol_name(), port, servicePort->get_protocol_names());
+		BlackTek::Console::Net::Error("ServiceManager::add: {:s}.", reason);
+		return std::unexpected(std::move(reason));
+	}
+
+	return {};
 }
 
 #endif

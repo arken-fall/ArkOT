@@ -120,11 +120,19 @@ bool ConfigManager::Load()
         strings[MYSQL_USER]        = databaseTbl["mysql"]["user"].value_or<std::string>("forgottenserver");
         strings[MYSQL_PASS]        = databaseTbl["mysql"]["pass"].value_or<std::string>("");
         strings[MYSQL_DB]          = databaseTbl["mysql"]["database"].value_or<std::string>("forgottenserver");
+        // The schema holding the shared `accounts` / `account_sessions` /
+        // `store_history` base tables that every world schema views; see
+        // auth_schema.sql. Empty, or equal to MYSQL_DB, means single world: no
+        // auth schema, no views, no boot probe, no database change at all.
+        strings[MYSQL_AUTH_DB]     = databaseTbl["mysql"]["auth_database"].value_or<std::string>("");
         strings[MYSQL_SOCK]        = databaseTbl["mysql"]["socket"].value_or<std::string>("");
         strings[ASSETS_DAT_PATH]   = serverTbl["world"]["assets_dat_path"].value_or<std::string>("data/items/assets.dat");
         strings[APPEARANCES_DAT_PATH] = serverTbl["world"]["appearances_dat_path"].value_or<std::string>("data/items/appearances.dat");
 
         integers[SQL_PORT]              = static_cast<int32_t>(databaseTbl["mysql"]["port"].value_or(int64_t{3306}));
+        // Which row of config/worlds.toml this process is; validated at boot by
+        // BlackTek::World::Registry::Load. One process serves exactly one world.
+        integers[WORLD_ID]              = static_cast<int32_t>(serverTbl["world"]["id"].value_or(int64_t{0}));
         integers[MARKET_OFFER_DURATION] = static_cast<int32_t>(gameplayTbl["market"]["offer_duration"].value_or(int64_t{2592000}));
 
         if (integers[GAME_PORT] == 0)
@@ -165,7 +173,6 @@ bool ConfigManager::Load()
     // Network / accounts
     booleans[ONE_PLAYER_ON_ACCOUNT]   = serverTbl["accounts"]["one_player_per_account"].value_or(true);
     booleans[FREE_PREMIUM]            = serverTbl["accounts"]["free_premium"].value_or(false);
-    booleans[ONLINE_OFFLINE_CHARLIST] = serverTbl["accounts"]["online_offline_charlist"].value_or(false);
     booleans[REPLACE_KICK_ON_LOGIN]   = serverTbl["network"]["replace_kick_on_login"].value_or(true);
     booleans[ALLOW_CLONES]            = serverTbl["network"]["allow_clones"].value_or(false);
     booleans[ALLOW_WALKTHROUGH]       = serverTbl["network"]["allow_walkthrough"].value_or(true);

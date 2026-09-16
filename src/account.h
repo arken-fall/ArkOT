@@ -5,9 +5,21 @@
 #define FS_ACCOUNT_H
 
 #include "enums.h"
+#include "world.h"
+
+// One character offered to the client, tagged with the world it lives on.
+// A character belongs to one world forever, so the tag is set once, where the
+// row is read, and never recomputed. Plain aggregate: no invariant of its own.
+struct CharacterEntry
+{
+	std::string			name;
+	BlackTek::World::Id	world = 0;
+};
+
+using CharacterList = std::vector<CharacterEntry>;
 
 struct Account {
-	std::vector<std::string> characters;
+	CharacterList characters;
 	std::string name;
 	std::string key;
 	uint32_t id = 0;

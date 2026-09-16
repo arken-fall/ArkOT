@@ -5,6 +5,18 @@ host               = "127.0.0.1"
 user               = "forgottenserver"
 pass               = "bt_test"
 database           = "blacktek"
+
+# The shared auth schema that holds `accounts`, `account_sessions` and
+# `store_history` for every world on this MySQL instance; see auth_schema.sql,
+# which creates it and the per-world views that make the existing unqualified
+# queries resolve into it.
+#
+# EMPTY (or equal to `database`) means single world: no shared auth schema, no
+# views, no boot probe, no database change at all. Leave it empty unless this
+# deployment actually serves more than one world and auth_schema.sql has already
+# been run against every world schema.
+auth_database      = ""
+
 port               = 3307
 socket             = ""
 optimize_on_startup = false

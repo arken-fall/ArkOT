@@ -32,8 +32,13 @@
 #include "zones.h"
 #include "console.h"
 #include "metrics.h"
+#include "world.h"
 #include "simd_dispatch.h"
+#include <array>
 #include <memory>
+#include <optional>
+#include <ranges>
+#include <string_view>
 
 #if __has_include("gitmetadata.h")
 	#include "gitmetadata.h"
@@ -235,6 +240,166 @@ void startupErrorMessage(const std::string& errorStr)
 	g_loaderSignal.notify_all();
 }
 
+namespace
+{
+	// The three tables auth_schema.sql hoists into the shared auth schema. Every
+	// world schema carries a VIEW of the same name over each of them, which is the
+	// whole reason no account query in this server - or in the unmodifiable
+	// third-party login-server - had to be schema-qualified.
+	constexpr std::array<std::string_view, 3> AuthSharedTables{ "accounts", "account_sessions", "store_history" };
+
+	// Establishes that this world's schema really was provisioned against the
+	// configured auth schema. Returns the reason it was not, or nullopt when the
+	// shared auth schema is usable. Boot must refuse on a reason: a world whose
+	// views were never created would quietly authenticate against its own stale
+	// account table, which is a broken login rather than a degraded one.
+	[[nodiscard]] std::optional<std::string> ProbeSharedAuthSchema(const std::string& authSchema, const std::string& worldSchema)
+	{
+		Database& db = Database::getInstance();
+
+		// The unqualified name every existing account query uses must resolve to
+		// something this connection can read. EXISTS() always yields exactly one
+		// row, so a freshly provisioned (and therefore empty) account table is not
+		// mistaken for a failure - storeQuery returns nullptr for an empty result
+		// set just as it does for a failed query.
+		if (not db.storeQuery("SELECT EXISTS(SELECT 1 FROM `accounts` LIMIT 1) AS `readable`"))
+		{
+			return fmt::format("Shared auth schema: `accounts` cannot be read from schema '{:s}'. Run auth_schema.sql for this world, or clear [mysql].auth_database in config/database.toml.", worldSchema);
+		}
+
+		// Reading is not enough; it has to be reading the SHARED rows. So `accounts`
+		// must be a view in this world's schema, and the base table behind it must
+		// live in the auth schema. information_schema answers both on this same
+		// connection, exactly as DatabaseManager already reaches it
+		// (src/databasemanager.cpp:18, 41, 47).
+		std::array<bool, AuthSharedTables.size()> isView{};
+		std::array<bool, AuthSharedTables.size()> hasBaseTable{};
+		std::array<bool, AuthSharedTables.size()> viewNamesAuthSchema{};
+
+		constexpr std::string_view sharedTableList = "('accounts', 'account_sessions', 'store_history')";
+
+		const auto indexOf = [](std::string_view tableName) -> std::optional<size_t>
+		{
+			const auto match = std::ranges::find_if(AuthSharedTables, [tableName](std::string_view candidate)
+			{
+				return caseInsensitiveEqual(tableName, candidate);
+			});
+
+			if (match == AuthSharedTables.end())
+				return std::nullopt;
+
+			return static_cast<size_t>(std::ranges::distance(AuthSharedTables.begin(), match));
+		};
+
+		if (const auto views = db.storeQuery(fmt::format("SELECT `TABLE_NAME`, `VIEW_DEFINITION` FROM `information_schema`.`VIEWS` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_NAME` IN {:s}", db.escapeString(worldSchema), sharedTableList)))
+		{
+			const std::string authReference = asLowerCaseString(fmt::format("`{:s}`.", authSchema));
+
+			do
+			{
+				if (const auto index = indexOf(views->getString("TABLE_NAME")))
+				{
+					isView[*index] = true;
+					viewNamesAuthSchema[*index] = asLowerCaseString(std::string{ views->getString("VIEW_DEFINITION") }).find(authReference) != std::string::npos;
+				}
+			} while (views->next());
+		}
+
+		if (const auto tables = db.storeQuery(fmt::format("SELECT `TABLE_NAME` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_TYPE` = 'BASE TABLE' AND `TABLE_NAME` IN {:s}", db.escapeString(authSchema), sharedTableList)))
+		{
+			do
+			{
+				if (const auto index = indexOf(tables->getString("TABLE_NAME")))
+				{
+					hasBaseTable[*index] = true;
+				}
+			} while (tables->next());
+		}
+
+		std::string missingViews;
+		std::string missingTables;
+
+		const auto listName = [](std::string& list, std::string_view tableName)
+		{
+			if (not list.empty())
+			{
+				list += ", ";
+			}
+
+			list += tableName;
+		};
+
+		for (size_t index = 0; index < AuthSharedTables.size(); ++index)
+		{
+			if (not isView[index])
+			{
+				listName(missingViews, AuthSharedTables[index]);
+			}
+
+			if (not hasBaseTable[index])
+			{
+				listName(missingTables, AuthSharedTables[index]);
+			}
+		}
+
+		if (not missingViews.empty())
+		{
+			return fmt::format("Shared auth schema: schema '{:s}' has no view for {:s}. This world was never provisioned against auth schema '{:s}' - run auth_schema.sql for it, or clear [mysql].auth_database in config/database.toml.", worldSchema, missingViews, authSchema);
+		}
+
+		if (not missingTables.empty())
+		{
+			return fmt::format("Shared auth schema: auth schema '{:s}' has no base table for {:s}. Run section 1 of auth_schema.sql, or clear [mysql].auth_database in config/database.toml.", authSchema, missingTables);
+		}
+
+		// Whether a stored view definition still spells out the auth schema is a
+		// question about the server's own text formatting - and about whether this
+		// user holds SHOW VIEW, without which VIEW_DEFINITION comes back empty -
+		// not about structure, so it only warns. The structural checks above are
+		// what boot refuses on; refusing here too would trade a real outage for a
+		// cosmetic mismatch.
+		auto unconfirmed = std::views::iota(size_t{ 0 }, AuthSharedTables.size())
+			| std::views::filter([&viewNamesAuthSchema](size_t index) { return not viewNamesAuthSchema[index]; });
+
+		for (const auto index : unconfirmed)
+		{
+			BlackTek::Console::Database::Warn("mainLoader: view `{:s}`.`{:s}` does not name auth schema '{:s}' in its definition; confirm it points where you think it does.", worldSchema, AuthSharedTables[index], authSchema);
+		}
+
+		return std::nullopt;
+	}
+
+	// O3: the cross-world character list reads `<other world>`.`players` on this
+	// same connection, so the login-serving MySQL user needs SELECT on every world
+	// schema, not just its own. A world that cannot be read costs only that world's
+	// characters in the list, so this warns per world instead of refusing - one
+	// unreachable world must never stop this world from serving.
+	void ProbeWorldSchemas()
+	{
+		Database& db = Database::getInstance();
+
+		const auto quotable = [](const BlackTek::World::Entry& entry) noexcept
+		{
+			return entry.schema.find('`') == std::string::npos;
+		};
+
+		const auto worlds = BlackTek::World::Registry::GetInstance().All();
+
+		for (const auto& entry : worlds | std::views::filter(std::not_fn(quotable)))
+		{
+			BlackTek::Console::Database::Warn("mainLoader: world '{:s}' (id {:d}) declares an unusable schema name '{:s}'; its characters cannot be listed.", entry.name, entry.id, entry.schema);
+		}
+
+		for (const auto& entry : worlds | std::views::filter(quotable))
+		{
+			if (not db.storeQuery(fmt::format("SELECT EXISTS(SELECT 1 FROM `{:s}`.`players` LIMIT 1) AS `readable`", entry.schema)))
+			{
+				BlackTek::Console::Database::Warn("mainLoader: cannot read `{:s}`.`players` for world '{:s}' (id {:d}); that world's characters will be missing from the character list. Grant this MySQL user SELECT on that schema.", entry.schema, entry.name, entry.id);
+			}
+		}
+	}
+}
+
 void mainLoader(int argc, char* argv[], ServiceManager* services);
 bool argumentsHandler(const StringVector& args);
 
@@ -317,6 +482,38 @@ void printServerVersion()
 	Console::printInfo("Website", "black-tek.github.io/blacktek/welcome/");
 }
 
+namespace
+{
+	// Registers one listener and refuses the boot if it is not accepting when we
+	// are done. ServicePort::open does not retry a bind that failed at startup,
+	// so such a listener stays dead for the entire run - and the config-level
+	// collision checks below cannot see a port held by a process outside this
+	// server, which is exactly how an occupied login port used to produce an
+	// ONLINE banner nobody could log into.
+	//
+	// Every configured listener is treated as required. A game or login port
+	// that will not bind means no one can play; a status port that will not bind
+	// is most often a second copy of this same server already running, and two
+	// instances sharing one world's database is a worse outcome than refusing to
+	// start. Port 0 is the documented "listener disabled" setting, and is the one
+	// way add() can fail that the operator asked for, so it does not refuse.
+	template <typename ProtocolType>
+	[[nodiscard]] bool AddListener(ServiceManager& services, uint16_t port)
+	{
+		auto listening = services.add<ProtocolType>(port);
+		if (listening.has_value() or port == 0)
+			return true;
+
+		// Ports bound before this one would still make is_running() true, and
+		// main() announces ONLINE on that alone, so the refusal has to take the
+		// whole set of listeners down with it.
+		services.AbandonListeners();
+
+		startupErrorMessage(fmt::format("{:s} could not listen on port {:d}: {:s}. Free that port or change it in config/server.toml, then start the server again.", ProtocolType::protocol_name(), port, listening.error()));
+		return false;
+	}
+}
+
 void mainLoader(int, char*[], ServiceManager* services)
 {
 	// dispatcher thread
@@ -387,6 +584,62 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 
+	// World identity. Loaded once here, on the dispatcher, before any listener can
+	// accept; every later reader runs after mainLoader returns, so the registry
+	// needs no synchronisation. A world that cannot prove which world it is - or
+	// that disagrees with config/worlds.toml about its own address, port or
+	// schema - refuses to boot rather than misrouting players at login.
+	{
+		using WorldRegistry = BlackTek::World::Registry;
+
+		const int32_t configuredWorldId = g_config.GetNumber(ConfigManager::WORLD_ID);
+		if (configuredWorldId < 0 or configuredWorldId > 255)
+		{
+			startupErrorMessage(fmt::format("World registry: [world].id must be between 0 and 255, got {:d}.", configuredWorldId));
+			return;
+		}
+
+		// The wire name is the login source's world name; [identity].name is only a
+		// stand-in for the single world synthesised when no worlds.toml is deployed.
+		const std::string& serverName = g_config.GetString(ConfigManager::SERVER_NAME);
+
+		const WorldRegistry::Identity identity{
+			.name    = serverName.empty() ? std::string{STATUS_SERVER_NAME} : serverName,
+			.address = g_config.GetString(ConfigManager::IP),
+			.schema  = g_config.GetString(ConfigManager::MYSQL_DB),
+			.port    = static_cast<uint16_t>(g_config.GetNumber(ConfigManager::GAME_PORT_MODERN)),
+			.id      = static_cast<BlackTek::World::Id>(configuredWorldId) };
+
+		if (const auto loaded = WorldRegistry::GetInstance().Load(identity); not loaded)
+		{
+			startupErrorMessage(fmt::format("World registry: {:s}", WorldRegistry::Describe(loaded.error())));
+			return;
+		}
+	}
+
+	// Shared auth schema. An empty [mysql].auth_database - or one equal to
+	// [mysql].database - is a single-world install: no auth schema, no views,
+	// nothing to probe, so this whole block is skipped. When it is set, every
+	// unqualified `accounts` / `account_sessions` / `store_history` query in this
+	// process is expected to resolve through a per-world view into that schema
+	// (auth_schema.sql), so a world whose views were never created must stop here
+	// rather than serve logins against its own stale account table.
+	{
+		const std::string& authSchema = g_config.GetString(ConfigManager::MYSQL_AUTH_DB);
+		const std::string& worldSchema = g_config.GetString(ConfigManager::MYSQL_DB);
+
+		if (not authSchema.empty() and not caseInsensitiveEqual(authSchema, worldSchema))
+		{
+			if (const auto failure = ProbeSharedAuthSchema(authSchema, worldSchema))
+			{
+				startupErrorMessage(*failure);
+				return;
+			}
+
+			ProbeWorldSchemas();
+		}
+	}
+
 	Console::printInfo("Compiler", BOOST_COMPILER);
 	Console::printInfo("Compiled", std::string(__DATE__) + " " + __TIME__);
 	Console::printInfo("Lua Version", LUA_VERSION);
@@ -431,6 +684,7 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 
+	Console::printProgress("World", true, fmt::format("{:s} (id {:d})", BlackTek::World::Local().name, BlackTek::World::Local().id));
 	Console::printProgress("World Type", true, asUpperCaseString(worldType));
 	Console::printProgress("World Map",  true, g_config.GetString(ConfigManager::MAP_NAME));
 
@@ -442,6 +696,7 @@ void mainLoader(int, char*[], ServiceManager* services)
 	}
 
 	Console::printProgress("Game Port",   true, std::to_string(g_config.GetNumber(ConfigManager::GAME_PORT)));
+	Console::printProgress("Modern Game Port", true, std::to_string(g_config.GetNumber(ConfigManager::GAME_PORT_MODERN)));
 	Console::printProgress("Login Port",  true, std::to_string(g_config.GetNumber(ConfigManager::LOGIN_PORT)));
 	Console::printProgress("Status Port", true, std::to_string(g_config.GetNumber(ConfigManager::STATUS_PORT)));
 
@@ -559,41 +814,70 @@ void mainLoader(int, char*[], ServiceManager* services)
 	// Game client protocols; 0 disables a listener, matching game_port_modern.
 	// Legacy (pre-13.40) clients use game_port/login_port; a modern-only server
 	// runs with both set to 0 and serves game_port_modern alone.
-	if (auto gamePort = g_config.GetNumber(ConfigManager::GAME_PORT); gamePort != 0)
+	const auto gamePort = g_config.GetNumber(ConfigManager::GAME_PORT);
+	const auto modernPort = g_config.GetNumber(ConfigManager::GAME_PORT_MODERN);
+	const auto loginPort = g_config.GetNumber(ConfigManager::LOGIN_PORT);
+	const auto statusPort = g_config.GetNumber(ConfigManager::STATUS_PORT);
+
+	// shared spectator payloads are built once for every client, so they
+	// can only follow one generation; serving both ports at once is not
+	// supported since the legacy listener was retired
+	if (gamePort != 0 and modernPort != 0)
 	{
-		services->add<ProtocolGame>(static_cast<uint16_t>(gamePort));
+		startupErrorMessage("game_port and game_port_modern can not both be enabled; set game_port = 0 for a 13.40+ server.");
+		return;
 	}
 
-	if (auto loginPort = g_config.GetNumber(ConfigManager::LOGIN_PORT); loginPort != 0)
+	// A 15.25 client only speaks to an in-binary login server on port 7171 -
+	// that is a client-side constant - so login_port cannot be moved out of a
+	// collision. ServiceManager::add would only print and disable one of the
+	// two listeners, leaving a server that looks healthy and cannot be logged
+	// into, so this refuses instead.
+	if (loginPort != 0 and (loginPort == statusPort or loginPort == gamePort or loginPort == modernPort))
 	{
-		services->add<ProtocolLogin>(static_cast<uint16_t>(loginPort));
+		startupErrorMessage(fmt::format("login_port {:d} collides with another listener in config/server.toml (status_port {:d}, game_port {:d}, game_port_modern {:d}). A 15.25 client only reaches an in-binary login server on 7171, so move the other listener.", loginPort, statusPort, gamePort, modernPort));
+		return;
+	}
+
+	if (gamePort != 0)
+	{
+		if (not AddListener<ProtocolGame>(*services, static_cast<uint16_t>(gamePort)))
+			return;
+
+		// the legacy pair shares one port; make_protocol tells them apart by
+		// checksum state, which only works while neither is single-socket
+		if (loginPort != 0)
+		{
+			if (not AddListener<ProtocolLogin>(*services, static_cast<uint16_t>(loginPort)))
+				return;
+
+			if (not AddListener<ProtocolOld>(*services, static_cast<uint16_t>(loginPort)))
+				return;
+		}
 	}
 
 	// Modern (13.40+) clients handshake on a separate port; see ProtocolGameModern
-	if (auto modernPort = g_config.GetNumber(ConfigManager::GAME_PORT_MODERN); modernPort != 0)
+	if (modernPort != 0)
 	{
-		services->add<ProtocolGameModern>(static_cast<uint16_t>(modernPort));
-
-		// shared spectator payloads are built once for every client, so they
-		// can only follow one generation; serving both ports at once is not
-		// supported since the legacy listener was retired
-		if (g_config.GetNumber(ConfigManager::GAME_PORT) != 0)
-		{
-			startupErrorMessage("game_port and game_port_modern can not both be enabled; set game_port = 0 for a 13.40+ server.");
+		if (not AddListener<ProtocolGameModern>(*services, static_cast<uint16_t>(modernPort)))
 			return;
-		}
 
 		ProtocolGame::setSharedModernLayout(true);
+
+		// ProtocolLoginModern is server_sends_first, so it takes the login port
+		// alone - ServicePort::add_service refuses any service beside a
+		// single-socket one. A 15.25-only server has no legacy client to
+		// redirect, so there is nothing for ProtocolOld to answer here.
+		if (loginPort != 0)
+		{
+			if (not AddListener<ProtocolLoginModern>(*services, static_cast<uint16_t>(loginPort)))
+				return;
+		}
 	}
 
 	// OT protocols
-	services->add<ProtocolStatus>(static_cast<uint16_t>(g_config.GetNumber(ConfigManager::STATUS_PORT)));
-
-	// Legacy login protocol
-	if (auto loginPort = g_config.GetNumber(ConfigManager::LOGIN_PORT); loginPort != 0)
-	{
-		services->add<ProtocolOld>(static_cast<uint16_t>(loginPort));
-	}
+	if (not AddListener<ProtocolStatus>(*services, static_cast<uint16_t>(statusPort)))
+		return;
 
 	// House rent
 	RentPeriod_t rentPeriod;

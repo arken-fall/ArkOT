@@ -9,6 +9,10 @@ location    = ""
 motd        = "Welcome to The Black Tek Server!"
 
 [world]
+# Which row of config/worlds.toml this process is. The matching row's address,
+# port and schema must agree with [network].ip, [network].game_port_modern and
+# config/database.toml's [mysql].database, or the server refuses to boot.
+id              = 0
 # Valid values: "pvp", "no-pvp", "pvp-enforced"
 type            = "pvp"
 map_name        = "canary"
@@ -32,7 +36,12 @@ ipv6_fallback_to_ipv4    = true
 bind_only_global_address = false
 # Legacy (10.98) listeners retired 2026-08-11 — this server is 15.25-only.
 # 0 disables; modern clients learn their port from the login webservice.
-login_port               = 0
+# 7171 is a client-side constant, not a preference: a 15.25 client only talks to
+# an in-binary login server on 7171, and on any other port it goes to HTTP login
+# instead. So this value cannot be moved out of a port collision — the other
+# listener has to move, and the server refuses to boot on a collision. That is
+# why status_port below is 7184 and must stay off 7171 (its built-in default).
+login_port               = 7171
 game_port                = 0
 # 13.40+ clients connect here (they learn the port from the login webservice).
 # The modern handshake is framed differently, so it gets its own listener.
@@ -49,9 +58,8 @@ allow_clones             = false
 allow_walkthrough        = true
 
 [accounts]
-one_player_per_account  = true
-free_premium            = false
-online_offline_charlist = false
+one_player_per_account = true
+free_premium           = false
 
 [account_manager]
 enabled             = true

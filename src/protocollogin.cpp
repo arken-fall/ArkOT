@@ -12,8 +12,12 @@
 #include "iologindata.h"
 #include "ban.h"
 #include "game.h"
+#include "console.h"
+#include "world.h"
 
 #include <fmt/format.h>
+
+#include <ranges>
 
 extern ConfigManager g_config;
 extern Game g_game;
@@ -89,34 +93,45 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 
 	uint8_t size = std::min<size_t>(std::numeric_limits<uint8_t>::max(), account.characters.size());
 
-	if (g_config.GetBoolean(ConfigManager::ONLINE_OFFLINE_CHARLIST)) {
-		output->addByte(2); // number of worlds
+	// the wire carries the count in one byte, and the list now spans every world
+	if (account.characters.size() > size) {
+		BlackTek::Console::Net::Warn("ProtocolLogin::getCharacterList: account {:d} has {:d} characters across all worlds, but the character list carries at most {:d}; the remainder is not shown.", account.id, account.characters.size(), size);
+	}
 
-		for (uint8_t i = 0; i < 2; i++) {
-			output->addByte(i); // world id
-			output->addString(i == 0 ? "Offline" : "Online");
-			output->addString(g_config.GetString(ConfigManager::IP));
-			output->add<uint16_t>(g_config.GetNumber(ConfigManager::GAME_PORT));
-			output->addByte(0);
-		}
-	} else {
-		output->addByte(1); // number of worlds
-		output->addByte(0); // world id
-		output->addString(g_config.GetString(ConfigManager::SERVER_NAME));
-		output->addString(g_config.GetString(ConfigManager::IP));
-		output->add<uint16_t>(g_config.GetNumber(ConfigManager::GAME_PORT));
-		output->addByte(0);
+	const auto worlds = BlackTek::World::Registry::GetInstance().All();
+
+	// the wire carries this count in one byte as well, and an unclamped cast of a
+	// 256th world would write 0 and silently hand the client an empty world list
+	const uint8_t worldCount = std::min<size_t>(std::numeric_limits<uint8_t>::max(), worlds.size());
+
+	if (worlds.size() > worldCount)
+	{
+		BlackTek::Console::Net::Warn("ProtocolLogin::getCharacterList: the registry declares {:d} worlds, but the world list carries at most {:d}; the remainder is not shown.", worlds.size(), worldCount);
+	}
+
+	// Every world the registry declares, in registry order. The advertised address
+	// and port are that world's own row, never this process's config: only the
+	// registry knows where the other worlds live, and boot has already proven this
+	// world's row against this process.
+	output->addByte(worldCount);
+
+	for (const auto& world : worlds | std::views::take(worldCount))
+	{
+		output->addByte(world.id);
+		output->addString(world.name);
+		output->addString(world.address);
+		output->add<uint16_t>(world.port);
+		output->addByte(0); // preview state
 	}
 
 	output->addByte(size);
-	for (uint8_t i = 0; i < size; i++) {
-		const std::string& character = account.characters[i];
-		if (g_config.GetBoolean(ConfigManager::ONLINE_OFFLINE_CHARLIST)) {
-			output->addByte(g_game.getPlayerByName(character) ? 1 : 0);
-		} else {
-			output->addByte(0);
-		}
-		output->addString(character);
+
+	// the leading byte is the world the character lives on, tagged once where the
+	// row was read (IOLoginData::loginserverAuthentication)
+	for (const auto& character : account.characters | std::views::take(size))
+	{
+		output->addByte(character.world);
+		output->addString(character.name);
 	}
 
 	//Add premium days
@@ -156,8 +171,19 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	 * 1 byte: 0
 	 */
 
-	if (version <= 760) {
-		disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", CLIENT_VERSION_STR), version);
+	// A pre-XTEA refusal has to be framed the way the client reads it, and the
+	// modern framer writes no padding-count byte for an unencrypted frame - so on
+	// a modern connection this case just closes. Every version a real modern
+	// client can claim is refused readably by the profile gate below, once XTEA
+	// is up.
+	if (version <= 760)
+	{
+		if (usesModernFraming())
+			disconnect();
+
+		else
+			disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", CLIENT_VERSION_STR), version);
+
 		return;
 	}
 
@@ -174,8 +200,18 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	enableXTEAEncryption();
 	setXTEAKey(std::move(key));
 
-	if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
-		disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", CLIENT_VERSION_STR), version);
+	// The port the client walked in through fixes the framing generation; the
+	// version it just claimed has to land in a profile of that same generation or
+	// there is nothing to talk about. Same registry, same rule and same message as
+	// the game path (ProtocolGame::onRecvFirstMessage). The Legacy1098 band is
+	// 1097..1098, so the legacy listener accepts exactly what it always did.
+	const auto generation = usesModernFraming()
+		? BlackTek::Network::TransportGeneration::Modern
+		: BlackTek::Network::TransportGeneration::Legacy;
+
+	if (not BlackTek::Network::resolveProfile(version, generation))
+	{
+		disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", BlackTek::Network::allowedProtocolVersions()), version);
 		return;
 	}
 

@@ -5,6 +5,7 @@
 
 #include "configmanager.h"
 #include "connection.h"
+#include "console.h"
 #include "outputmessage.h"
 #include "protocol.h"
 #include "scheduler.h"
@@ -97,6 +98,19 @@ void Connection::accept(Protocol_ptr protocol)
 	this->protocol = protocol;
 	g_dispatcher.addTask(createTask([=]() { protocol->onConnect(); }));
 
+	// A login-protocol client opens with a world-name line whose first byte is
+	// usually the terminator itself, so there is nothing to sniff. Read the line
+	// up front, one byte at a time, and let readWorldLineByte start the header
+	// read once the line ends. parseHeader's sniff is deliberately left alone for
+	// game connections: there the line is optional in practice, and that is the
+	// framing path validated against a real client.
+	if (this->protocol->requiresWorldLine())
+	{
+		modern_world_name_consumed = true;
+		readWorldLineByte();
+		return;
+	}
+
 	accept();
 }
 
@@ -158,23 +172,23 @@ void Connection::parseHeader(const boost::system::error_code& error)
 		packetsSent = 0;
 	}
 
-	if (protocol and protocol->usesModernFraming() and !modernWorldNameConsumed)
+	if (protocol and protocol->usesModernFraming() and !modern_world_name_consumed)
 	{
-		modernWorldNameConsumed = true;
+		modern_world_name_consumed = true;
 		const uint8_t b0 = msg->getBuffer()[0];
 		const uint8_t b1 = msg->getBuffer()[1];
 		const bool printable0 = b0 >= 0x20 and b0 < 0x7F;
 		if (printable0 and (b1 == '\n' or (b1 >= 0x20 and b1 < 0x7F)))
 		{
-			modernWorldLine.assign(1, static_cast<char>(b0));
+			modern_world_line.assign(1, static_cast<char>(b0));
 			if (b1 == '\n')
 			{
 				accept();
 				return;
 			}
-			modernWorldLine.push_back(static_cast<char>(b1));
-			modernLineSkipped = 2;
-			skipWorldNameByte();
+			modern_world_line.push_back(static_cast<char>(b1));
+			modern_line_skipped = 2;
+			readWorldLineByte();
 			return;
 		}
 		// no world-name line (e.g. harness clients) - fall through to framing
@@ -221,9 +235,9 @@ void Connection::parseHeader(const boost::system::error_code& error)
 	}
 }
 
-void Connection::skipWorldNameByte()
+void Connection::readWorldLineByte()
 {
-	if (++modernLineSkipped > 32)
+	if (++modern_line_skipped > 32)
 	{
 		close(FORCE_CLOSE);
 		return;
@@ -240,7 +254,7 @@ void Connection::skipWorldNameByte()
 				}));
 
 		boost::asio::async_read(socket,
-			boost::asio::buffer(&modernLineByte, 1),
+			boost::asio::buffer(&modern_line_byte, 1),
 			boost::asio::bind_executor(strand,
 				[thisPtr = shared_from_this()](const boost::system::error_code& error, auto /*bytes_transferred*/)
 				{
@@ -251,21 +265,21 @@ void Connection::skipWorldNameByte()
 						return;
 					}
 
-					if (thisPtr->modernLineByte == '\n')
+					if (thisPtr->modern_line_byte == '\n')
 					{
-						std::cout << "[Modern] world-name preamble: " << thisPtr->modernWorldLine << std::endl;
+						BlackTek::Console::Net::Trace("Connection::readWorldLineByte: world-name preamble '{:s}'", thisPtr->modern_world_line);
 						thisPtr->accept();
 					}
 					else
 					{
-						thisPtr->modernWorldLine.push_back(static_cast<char>(thisPtr->modernLineByte));
-						thisPtr->skipWorldNameByte();
+						thisPtr->modern_world_line.push_back(static_cast<char>(thisPtr->modern_line_byte));
+						thisPtr->readWorldLineByte();
 					}
 				}));
 	}
 	catch (boost::system::system_error& e)
 	{
-		std::cout << "[Network error - Connection::skipWorldNameByte] " << e.what() << std::endl;
+		BlackTek::Console::Net::Error("Connection::readWorldLineByte: {:s}", e.what());
 		close(FORCE_CLOSE);
 	}
 }
@@ -291,9 +305,38 @@ void Connection::parsePacket(const boost::system::error_code& error)
 		if (not receivedFirst)
 		{
 			receivedFirst = true;
+
 			// First frame layout: sequence u32, padding count u8, then the
-			// 0x0A ClientPendingGame byte that legacy also skips.
-			msg->skipBytes(NetworkMessage::CHECKSUM_LENGTH + 2);
+			// 0x0A ClientPendingGame byte that legacy also skips. This is the one
+			// modern frame nothing trims - onRecvMessage only trims what it
+			// decrypts, and the first frame is plaintext - so trim it here.
+			// Without this, anything locating a field from the END of the message
+			// reads into the client's trailing padding.
+			constexpr uint16_t firstFrameOverhead = NetworkMessage::HEADER_LENGTH + NetworkMessage::CHECKSUM_LENGTH + 2;
+
+			// parseHeader accepts a blockCount of 0, which leaves the padding-count
+			// and opcode bytes unread from the socket and indeterminate in buffer.
+			if (msg->getLength() < firstFrameOverhead)
+			{
+				close(FORCE_CLOSE);
+				return;
+			}
+
+			msg->skipBytes(NetworkMessage::CHECKSUM_LENGTH);
+
+			const uint8_t paddingAmount = msg->getByte();
+			const uint16_t framedLength = msg->getLength();
+
+			// setLength takes a uint16_t; an unguarded subtraction would wrap and
+			// hand canRead a bound far past the payload.
+			if (framedLength < firstFrameOverhead + paddingAmount)
+			{
+				close(FORCE_CLOSE);
+				return;
+			}
+
+			msg->setLength(static_cast<NetworkMessage::MsgSize_t>(framedLength - paddingAmount));
+			msg->skipBytes(1); // protocol identifier / first opcode
 			protocol->onRecvFirstMessage(*msg);
 		}
 		else

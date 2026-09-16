@@ -52,6 +52,19 @@ void ServiceManager::stop()
 	death_timer.async_wait([this](const boost::system::error_code&) { die(); });
 }
 
+void ServiceManager::AbandonListeners()
+{
+	// stop() has to post this work because the io_context is running by then.
+	// Here the boot is still on the loader thread and run() has not been called,
+	// so no handler can be executing and the acceptors can be closed directly.
+	for (auto& servicePortIt : acceptors)
+	{
+		servicePortIt.second->onStopServer();
+	}
+
+	acceptors.clear();
+}
+
 ServicePort::~ServicePort()
 {
 	close();
@@ -141,12 +154,16 @@ void ServicePort::onStopServer()
 
 void ServicePort::openAcceptor(const std::weak_ptr<ServicePort>& weak_service, uint16_t port)
 {
-	if (auto service = weak_service.lock()) {
-		service->open(port);
+	if (auto service = weak_service.lock())
+	{
+		// This is the recovery path for a listener that was already accepting,
+		// so open() logs the reason and reschedules itself; there is nothing
+		// left here for a caller to act on.
+		static_cast<void>(service->open(port, BindFailure::Retry));
 	}
 }
 
-void ServicePort::open(uint16_t port)
+ServicePort::BindResult ServicePort::open(uint16_t port, BindFailure onFailure)
 {
 	close();
 
@@ -193,9 +210,17 @@ void ServicePort::open(uint16_t port)
 
 		acceptor->set_option(boost::asio::ip::tcp::no_delay(true));
 		accept();
+		return {};
 	}
 	catch (boost::system::system_error& e)
 	{
+		// set_option can throw after the bind itself succeeded, which leaves this
+		// object still holding the port; an IPv4 fallback onto a port we have not
+		// released would then fail against ourselves. Release it before retrying.
+		acceptor.reset();
+
+		std::string reason = fmt::format("{:d}: {:s}", e.code().value(), e.what());
+
 		if (useIPv6 and g_config.GetBoolean(ConfigManager::IPV6_FALLBACK_TO_IPV4))
 		{
 			BlackTek::Console::Net::Warn("[ServicePort::open] IPv6 unavailable falling back to IPv4. Error Code {}: {}", e.code().value(), e.what());
@@ -204,10 +229,12 @@ void ServicePort::open(uint16_t port)
 				bindIPv4();
 				acceptor->set_option(boost::asio::ip::tcp::no_delay(true));
 				accept();
-				return;
+				return {};
 			}
 			catch (boost::system::system_error& e2)
 			{
+				acceptor.reset();
+				reason = fmt::format("{:d}: {:s}", e2.code().value(), e2.what());
 				BlackTek::Console::Net::Error("[ServicePort::open] Error: {}: {}", e2.code().value(), e2.what());
 			}
 		}
@@ -216,8 +243,16 @@ void ServicePort::open(uint16_t port)
 			BlackTek::Console::Net::Error("[ServicePort::open] Error: {}: {}", e.code().value(), e.what());
 		}
 
-		pendingStart = true;
-		g_scheduler.addEvent(createSchedulerTask(15000, [=, thisPtr = std::weak_ptr<ServicePort>(shared_from_this())]() { ServicePort::openAcceptor(thisPtr, serverPort); }));
+		// Only a port that was accepting at some point earns the 15s reopen
+		// cycle. A bind that never came up is handed back instead, so the boot
+		// can refuse rather than loop forever behind an ONLINE banner.
+		if (onFailure == BindFailure::Retry)
+		{
+			pendingStart = true;
+			g_scheduler.addEvent(createSchedulerTask(15000, [=, thisPtr = std::weak_ptr<ServicePort>(shared_from_this())]() { ServicePort::openAcceptor(thisPtr, serverPort); }));
+		}
+
+		return std::unexpected(std::move(reason));
 	}
 }
 

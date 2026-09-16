@@ -46,7 +46,6 @@ public:
         SERVER_SAVE_CLEAN_MAP,
         SERVER_SAVE_CLOSE,
         SERVER_SAVE_SHUTDOWN,
-        ONLINE_OFFLINE_CHARLIST,
         YELL_ALLOW_PREMIUM,
         PREMIUM_TO_SEND_PRIVATE,
         FORCE_MONSTERTYPE_LOAD,
@@ -99,6 +98,7 @@ public:
         MYSQL_USER,
         MYSQL_PASS,
         MYSQL_DB,
+        MYSQL_AUTH_DB,
         MYSQL_SOCK,
         DEFAULT_PRIORITY,
         MAP_AUTHOR,
@@ -183,6 +183,7 @@ public:
         MULTILEVEL_FLOOR_RANGE,
         STORE_COIN_PACKAGE_SIZE,
         LEGACY_SPAWN_CLUSTER_RADIUS,
+        WORLD_ID,
 
         LAST_INTEGER_CONFIG
     };

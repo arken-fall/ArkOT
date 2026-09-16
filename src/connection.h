@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <deque>
+#include <string_view>
 #include <unordered_set>
 #include <gtl/phmap.hpp>
 #include "networkmessage.h"
@@ -74,10 +75,15 @@ class Connection : public std::enable_shared_from_this<Connection>
 
 		uint32_t getIP();
 
+		// The plaintext world name a modern client announces before any framed
+		// traffic, empty when the client sent none. Read by ProtocolGame once
+		// XTEA is up, so a wrong-world refusal reaches the client readably.
+		[[nodiscard]] std::string_view GetWorldLine() const noexcept { return modern_world_line; }
+
 	private:
 		void parseHeader(const boost::system::error_code& error);
 		void parsePacket(const boost::system::error_code& error);
-		void skipWorldNameByte();
+		void readWorldLineByte();
 
 		void onWriteOperation(const boost::system::error_code& error);
 
@@ -110,10 +116,10 @@ class Connection : public std::enable_shared_from_this<Connection>
 		// world-name line ("BlackTek\n") before any framed traffic; it has to
 		// be consumed before the first header parse. Ground truth: mehah
 		// Protocol::onConnect sends it for clientVersion >= 1200.
-		bool modernWorldNameConsumed = false;
-		uint8_t modernLineByte = 0;
-		uint8_t modernLineSkipped = 0;
-		std::string modernWorldLine;
+		bool modern_world_name_consumed = false;
+		uint8_t modern_line_byte = 0;
+		uint8_t modern_line_skipped = 0;
+		std::string modern_world_line;
 };
 
 #endif
