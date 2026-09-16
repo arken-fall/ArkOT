@@ -19,7 +19,7 @@ code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 | Item and appearance pipeline | Working |
 | World content | Canary's map and datapack, machine-ported |
 | Side systems (bestiary, prey, forge, wheel, store, market) | Real implementations, several with gaps |
-| Multi-world (one account, N worlds) | Design stage — `docs/plans/multi-world-brief.md` |
+| Multi-world (one account, N worlds) | Design stage — see Roadmap |
 
 **Requirements to run the world:** ~12.8 GB RAM resident, GCC 14+, MySQL/MariaDB, a login
 webservice, and a 15.25 client. The world ships with the server; see First boot.
@@ -76,14 +76,48 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 | Stale Docker and CI paths | The compose file still targets 7171/7172/7173 and cannot serve a world; CI builds but never runs the tests. |
 | One unexplained segfault | After ~8 hours under a 20,000-bot load; never reproduced, never root-caused. |
 
-## In the pipeline
+## Roadmap
 
-| Work | Shape |
+No dates. This is a small team, so the order below is intent rather than a schedule, and anything
+that blocks a *player* jumps ahead of anything that merely annoys a developer. Items leave the
+"Needs work" table above as they land here and get finished.
+
+### Now
+
+| Work | Done looks like |
 | --- | --- |
-| Multi-world | One account, N worlds; characters bound to a world, coins account-wide, unlocks per character. Brief: `docs/plans/multi-world-brief.md`. |
-| Boss rooms | Porting or replacing `BossLever` / `Encounter` unlocks the 239 held-back quest scripts. |
-| Bestiary coverage | Entries for the 972 monsters that have none. |
-| Raids | Nothing authored for this map yet; only upstream's three demo raids exist. |
+| **Multi-world** | One account, many worlds. A character belongs to one world for life; store coins follow the account, what a purchase unlocks stays with the character. Design first — the login routing and the account/world data split decide everything after them. |
+| **Retire the old datapack's claim on this map** | The 312 surviving 10.98 scripts stop registering against Canary's ids, and the 1,034 duplicate item-event registrations per boot go to zero. Right now the wrong script can win a lever. |
+| **Boss rooms** | An equivalent of Canary's `BossLever` / `Encounter`, which unlocks the 239 quest scripts held back because nothing here answers them. This is the single biggest block of missing content. |
+| **Map-switch migration** | Character towns, positions and house ownership renumbered from the retired map to Canary's, so town 1 stops meaning two different places. |
+
+### Next
+
+| Work | Done looks like |
+| --- | --- |
+| Bestiary coverage | Entries for the 972 monsters that have none, so they can be tracked, charmed and offered as prey. |
+| The missing monster spells | 40 spell names that 83 monsters ask for and nothing provides. 32 need engine work first: chain combat, `CONDITION_ROOTED`, `CONDITION_FEARED`, damage callbacks. |
+| Player spells and the Monk | 51 spells with no counterpart here, the Monk vocation, the wheel Avatars and the vocation familiars. |
+| Cyclopedia combat pages | Stop sending ~57 hard-coded zeros for critical, leech, dodge, mitigation and the rest, and report what the character actually has. |
+| Market item tiers | Forge tiers exist on items but every market listing goes out as tier 0. |
+| Prey third slot | The client is told it unlocks in the store; nothing unlocks it. |
+| Wheel perks, instants and stages | They are stored and exposed to Lua, and no script calls them, so they do nothing in play. |
+
+### Later
+
+| Work | Done looks like |
+| --- | --- |
+| The rest of the 15.25 surface | 45 client requests currently unanswered — imbuements, bosstiary, quick loot, depot search and stash, party analyser, highscores, team finder, hirelings, podiums. |
+| Raids | Nothing is authored for this map; only upstream's three demo raids exist. |
+| Test coverage worth the name | 13 golden tests cover transport, id mapping and event dispatch. Nothing exercises bestiary, prey, forge, wheel, store or quests — those are checked by driving a real client by hand. |
+| Build and CI honesty | A compose file that can actually serve a world, and CI that runs `./blacktek_tests` instead of only compiling. |
+
+### Not planned
+
+| | |
+| --- | --- |
+| **10.98 and other legacy protocols** | Retired deliberately. The listeners ship disabled and the server refuses to run two generations at once. |
+| **13.40 / 14.12 support** | Declared in the profile registry but never tested against a real client of either band. They stay unsupported until somebody verifies them; a declared profile is not a promise. |
 
 ---
 
