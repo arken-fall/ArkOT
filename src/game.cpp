@@ -10,6 +10,7 @@
 #include "store.h"
 
 #include "pugicast.h"
+#include "presence.h"
 
 #include "augments.h"
 #include "storewindow.h"
@@ -184,6 +185,10 @@ void Game::setGameState(GameState_t newState)
 				it->second->kickPlayer(true);
 				it = players.begin();
 			}
+
+			// every kicked player has released its own claim; this frees whatever is
+			// left and removes the heartbeat, while the database is still reachable
+			BlackTek::World::Presence::GetInstance().Retire();
 
 			saveMotdNum();
 			saveGameState();

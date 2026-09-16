@@ -27,6 +27,7 @@
 #include "ban.h"
 #include "scheduler.h"
 #include "world.h"
+#include "presence.h"
 
 #include <ranges>
 #include <fmt/format.h>
@@ -191,6 +192,33 @@ namespace
 		return waitList.size();
 	}
 
+	// account-level, so it is shared across worlds through the `accounts` view;
+	// the same accounts the per-world rule has always exempted
+	[[nodiscard]] bool IsSingleSessionExempt(const PlayerConstPtr& player) noexcept
+	{
+		return player->getAccountType() >= ACCOUNT_TYPE_GAMEMASTER;
+	}
+
+	[[nodiscard]] std::string DescribePresenceRefusal(const BlackTek::World::Presence::Refused& refused)
+	{
+		using BlackTek::World::Presence;
+
+		switch (refused.reason)
+		{
+			case Presence::Refusal::AlreadyOnline:
+			{
+				const auto world = BlackTek::World::Registry::GetInstance().Find(refused.world);
+				const std::string_view worldName = world ? std::string_view{ world->name } : std::string_view{ "another world" };
+				return fmt::format("Your account is already online on {:s} as {:s}.\nLog out there first, then try again.", worldName, refused.character_name);
+			}
+
+			case Presence::Refusal::Unavailable:
+				break;
+		}
+
+		// fails closed: a presence check that could not run refuses the login
+		return "Your login could not be checked right now.\nPlease try again in a moment.";
+	}
 
 }
 
@@ -244,10 +272,13 @@ void ProtocolGame::login(uint32_t characterId, uint32_t accountId, OperatingSyst
 			return;
 		}
 
-		if (g_config.GetBoolean(ConfigManager::ONE_PLAYER_ON_ACCOUNT) 
-			and characterId != AccountManager::ID 
-			and player->getAccountType() < ACCOUNT_TYPE_GAMEMASTER 
-			and g_game.getPlayerByAccount(player->getAccount()))
+		// allow_clones genuinely bypasses the rule, both here and deployment-wide below
+		const bool singleSession = g_config.GetBoolean(ConfigManager::ONE_PLAYER_ON_ACCOUNT)
+			and not g_config.GetBoolean(ConfigManager::ALLOW_CLONES)
+			and characterId != AccountManager::ID
+			and not IsSingleSessionExempt(player);
+
+		if (singleSession and g_game.getPlayerByAccount(player->getAccount()))
 		{
 			disconnectClient("You may only login with one character\nof your account at the same time.");
 			return;
@@ -273,6 +304,23 @@ void ProtocolGame::login(uint32_t characterId, uint32_t accountId, OperatingSyst
 				}
 				return;
 			}
+		}
+
+		// Before the waiting list, because admission takes the player off it. The local
+		// check above, this claim and placement below all run in this one dispatcher task,
+		// which is what lets Presence::Classify treat a row naming this world as leftover.
+		// Every early return from here to placement releases the claim as it leaves scope.
+		BlackTek::World::PresenceClaim presenceClaim;
+		if (singleSession and BlackTek::World::Presence::GetInstance().IsEnabled())
+		{
+			auto claimed = BlackTek::World::Presence::GetInstance().Claim(player->getAccount(), player->getGUID(), player->getName());
+			if (not claimed)
+			{
+				disconnectClient(DescribePresenceRefusal(claimed.error()));
+				return;
+			}
+
+			presenceClaim = std::move(*claimed);
 		}
 
 		if (std::size_t currentSlot = clientLogin(player))
@@ -335,6 +383,14 @@ void ProtocolGame::login(uint32_t characterId, uint32_t accountId, OperatingSyst
 			for (auto& c : initialConditions)
 				player->addCondition(std::move(c));
 		}
+
+		// An onLogin script that returns false kicks the player inside placeCreature, and that
+		// removal already ran before the player held the claim, so release it here instead.
+		if (player->isRemoved())
+			presenceClaim.Release();
+
+		else
+			player->adoptPresenceClaim(std::move(presenceClaim));
 
 		if (operatingSystem >= CLIENTOS_OTCLIENT_LINUX)
 		{

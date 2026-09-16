@@ -23,6 +23,7 @@
 #include "wheel.h"
 #include "store.h"
 #include "accountmanager.h"
+#include "presence.h"
 
 #include <array>
 #include <bitset>
@@ -186,6 +187,10 @@ class Player final : public Creature
 		// non-copyable
 		Player(const Player&) = delete;
 		Player& operator=(const Player&) = delete;
+
+		// deployment-wide login slot: adopted once the player is placed, released after the logout save
+		void					adoptPresenceClaim(BlackTek::World::PresenceClaim claim) noexcept;
+		[[nodiscard]] uint64_t	getPresenceToken() const noexcept	{ return presence_claim.Token(); }
 
 		// static
 		static MuteCountMap muteCountMap;
@@ -995,6 +1000,9 @@ class Player final : public Creature
 		std::string guildNick;
 		std::string tempAccountName;
 		std::string tempPassword;
+
+		// empty for players loaded offline (market, house rent), so their destructor releases nothing
+		BlackTek::World::PresenceClaim presence_claim;
 
 		ContainerPtr storeInbox = nullptr;
 		ContainerPtr rewardChest = nullptr;

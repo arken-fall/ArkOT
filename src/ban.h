@@ -37,6 +37,9 @@ class IOBan
 		static bool isAccountBanned(uint32_t accountId, BanInfo& banInfo);
 		static bool isIpBanned(uint32_t clientIP, BanInfo& banInfo);
 		static bool isPlayerNamelocked(uint32_t playerId);
+
+		// moves every expired account ban to history; safe to run from several worlds at once
+		static void sweepExpiredAccountBans();
 };
 
 #endif

@@ -22,6 +22,7 @@
 #include "protocollogin.h"
 #include "protocolstatus.h"
 #include "databasemanager.h"
+#include "ban.h"
 #include "scheduler.h"
 #include "databasetasks.h"
 #include "script.h"
@@ -33,11 +34,14 @@
 #include "console.h"
 #include "metrics.h"
 #include "world.h"
+#include "presence.h"
 #include "simd_dispatch.h"
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <optional>
 #include <ranges>
+#include <span>
 #include <string_view>
 
 #if __has_include("gitmetadata.h")
@@ -242,18 +246,128 @@ void startupErrorMessage(const std::string& errorStr)
 
 namespace
 {
-	// The three tables auth_schema.sql hoists into the shared auth schema. Every
+	// The five tables auth_schema.sql hoists into the shared auth schema. Every
 	// world schema carries a VIEW of the same name over each of them, which is the
-	// whole reason no account query in this server - or in the unmodifiable
+	// whole reason no account or ban query in this server - or in the unmodifiable
 	// third-party login-server - had to be schema-qualified.
-	constexpr std::array<std::string_view, 3> AuthSharedTables{ "accounts", "account_sessions", "store_history" };
+	constexpr std::array<std::string_view, 5> AuthSharedTables{ "accounts", "account_sessions", "store_history", "account_bans", "account_ban_history" };
+
+	// Tables that live only in the auth schema, as base tables with deliberately no
+	// per-world view. BlackTek::World::Presence names the auth schema in every query.
+	constexpr std::array<std::string_view, 2> AuthOnlyTables{ "world_presence", "account_presence" };
+
+	// The shared tables IOBan reads `banned_by_name` from.
+	constexpr std::array<std::string_view, 2> BanTables{ "account_bans", "account_ban_history" };
+
+	// A ban table outside the shared list would never be proven to be a view over a
+	// base table, and the column check below leans on exactly that proof.
+	static_assert(std::ranges::all_of(BanTables, [](std::string_view table) { return std::ranges::find(AuthSharedTables, table) != AuthSharedTables.end(); }),
+		"every ban table must also be listed in AuthSharedTables");
+
+	// The configured auth schema, or empty on a single-world install: [mysql].auth_database
+	// unset, or equal to [mysql].database. The view points into g_config's own storage.
+	[[nodiscard]] std::string_view SharedAuthSchema() noexcept
+	{
+		const std::string& authSchema = g_config.GetString(ConfigManager::MYSQL_AUTH_DB);
+
+		if (authSchema.empty() or caseInsensitiveEqual(authSchema, g_config.GetString(ConfigManager::MYSQL_DB)))
+			return {};
+
+		return authSchema;
+	}
+
+	// "('a', 'b')", built from the name array itself, so an IN list can never drift
+	// from the names a probe reports on.
+	[[nodiscard]] std::string SqlNameList(const Database& db, std::span<const std::string_view> names)
+	{
+		std::string list{ "(" };
+
+		for (const auto name : names)
+		{
+			if (list.size() > 1)
+				list += ", ";
+
+			list += db.escapeString(name);
+		}
+
+		list += ')';
+		return list;
+	}
+
+	[[nodiscard]] std::optional<size_t> IndexOf(std::span<const std::string_view> names, std::string_view tableName) noexcept
+	{
+		const auto match = std::ranges::find_if(names, [tableName](std::string_view candidate)
+		{
+			return caseInsensitiveEqual(tableName, candidate);
+		});
+
+		if (match == names.end())
+			return std::nullopt;
+
+		return static_cast<size_t>(std::ranges::distance(names.begin(), match));
+	}
+
+	// Runs an information_schema query whose rows carry `TABLE_NAME`, and marks which
+	// of `names` came back. A failed query reads exactly like an empty result -
+	// storeQuery returns nullptr for both - so every check built on this fails closed.
+	template <size_t Count>
+	[[nodiscard]] std::array<bool, Count> FindTables(Database& db, const std::string& query, const std::array<std::string_view, Count>& names)
+	{
+		std::array<bool, Count> found{};
+
+		if (const auto rows = db.storeQuery(query))
+		{
+			do
+			{
+				if (const auto index = IndexOf(names, rows->getString("TABLE_NAME")))
+					found[*index] = true;
+			} while (rows->next());
+		}
+
+		return found;
+	}
+
+	// "a, b" for every name whose flag is false; empty when all were found.
+	template <size_t Count>
+	[[nodiscard]] std::string MissingNames(const std::array<std::string_view, Count>& names, const std::array<bool, Count>& found)
+	{
+		std::string list;
+
+		auto missing = std::views::iota(size_t{ 0 }, Count)
+			| std::views::filter([&found](size_t index) { return not found[index]; });
+
+		for (const auto index : missing)
+		{
+			if (not list.empty())
+				list += ", ";
+
+			list += names[index];
+		}
+
+		return list;
+	}
+
+	// Marks which BanTables carry `banned_by_name` in one schema. `schemaExpression`
+	// is spliced into the query verbatim, so it must already be SQL: an escaped
+	// schema literal, or DATABASE(). information_schema.COLUMNS lists a view's
+	// columns as well as a base table's, so this reads either kind. Fails closed
+	// through FindTables: a query error reports every column as missing.
+	[[nodiscard]] std::array<bool, BanTables.size()> FindBannedByNameColumns(Database& db, std::string_view schemaExpression)
+	{
+		return FindTables(db, fmt::format("SELECT `TABLE_NAME` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = {:s} AND `COLUMN_NAME` = 'banned_by_name' AND `TABLE_NAME` IN {:s}", schemaExpression, SqlNameList(db, BanTables)), BanTables);
+	}
+
+	// Clearing [mysql].auth_database is only a fix for a world that never shared its
+	// account tables. On a world whose tables are views it trades this refusal for
+	// another one, so every refusal that offers it says when it applies.
+	constexpr std::string_view ClearAuthDatabaseRemedy{ "Clear [mysql].auth_database in config/database.toml only if this world's `accounts`, `account_sessions` and `store_history` are base tables, i.e. it is genuinely single-world; a world whose account tables are views must be provisioned, not cleared." };
 
 	// Establishes that this world's schema really was provisioned against the
 	// configured auth schema. Returns the reason it was not, or nullopt when the
 	// shared auth schema is usable. Boot must refuse on a reason: a world whose
 	// views were never created would quietly authenticate against its own stale
 	// account table, which is a broken login rather than a degraded one.
-	[[nodiscard]] std::optional<std::string> ProbeSharedAuthSchema(const std::string& authSchema, const std::string& worldSchema)
+	[[nodiscard]] std::optional<std::string> ProbeSharedAuthSchema(std::string_view authSchema, std::string_view worldSchema)
 	{
 		Database& db = Database::getInstance();
 
@@ -264,7 +378,7 @@ namespace
 		// set just as it does for a failed query.
 		if (not db.storeQuery("SELECT EXISTS(SELECT 1 FROM `accounts` LIMIT 1) AS `readable`"))
 		{
-			return fmt::format("Shared auth schema: `accounts` cannot be read from schema '{:s}'. Run auth_schema.sql for this world, or clear [mysql].auth_database in config/database.toml.", worldSchema);
+			return fmt::format("Shared auth schema: `accounts` cannot be read from schema '{:s}'. Run auth_schema.sql for this world. {:s}", worldSchema, ClearAuthDatabaseRemedy);
 		}
 
 		// Reading is not enough; it has to be reading the SHARED rows. So `accounts`
@@ -273,31 +387,19 @@ namespace
 		// connection, exactly as DatabaseManager already reaches it
 		// (src/databasemanager.cpp:18, 41, 47).
 		std::array<bool, AuthSharedTables.size()> isView{};
-		std::array<bool, AuthSharedTables.size()> hasBaseTable{};
 		std::array<bool, AuthSharedTables.size()> viewNamesAuthSchema{};
 
-		constexpr std::string_view sharedTableList = "('accounts', 'account_sessions', 'store_history')";
+		const std::string sharedTableList = SqlNameList(db, AuthSharedTables);
+		const std::string escapedAuthSchema = db.escapeString(authSchema);
+		const std::string escapedWorldSchema = db.escapeString(worldSchema);
 
-		const auto indexOf = [](std::string_view tableName) -> std::optional<size_t>
-		{
-			const auto match = std::ranges::find_if(AuthSharedTables, [tableName](std::string_view candidate)
-			{
-				return caseInsensitiveEqual(tableName, candidate);
-			});
-
-			if (match == AuthSharedTables.end())
-				return std::nullopt;
-
-			return static_cast<size_t>(std::ranges::distance(AuthSharedTables.begin(), match));
-		};
-
-		if (const auto views = db.storeQuery(fmt::format("SELECT `TABLE_NAME`, `VIEW_DEFINITION` FROM `information_schema`.`VIEWS` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_NAME` IN {:s}", db.escapeString(worldSchema), sharedTableList)))
+		if (const auto views = db.storeQuery(fmt::format("SELECT `TABLE_NAME`, `VIEW_DEFINITION` FROM `information_schema`.`VIEWS` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_NAME` IN {:s}", escapedWorldSchema, sharedTableList)))
 		{
 			const std::string authReference = asLowerCaseString(fmt::format("`{:s}`.", authSchema));
 
 			do
 			{
-				if (const auto index = indexOf(views->getString("TABLE_NAME")))
+				if (const auto index = IndexOf(AuthSharedTables, views->getString("TABLE_NAME")))
 				{
 					isView[*index] = true;
 					viewNamesAuthSchema[*index] = asLowerCaseString(std::string{ views->getString("VIEW_DEFINITION") }).find(authReference) != std::string::npos;
@@ -305,51 +407,42 @@ namespace
 			} while (views->next());
 		}
 
-		if (const auto tables = db.storeQuery(fmt::format("SELECT `TABLE_NAME` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_TYPE` = 'BASE TABLE' AND `TABLE_NAME` IN {:s}", db.escapeString(authSchema), sharedTableList)))
+		const auto hasBaseTable = FindTables(db, fmt::format("SELECT `TABLE_NAME` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_TYPE` = 'BASE TABLE' AND `TABLE_NAME` IN {:s}", escapedAuthSchema, sharedTableList), AuthSharedTables);
+
+		if (const std::string missingViews = MissingNames(AuthSharedTables, isView); not missingViews.empty())
 		{
-			do
-			{
-				if (const auto index = indexOf(tables->getString("TABLE_NAME")))
-				{
-					hasBaseTable[*index] = true;
-				}
-			} while (tables->next());
+			return fmt::format("Shared auth schema: schema '{:s}' has no view for {:s}. This world was never provisioned against auth schema '{:s}' - run auth_schema.sql for it. {:s}", worldSchema, missingViews, authSchema, ClearAuthDatabaseRemedy);
 		}
 
-		std::string missingViews;
-		std::string missingTables;
-
-		const auto listName = [](std::string& list, std::string_view tableName)
+		if (const std::string missingTables = MissingNames(AuthSharedTables, hasBaseTable); not missingTables.empty())
 		{
-			if (not list.empty())
-			{
-				list += ", ";
-			}
-
-			list += tableName;
-		};
-
-		for (size_t index = 0; index < AuthSharedTables.size(); ++index)
-		{
-			if (not isView[index])
-			{
-				listName(missingViews, AuthSharedTables[index]);
-			}
-
-			if (not hasBaseTable[index])
-			{
-				listName(missingTables, AuthSharedTables[index]);
-			}
+			return fmt::format("Shared auth schema: auth schema '{:s}' has no base table for {:s}. Run section 1 of auth_schema.sql. {:s}", authSchema, missingTables, ClearAuthDatabaseRemedy);
 		}
 
-		if (not missingViews.empty())
+		// Cross-world presence queries these by their auth-schema name only, so they
+		// must be base tables there; a world-schema table of the same name is never read.
+		const auto hasPresenceTable = FindTables(db, fmt::format("SELECT `TABLE_NAME` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = {:s} AND `TABLE_TYPE` = 'BASE TABLE' AND `TABLE_NAME` IN {:s}", escapedAuthSchema, SqlNameList(db, AuthOnlyTables)), AuthOnlyTables);
+
+		if (const std::string missingPresence = MissingNames(AuthOnlyTables, hasPresenceTable); not missingPresence.empty())
 		{
-			return fmt::format("Shared auth schema: schema '{:s}' has no view for {:s}. This world was never provisioned against auth schema '{:s}' - run auth_schema.sql for it, or clear [mysql].auth_database in config/database.toml.", worldSchema, missingViews, authSchema);
+			return fmt::format("Shared auth schema: auth schema '{:s}' has no base table for {:s}, which cross-world login presence needs. Run section 1 of auth_schema.sql against it, then start the server again.", authSchema, missingPresence);
 		}
 
-		if (not missingTables.empty())
+		// IOBan selects `banned_by_name`. Should that query fail, storeQuery returns
+		// nullptr and the account reads as NOT banned, so a missing column would let
+		// every banned account log in. Both layers are checked: the auth base table
+		// must have the column, and so must this world's view, whose column list was
+		// frozen when it was created. The checks above already proved each name is a
+		// base table in the auth schema and a view in this world's schema, so a
+		// missing column here can only mean the column really is absent.
+		if (const std::string missingBaseColumn = MissingNames(BanTables, FindBannedByNameColumns(db, escapedAuthSchema)); not missingBaseColumn.empty())
 		{
-			return fmt::format("Shared auth schema: auth schema '{:s}' has no base table for {:s}. Run section 1 of auth_schema.sql, or clear [mysql].auth_database in config/database.toml.", authSchema, missingTables);
+			return fmt::format("Shared auth schema: base table {:s} in auth schema '{:s}' has no `banned_by_name` column, so ban checks would fail and let banned accounts log in. Add the column as section 1 of auth_schema.sql defines it, then re-run section 3 of auth_schema.sql for every world.", missingBaseColumn, authSchema);
+		}
+
+		if (const std::string staleViews = MissingNames(BanTables, FindBannedByNameColumns(db, escapedWorldSchema)); not staleViews.empty())
+		{
+			return fmt::format("Shared auth schema: view {:s} in schema '{:s}' has no `banned_by_name` column - it was created before the column existed, and a view's column list does not follow its base table. Ban checks would fail and let banned accounts log in. Re-run section 3 of auth_schema.sql for world schema '{:s}', then start the server again.", staleViews, worldSchema, worldSchema);
 		}
 
 		// Whether a stored view definition still spells out the auth schema is a
@@ -397,6 +490,39 @@ namespace
 				BlackTek::Console::Database::Warn("mainLoader: cannot read `{:s}`.`players` for world '{:s}' (id {:d}); that world's characters will be missing from the character list. Grant this MySQL user SELECT on that schema.", entry.schema, entry.name, entry.id);
 			}
 		}
+	}
+
+	// IOBan selects `banned_by_name`, and a failed ban query reads as NOT banned, so a
+	// world whose ban tables lack the column lets every banned account in. Unlike the
+	// shared-auth probe, this runs whatever [mysql].auth_database says, and after the
+	// migrations: a single-world install gets the column from the version-8 migration,
+	// which can fail and simply stop, and a world with views whose auth_database was
+	// cleared skips the shared-auth probe entirely. The query asks about whatever the
+	// ban names are in this world's schema - base tables or views - since that is
+	// exactly what every unqualified ban query reads. Returns the reason to refuse.
+	[[nodiscard]] std::optional<std::string> ProbeBannedByName(std::string_view worldSchema)
+	{
+		Database& db = Database::getInstance();
+
+		const std::string missing = MissingNames(BanTables, FindBannedByNameColumns(db, "DATABASE()"));
+
+		if (missing.empty())
+			return std::nullopt;
+
+		// Only picks the remedy; boot refuses either way. Should this query fail, no
+		// name reads as a view and the message falls back to naming both remedies.
+		const auto isView = FindTables(db, fmt::format("SELECT `TABLE_NAME` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_TYPE` = 'VIEW' AND `TABLE_NAME` IN {:s}", SqlNameList(db, BanTables)), BanTables);
+
+		if (std::ranges::contains(isView, true))
+		{
+			const std::string_view restoreAuthSchema = SharedAuthSchema().empty()
+				? ", and set [mysql].auth_database in config/database.toml back to the auth schema those views read from - clearing it does not make a world with views single-world"
+				: "";
+
+			return fmt::format("Ban check: {:s} in schema '{:s}' has no `banned_by_name` column, so ban checks would fail and let banned accounts log in. This world's ban tables are views into a shared auth schema, and a view's column list does not follow its base table. Re-run section 3 of auth_schema.sql for world schema '{:s}'{:s}, then start the server again.", missing, worldSchema, worldSchema, restoreAuthSchema);
+		}
+
+		return fmt::format("Ban check: {:s} in schema '{:s}' has no `banned_by_name` column, so ban checks would fail and let banned accounts log in. On a single-world install the version-8 migration (data/migrations/7.lua) adds it: check the migration output above for why it did not, fix that, then start the server again. If this world's ban tables are views into a shared auth schema, re-run section 3 of auth_schema.sql for world schema '{:s}' instead.", missing, worldSchema, worldSchema);
 	}
 }
 
@@ -620,17 +746,23 @@ void mainLoader(int, char*[], ServiceManager* services)
 	// Shared auth schema. An empty [mysql].auth_database - or one equal to
 	// [mysql].database - is a single-world install: no auth schema, no views,
 	// nothing to probe, so this whole block is skipped. When it is set, every
-	// unqualified `accounts` / `account_sessions` / `store_history` query in this
-	// process is expected to resolve through a per-world view into that schema
-	// (auth_schema.sql), so a world whose views were never created must stop here
-	// rather than serve logins against its own stale account table.
+	// unqualified `accounts` / `account_sessions` / `store_history` /
+	// `account_bans` / `account_ban_history` query in this process is expected to
+	// resolve through a per-world view into that schema (auth_schema.sql), so a
+	// world whose views were never created must stop here rather than serve logins
+	// against its own stale account table.
+	//
+	// This runs before DatabaseManager::updateDatabase(), and that ordering is safe
+	// for the ban column check: on a shared install the ban names are views, and
+	// the version-8 migration never alters a view, so the columns seen here are the
+	// columns every ban query will see. It also means a stale view refuses boot
+	// here, before that migration can merely decline and let boot carry on.
 	{
-		const std::string& authSchema = g_config.GetString(ConfigManager::MYSQL_AUTH_DB);
-		const std::string& worldSchema = g_config.GetString(ConfigManager::MYSQL_DB);
+		const std::string_view authSchema = SharedAuthSchema();
 
-		if (not authSchema.empty() and not caseInsensitiveEqual(authSchema, worldSchema))
+		if (not authSchema.empty())
 		{
-			if (const auto failure = ProbeSharedAuthSchema(authSchema, worldSchema))
+			if (const auto failure = ProbeSharedAuthSchema(authSchema, g_config.GetString(ConfigManager::MYSQL_DB)))
 			{
 				startupErrorMessage(*failure);
 				return;
@@ -653,6 +785,18 @@ void mainLoader(int, char*[], ServiceManager* services)
 	}
 	g_databaseTasks.start();
 	DatabaseManager::updateDatabase();
+
+	// After the migration, which is what adds `banned_by_name` on a single-world
+	// install, and before anything reads a ban. updateDatabase() reports no failure,
+	// so this is the only thing standing between a failed migration and a server
+	// that reads every banned account as not banned.
+	if (const auto failure = ProbeBannedByName(g_config.GetString(ConfigManager::MYSQL_DB)))
+	{
+		startupErrorMessage(*failure);
+		return;
+	}
+
+	IOBan::sweepExpiredAccountBans();
 
 	if (g_config.GetBoolean(ConfigManager::OPTIMIZE_DATABASE) and not DatabaseManager::optimizeTables())
 	{
@@ -839,10 +983,20 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 
+	// Whether a game or login listener really bound, which cross-world presence
+	// needs below. AddListener returns true both for a bind and for a skipped port
+	// 0, so a success only counts when the port it was actually handed - after the
+	// narrowing cast - is nonzero: for such a port ServiceManager::add succeeds only
+	// once ServicePort::open has bound it (or it was bound by an earlier add) and it
+	// is registered as an acceptor.
+	bool gameOrLoginBound = false;
+
 	if (gamePort != 0)
 	{
 		if (not AddListener<ProtocolGame>(*services, static_cast<uint16_t>(gamePort)))
 			return;
+
+		gameOrLoginBound = gameOrLoginBound or static_cast<uint16_t>(gamePort) != 0;
 
 		// the legacy pair shares one port; make_protocol tells them apart by
 		// checksum state, which only works while neither is single-socket
@@ -850,6 +1004,8 @@ void mainLoader(int, char*[], ServiceManager* services)
 		{
 			if (not AddListener<ProtocolLogin>(*services, static_cast<uint16_t>(loginPort)))
 				return;
+
+			gameOrLoginBound = gameOrLoginBound or static_cast<uint16_t>(loginPort) != 0;
 
 			if (not AddListener<ProtocolOld>(*services, static_cast<uint16_t>(loginPort)))
 				return;
@@ -862,6 +1018,8 @@ void mainLoader(int, char*[], ServiceManager* services)
 		if (not AddListener<ProtocolGameModern>(*services, static_cast<uint16_t>(modernPort)))
 			return;
 
+		gameOrLoginBound = gameOrLoginBound or static_cast<uint16_t>(modernPort) != 0;
+
 		ProtocolGame::setSharedModernLayout(true);
 
 		// ProtocolLoginModern is server_sends_first, so it takes the login port
@@ -872,12 +1030,38 @@ void mainLoader(int, char*[], ServiceManager* services)
 		{
 			if (not AddListener<ProtocolLoginModern>(*services, static_cast<uint16_t>(loginPort)))
 				return;
+
+			gameOrLoginBound = gameOrLoginBound or static_cast<uint16_t>(loginPort) != 0;
 		}
 	}
 
 	// OT protocols
 	if (not AddListener<ProtocolStatus>(*services, static_cast<uint16_t>(statusPort)))
 		return;
+
+	// Cross-world presence. Only once every listener above has bound: a bind that
+	// succeeded proves no other process is running this world (see AddListener),
+	// which is what lets Start delete this world's leftover claims. A single-world
+	// install passes an empty name and presence stays disabled.
+	//
+	// That proof needs a bind to exist. With every game and login port disabled
+	// nothing bound, and Start would delete this world's rows on no evidence at all -
+	// possibly the live claims of another process serving the same world id. The
+	// status listener does not count: it takes no logins, so it proves nothing about
+	// who serves this world's players.
+	if (not SharedAuthSchema().empty() and not gameOrLoginBound)
+	{
+		services->AbandonListeners();
+		startupErrorMessage("Cross-world presence: no game or login listener is bound, so nothing proves this is the only process serving this world, and clearing its presence claims could evict another server's live logins. Give game_port_modern or game_port a nonzero port in config/server.toml, or clear [mysql].auth_database if this world is genuinely single-world, then start the server again.");
+		return;
+	}
+
+	if (const auto started = BlackTek::World::Presence::GetInstance().Start(SharedAuthSchema()); not started)
+	{
+		services->AbandonListeners();
+		startupErrorMessage(started.error());
+		return;
+	}
 
 	// House rent
 	RentPeriod_t rentPeriod;

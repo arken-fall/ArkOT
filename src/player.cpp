@@ -2064,7 +2064,15 @@ void Player::onRemoveCreature(const CreaturePtr& creature, bool isLogout)
 		if (!saved) {
 			std::cout << "Error while saving player: " << getName() << std::endl;
 		}
+
+		// only after the save, so another world can never load this account's state before it is persisted
+		presence_claim.Release();
 	}
+}
+
+void Player::adoptPresenceClaim(BlackTek::World::PresenceClaim claim) noexcept
+{
+	presence_claim = std::move(claim);
 }
 
 void Player::openShopWindow(const NpcPtr& npc, const std::list<ShopInfo>& shop)
