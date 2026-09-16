@@ -1,43 +1,166 @@
-# Black Tek Server 
-__________________
-[![Discord Shield](https://discordapp.com/api/guilds/1251683017441677372/widget.png?style=shield)](https://discord.gg/dy5wXSzbPG)
-[![Linux Build](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/linux_build_runner.yml/badge.svg?branch=master)](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/linux_build_runner.yml) 
-[![Windows Build](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/windows_build_runner.yml/badge.svg)](https://github.com/Black-Tek/BlackTek-Server/actions/workflows/windows_build_runner.yml)
+# ArkOT
 
-## About this fork — ArkOT, by the ArkenFall team
-__________________
-This repository (**ArkOT**) is the ArkenFall team's fork of BlackTek Server, updated to speak the **modern Tibia 15.25 client protocol**. The world it serves is **[Arkenfall](https://arkenfall.org)** (site source: [arken-fall/arkot-web](https://github.com/unbridledpc/arkot-web)). We are **not part of the BlackTek team** and this fork is not affiliated with or endorsed by them — all credit for the base server belongs to the BlackTek project and its upstream lineage (TFS / OpenTibia). Everything below this section is their original README.
+**ArkOT** is the ArkenFall team's fork of [BlackTek Server](https://github.com/Black-Tek/BlackTek-Server),
+rebuilt to speak the **Tibia 15.25 client protocol** and nothing else. It serves the world
+[Arkenfall](https://arkenfall.org). We are not part of the BlackTek team and this fork is not
+affiliated with or endorsed by them; all credit for the base server belongs to BlackTek and its
+upstream lineage. Upstream's own README is preserved at the bottom of this file.
 
-**Where it stands (2026-09-13).** The fork tracks upstream BlackTek `master` (2.0 "Rise After Midnight" plus the August 2026 trunk: unified ItemEvents, shared-pooled allocator, detached coro-timers, spectator broadcast helpers, dispatcher-side login) and is verified against a real [mehah OTClient](https://github.com/mehah/otclient) 15.25 build entering the world, walking, chatting and using the windows listed below with zero parse errors. Progress is tracked gate by gate in `STATUS.md`; every change and the reasoning behind it is recorded in `arktext.md`.
+Engineering log: `arktext.md`. Port gates: `STATUS.md` (last updated 2026-09-14, a lap behind the
+code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 
-What we changed to get from 10.98 to 15.25:
+---
 
-- **Protocol profiles** (`src/protocolprofile.h`) — a registry describing each supported protocol generation (10.98 / 13.40 / 14.12 / 15.25) with per-version feature bits and a data-driven login layout. It is the only place version numbers appear; everything else asks the profile.
-- **Modern transport** — the 13.40+ wire framing: sequence-number checksums, the padded XTEA layout, block-count outer lengths, and raw-deflate compression, golden-tested against independently generated fixtures.
-- **HTTP login flow** — modern clients authenticate through a login webservice (compatible with [opentibiabr/login-server](https://github.com/opentibiabr/login-server)) that hands out opaque session keys; the server validates them via SHA-256 lookup in a new `account_sessions` table (DB migration included). Authentication runs on the dispatcher, as upstream now does it.
-- **A dedicated modern game port** (`game_port_modern`) — the modern handshake is framed differently from the legacy one, so each generation gets its own listener instead of byte-sniffing. Shared spectator broadcasts are written once per server in the layout of the enabled listener; running both listeners at once is refused at startup.
-- **Protobuf appearances** — the server loads a 15.25 `appearances.dat` and maps its unified item ids to modern appearance ids (~42k entries), pruning stale rows at load. The 20,805 appearances with no 10.98 item are registered as server items with gameplay attributes joined from community data.
-- **Ported game-packet writers** — login, stats, skills, creatures, items, effects and map descriptions rewritten for the 15.25 wire format where it diverges, gated on the protocol profile.
-- **Windows a player opens first (Phase E)** — NPC shop and sale lists (currency block, client ids, u16 amounts, resource balances), the outfit window (12.81+ list layout), death and text windows, quest log and quest lines with mission ids, the market (request bytes, item tiers, u64 prices, the full 15.25 description set), u16 spell cooldowns, u64 experience messages, and the gamemaster map-click teleport.
-- **Cyclopedia, blessings, inspection (Phase D)** — every cyclopedia character-info request type is answered (general, combat, offence, defence and misc stats, recent deaths from the database, item summary, outfits and mounts, store summary, badges, titles, inspection), the blessings status and dialog, and the object and character inspection windows.
-- **Bestiary and charms (Phase D, real system)** — a `BlackTek::Bestiary` module: race ids and bestiary entries on the monster types (`monster.raceId`, `monster.bestiary` in the monster Lua; 456 creatures filled from public bestiary data by name via `harness/build_bestiary_data.py`), kill tracking per character with staged creature pages and the cyclopedia tracker, charm points on completion, and the 25 charm runes from `config/charms.toml` that are bought with points, assigned to a completed creature and applied as augments against it. State lives in `player_bestiary`, `player_charms` and `players.charm_points` (migration included).
-- **Prey (Phase D, real system)** — a `BlackTek::Prey` module driven by `config/prey.toml`: three slots (two free, the third by config or store), nine-creature lists drawn from the bestiary by the character's level band, bonus rolls with rarity (damage boost, damage reduction, experience, loot), rerolls for gold or wildcards, full-bestiary picks, automatic-reroll and lock options, a once-a-minute countdown, and the bonuses themselves: damage boost and reduction as augments against the creature, experience at the gain, loot in the drop script. State lives in `player_prey` and `players.prey_wildcards` (migration included).
-- **Exaltation forge (Phase D, real system)** — a `BlackTek::Forge` module driven by `config/forge.toml`: classification price tables (gold and exalted cores per tier, convergence prices), fusion with success and bonus rolls, tier transfer, dust from kills capped by a raisable dust level, dust to slivers to exalted cores as real items, and a paged forge history. The tier lives on the item as a custom attribute, so it saves and trades with it and shows in the client's tier byte. State lives in `forge_history`, `players.forge_dust` and `players.forge_dust_level` (migration included). Generated 15.25 items now borrow their appearance's flags (stackable, pickupable, blocking and so on) since they have no legacy dat entry.
-- **Legacy retired** — this fork is 15.25-only: the 10.98 game/login listeners ship disabled (`game_port = 0`, `login_port = 0`; `0` disables a listener).
+## At a glance
 
-Behaviour for the modern packets is taken from the client's own parsers, with [Canary](https://github.com/opentibiabr/canary) as a cross-check; the code itself follows BlackTek's conventions (see `CONTRIBUTING.md`) rather than theirs.
+| Area | State |
+| --- | --- |
+| 15.25 protocol, transport, login | Working, verified against a real client |
+| Item and appearance pipeline | Working |
+| World content | Canary's map and datapack, machine-ported |
+| Side systems (bestiary, prey, forge, wheel, store, market) | Real implementations, several with gaps |
+| Multi-world (one account, N worlds) | Design stage — `docs/plans/multi-world-brief.md` |
 
-- **The real map (2026-09-14)** — the full real-world map ships packed as `data/world/realmap.7z` (unpack it into `data/world/` before the first boot; `map_name = "realmap"` in `config/server.toml`). Its spawns are BlackTek zones (`data/world/realmap-zones/`, converted from the legacy spawn file by the engine's own converter), its 1164 houses load from `map1-house.xml`, and the 900 NPCs of the real world come with their scripts and the NPC-system modules they need (greet/spell keywords, keyword conditions, travel discounts). The quest and item actions of the SeeingBlue 10.98 datapack were converted into `ItemEvent` revscripts (`data/scripts/realmap/`, generated by `harness/build_itemevents.py`), its 133 creatures BlackTek did not have into monster Lua (`data/scripts/monsters/monsters/realmap/`, `harness/build_monsters.py`), and its quest libraries into `data/lib/realmap/`. Where the pack and BlackTek both script the same item, BlackTek's script wins (first registration). The map needs about 10 GB of RAM and 8 s to load.
+**Requirements to run the world:** ~12.8 GB RAM resident, GCC 14+, MySQL/MariaDB, a login
+webservice, and a 15.25 client. The world ships with the server; see First boot.
 
-- **Wheel of destiny (2026-09-14, real system)** — a `BlackTek::Wheel` module driven by `config/wheel.toml`: the 36 slots with their sizes, point requirements and growth rules, one point per level above 50 plus the five promotion scrolls, the per-slot rewards by vocation (health, mana, capacity, mitigation, skills, leeches, vessel resonance, spell upgrades and the instants), the four revelation stages with their damage and healing bonuses and perks, the gem atelier (reveal, lock, destroy into fragments, rotate the domain, raise a modifier's grade with fragments) and the 46 basic and 94 supreme gem modifiers. Stats and skills land on the character directly, resistances, mitigation, leeches and the healing bonus as one augment, spell cooldown and mana reductions inside the spell system, and everything else (stages, perks, instants, per-spell bonuses) through `player:getWheel...` Lua bindings for the datapack. State lives in `player_wheel_slots`, `player_wheel_gems`, `player_wheel_grades` and `player_wheel_scrolls` (migration included). Gold for the atelier and the forge is now taken from the bank when the purse falls short.
+---
 
-- **Store (2026-09-14, real system)** — the 12.x+ store protocol on top of BlackTek's Lua store definition: categories with icons and parents, the front page with banners, offers the client draws itself (items by their client id, outfits and mounts with try-on), category, premium, useful-things, single-offer and search browsing, disabled offers with reasons, offer descriptions, purchases, transferable-coin transfers to other accounts, and a paged transaction history. Coins live on the account (`accounts.coins`, `accounts.coins_transferable`) and every change is written through and recorded in `store_history` (migration included). Items land in the store inbox; outfits and mounts go straight onto the character; a category's `onPurchase` script delivers anything else. `config/store.toml` names the image host (the icons ship with the arkenfall.org site) and the banners; `data/scripts/store/store.lua` is the shelf.
+## Engine
 
-Every side system the 15.25 client expects is now answered with a real implementation.
+| System | State | Notes |
+| --- | --- | --- |
+| Modern 13.40+ transport | Done | Sequence checksums, padded XTEA, block-count lengths, raw deflate. Golden-tested. |
+| Session-key login | Done | Opaque key from an HTTP webservice, SHA-256 lookup in `account_sessions`; email/password still works as a fallback. |
+| Appearance / item-id pipeline | Done | 42,752 server↔appearance mappings, both directions, through one helper. |
+| Item events | Done | Actions and movements unified; hooks by item id, action id, unique id or tile position. |
+| Charms | Done | 25 runes, bought with points, applied as real augments against the creature. |
+| Exaltation forge | Done | Fusion, transfer, convergence, dust economy, history; tier rides on the item. |
+| Store | Done | Categories, offers, purchases, coin transfer, paged history; coins on the account. |
+| Protocol profiles | Partial | 10.98 / 13.40 / 14.12 / 15.25 declared, but only 15.25 has met a real client. |
+| Generated 15.25 items | Partial | 20,805 items generated from appearances; 7,729 still have no name. |
+| Bestiary | Partial | Engine is complete; only 741 of 1,712 monsters carry an entry. |
+| Prey | Partial | All three slots work, but nothing unlocks the third — it stays locked unless config frees it. |
+| Wheel of destiny | Partial | Slots, gems and stat bonuses apply; perks, instants and stages exist only as Lua getters nothing calls. |
+| Market | Partial | Full 15.25 flow, but every item goes out with tier 0 even though forge tiers exist. |
+| Cyclopedia | Partial | All request types answered; the combat pages still send ~57 hard-coded zeros. |
+| Legacy 10.98 listeners | Retired | Ship disabled (`game_port = 0`, `login_port = 0`); starting both generations is refused. |
 
-**Verifying a change.** `harness/` holds the packet-diff and scripted-client tools (`harness/README.md`). A full check is: build, `./blacktek_tests`, the scripted 15.25 login (`harness/modern_client.py`), and a headless run of the real client (`xvfb-run -a ./otclient` with an `otclientrc.lua` that logs in and exercises the feature) while `harness/capture_proxy.py` records the session for `packet_diff.py --decode`.
+## World content
 
-To connect, use a mehah OTClient build with 15.25 assets and HTTP login pointed at your login webservice — the client section further down describes upstream's 10.98 setup, which does not apply to this fork.
+| Thing | Count | Where it came from |
+| --- | --- | --- |
+| Map | 17,972,761 tiles, 23,359,570 items | Canary v3.6.1, converted to OTBM v2 with server ids |
+| Zones | 16,704 (16,691 from spawns + 12 flag zones) | Converted from the map's spawn file |
+| Houses | 993 across 19 towns | The map's own house file |
+| Monster types | 1,696 loaded | 740 BlackTek, 133 SeeingBlue 10.98 pack, 839 Canary |
+| NPCs | 1,079 definitions, 1,063 dialogues | 900 from the 10.98 pack, 179 ported from Canary |
+| Quest scripts | 726 across 100 quests | Canary |
+| Quest log | 50 quests, 369 missions | Canary's catalog, resolved to the storages this server writes |
+| Spells | 387 | BlackTek's own, plus 124 monster spells ported from Canary |
+| Items | 42,686 defined | 21,881 legacy-era, 20,805 generated from 15.25 appearances |
+
+## Needs work
+
+| Item | Why it matters |
+| --- | --- |
+| Two datapacks claim the same items | 312 scripts from the 10.98 pack still register against a map that no longer has those ids — 1,034 duplicate registrations per boot, only the first fires. |
+| 239 quest scripts held back | They need Canary machinery this server has no counterpart for: `BossLever`, `Encounter`, `Hazard`, its key-value store. |
+| 69 NPCs greet and trade but cannot hand out their quest | 79 dialogue callbacks need Canary's own npc object. |
+| 972 monsters have no bestiary entry | They cannot be tracked, charmed, or offered as prey. |
+| 83 monsters cast spells that do not exist | 40 distinct names; 32 need engine features (chain combat, `CONDITION_ROOTED`, `CONDITION_FEARED`, damage callbacks). |
+| 51 player spells and the Monk vocation missing | Including the wheel Avatars and the vocation familiars. |
+| No migration for the map switch | Character towns and positions still use the retired map's numbering; Canary puts Thais at town 8. |
+| 45 client requests unanswered | Imbuements, bosstiary, quick loot, depot search, party analyser and others are advertised or ignored rather than implemented. |
+| Thin automated coverage | 13 golden tests cover transport, id mapping and event dispatch; everything else is verified by driving a real client. |
+| Stale Docker and CI paths | The compose file still targets 7171/7172/7173 and cannot serve a world; CI builds but never runs the tests. |
+| One unexplained segfault | After ~8 hours under a 20,000-bot load; never reproduced, never root-caused. |
+
+## In the pipeline
+
+| Work | Shape |
+| --- | --- |
+| Multi-world | One account, N worlds; characters bound to a world, coins account-wide, unlocks per character. Brief: `docs/plans/multi-world-brief.md`. |
+| Boss rooms | Porting or replacing `BossLever` / `Encounter` unlocks the 239 held-back quest scripts. |
+| Bestiary coverage | Entries for the 972 monsters that have none. |
+| Raids | Nothing authored for this map yet; only upstream's three demo raids exist. |
+
+---
+
+## Provenance and credit
+
+**The C++ in `src/` is written here, not copied.** Where a wire format or a loader shape needed a
+reference implementation, [Canary](https://github.com/opentibiabr/canary) was read as a
+cross-check alongside the client's own parsers, and every place that happened says so in the source
+— for example `src/protocol.cpp:3` and `src/appearances.cpp:3`. The code itself follows BlackTek's
+`CONTRIBUTING.md` rather than Canary's conventions.
+
+**The world content in `data/` is different: it was machine-ported from Canary's open datapack.**
+The map, 839 monsters, 179 NPCs, 726 quest scripts, the quest log, the storage numbering and 27
+library functions are derived from that work, and it is redistributed here under the same
+**GPL-2.0** licence both projects use.
+
+That porting was a one-time job and the server does not depend on it. Everything it produced is
+committed — the world, the scripts, the data — so a clone builds and runs with no Python, no Canary
+checkout and no conversion step. The one-way converters are kept in `harness/` as the record of how
+the content was derived and to make a future re-port from a newer Canary release repeatable; nothing
+at build time or runtime reads them.
+
+With thanks to:
+
+- **[BlackTek Server](https://github.com/Black-Tek/BlackTek-Server)** — the base server this forks.
+- **[The Forgotten Server](https://github.com/otland/forgottenserver)** and
+  **[OpenTibia](https://github.com/opentibia/server)** — the lineage underneath it.
+- **[Canary / otservbr](https://github.com/opentibiabr/canary)** — the datapack and map this world
+  is built from, and the reference implementation for modern protocol behaviour.
+- **SeeingBlue and TimerTim** — the 10.98 real-map datapack whose monsters and quest libraries are
+  still part of this tree.
+- **[mehah's OTClient](https://github.com/mehah/otclient)** — the client every feature here is
+  verified against.
+
+---
+
+## Build
+
+```bash
+./bootstrap.sh                                    # first time: packages, premake5, vcpkg
+premake5 gmake2                                   # re-run after adding any source file
+make -j$(nproc) config=release_64 CC=gcc-14 CXX=g++-14
+./blacktek_tests                                  # 13 golden tests
+```
+
+GCC 14 or newer is required (the code is C++23 and uses `std::println`); `bootstrap.sh` still only
+refuses GCC below 10, so an older-but-not-ancient compiler gets all the way to a failing build.
+
+## First boot
+
+1. **Database** — import `schema.sql` into MySQL/MariaDB and set `config/database.toml`. Migrations
+   in `data/migrations/` then run automatically; the schema is at version 7.
+2. **Unpack the world** — it ships packed, because the map is 177 MB unpacked:
+
+   ```bash
+   7z x data/world/canary.7z -odata/world
+   ```
+
+   That is the whole of it: map, spawns and houses. The spawn zones, monsters, NPCs, quests and
+   items are already in the tree. `data/world/realmap.7z` (the retired 10.98 real map) and
+   `forgotten.otbm` (upstream's demo map) also ship; switch with `map_name` in `config/server.toml`.
+3. **Run it** from the repository root — configuration is TOML loaded by relative path:
+   `./Black-Tek-Server`.
+
+Ports come from `config/server.toml`: the modern game listener is **7183**, status is **7184**, and
+both legacy listeners are off. Real clients authenticate through an
+[opentibiabr/login-server](https://github.com/opentibiabr/login-server)-compatible webservice, which
+is not part of this repository.
+
+## Verifying a change
+
+`harness/` holds the packet tooling (`harness/README.md`). A full pass is: build, `./blacktek_tests`,
+a scripted 15.25 login (`harness/modern_client.py`), and a headless run of the real client
+(`xvfb-run -a ./otclient`) while `harness/capture_proxy.py` records the session for
+`packet_diff.py --decode`.
+
+---
 
 ## What is BlackTek Server?
 __________________
