@@ -93,6 +93,15 @@ class Database
 		}
 
 		/**
+		 * Retrieve the number of rows changed by the last query
+		 *
+		 * @return rows changed; a guarded UPDATE reports 0 when its guard rejected it
+		 */
+		[[nodiscard]] uint64_t getAffectedRows() const noexcept {
+			return static_cast<uint64_t>(mysql_affected_rows(handle));
+		}
+
+		/**
 		 * Get database engine version
 		 *
 		 * @return the database engine version

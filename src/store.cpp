@@ -15,6 +15,7 @@
 #include "tools.h"
 
 #include <algorithm>
+#include <limits>
 #include <ranges>
 #include <toml++/toml.hpp>
 
@@ -47,6 +48,74 @@ namespace BlackTek::Store
 		[[nodiscard]] uint32_t BalanceFor(const PlayerPtr& player, Coins coins) noexcept
 		{
 			return coins == Coins::Transferable ? player->getTransferableCoins() : player->getCoins() + player->getTransferableCoins();
+		}
+
+		[[nodiscard]] uint32_t ShiftedBalance(uint32_t balance, int64_t delta) noexcept
+		{
+			constexpr int64_t ceiling = static_cast<int64_t>(std::numeric_limits<uint32_t>::max());
+			return static_cast<uint32_t>(std::clamp<int64_t>(static_cast<int64_t>(balance) + delta, 0, ceiling));
+		}
+
+		// `accounts` is a row every world shares, so a coin change is written as a
+		// guarded delta rather than as the absolute value this process happens to
+		// hold: the guard in the WHERE clause rejects any write that would take
+		// either column below zero, so a spend another world already made cannot be
+		// resurrected and no balance can go negative. Both columns are int UNSIGNED,
+		// hence a signed delta added to the column instead of a subtraction, which
+		// would underflow in SQL before the guard ever saw it. The caller's cached
+		// balance is only touched once the row is known to have changed.
+		bool ApplyCoinDelta(const PlayerPtr& player, int64_t regularDelta, int64_t transferableDelta)
+		{
+			Database& db = Database::getInstance();
+			const uint32_t accountId = player->getAccount();
+			if (not db.executeQuery(fmt::format(
+				"UPDATE `accounts` SET `coins` = `coins` + ({:d}), `coins_transferable` = `coins_transferable` + ({:d}) WHERE `id` = {:d} AND `coins` + ({:d}) >= 0 AND `coins_transferable` + ({:d}) >= 0",
+				regularDelta, transferableDelta, accountId, regularDelta, transferableDelta)))
+			{
+				Console::Database::Error("Store::System::ApplyCoinDelta: the coin write for account {:d} failed", accountId);
+				return false;
+			}
+
+			// the guard, not this process, decides whether the change was affordable
+			if (db.getAffectedRows() != 1)
+			{
+				Console::Database::Warn("Store::System::ApplyCoinDelta: account {:d} refused a coin change of {:+d} regular and {:+d} transferable", accountId, regularDelta, transferableDelta);
+				return false;
+			}
+
+			// the row, not this process's login-time cache, is what the balance is
+			if (const auto result = db.storeQuery(fmt::format("SELECT `coins`, `coins_transferable` FROM `accounts` WHERE `id` = {:d}", accountId)))
+			{
+				player->setCoins(result->getNumber<uint32_t>("coins"), result->getNumber<uint32_t>("coins_transferable"));
+			}
+			else
+			{
+				// the write landed even though the read back did not; the delta is the
+				// best the cache can do until the next coin change refreshes it
+				player->setCoins(ShiftedBalance(player->getCoins(), regularDelta), ShiftedBalance(player->getTransferableCoins(), transferableDelta));
+			}
+			return true;
+		}
+
+		// what a spend costs each of the two columns
+		struct CoinDelta
+		{
+			int64_t regular = 0;
+			int64_t transferable = 0;
+		};
+
+		// a regular price is paid from the regular coins first, then from the
+		// transferable ones. The split lives here, in one place, because a spend
+		// that has to be undone is undone by negating this exact pair: refunding
+		// the whole price to one column would silently convert transferable
+		// coins into regular ones, or the other way around.
+		[[nodiscard]] CoinDelta SpendDelta(const PlayerPtr& player, uint32_t amount, Coins coins) noexcept
+		{
+			if (coins == Coins::Transferable)
+				return { .regular = 0, .transferable = -static_cast<int64_t>(amount) };
+
+			const uint32_t fromRegular = std::min(player->getCoins(), amount);
+			return { .regular = -static_cast<int64_t>(fromRegular), .transferable = -static_cast<int64_t>(amount - fromRegular) };
 		}
 	}
 
@@ -265,13 +334,33 @@ namespace BlackTek::Store
 			return;
 		}
 
-		if (not deliver(player, *category, *product, productType, param))
+		// the debit is a guarded delta the database is free to refuse, so it has
+		// to land before the product does: refused after delivery, it would hand
+		// the product out for nothing to an account that spent the same coins in
+		// another world. SpendDelta is a pure function of the cached balance and
+		// the price, and nothing between here and removeCoins touches either, so
+		// this is the exact pair removeCoins applies and the exact pair to undo.
+		const CoinDelta spent = SpendDelta(player, product->price, product->coins);
+		if (not removeCoins(player, product->price, product->coins, product->name))
 		{
 			player->sendStoreError(Error::Purchase, "Your purchase could not be completed.");
 			return;
 		}
 
-		removeCoins(player, product->price, product->coins, product->name);
+		if (not deliver(player, *category, *product, productType, param))
+		{
+			// the coins left the row but the product never arrived, so put them
+			// back through the same guarded write. No history row: a purchase
+			// that was undone is not a transaction the player made.
+			if (not ApplyCoinDelta(player, -spent.regular, -spent.transferable))
+			{
+				Console::Database::Error("Store::System::purchase: account {:d} was debited {:d} {:s} coins for '{:s}' and the refund was refused; the balance needs a manual correction",
+					player->getAccount(), product->price, product->coins == Coins::Transferable ? "transferable" : "regular", product->name);
+			}
+			player->sendStoreError(Error::Purchase, "Your purchase could not be completed.");
+			return;
+		}
+
 		player->sendStorePurchaseResult(fmt::format("You have purchased {:s}.", product->name));
 		player->sendStoreBalances();
 	}
@@ -404,15 +493,14 @@ namespace BlackTek::Store
 		{
 			return false;
 		}
-		if (coins == Coins::Transferable)
+
+		const int64_t credit = static_cast<int64_t>(amount);
+		const bool transferable = coins == Coins::Transferable;
+		if (not ApplyCoinDelta(player, transferable ? 0 : credit, transferable ? credit : 0))
 		{
-			player->setCoins(player->getCoins(), player->getTransferableCoins() + amount);
+			return false;
 		}
-		else
-		{
-			player->setCoins(player->getCoins() + amount, player->getTransferableCoins());
-		}
-		saveCoins(player);
+
 		record(player->getAccount(), mode, static_cast<int32_t>(amount), coins, description);
 		player->sendStoreBalances();
 		return true;
@@ -425,28 +513,18 @@ namespace BlackTek::Store
 		{
 			return false;
 		}
-		uint32_t regular = player->getCoins();
-		uint32_t transferable = player->getTransferableCoins();
-		if (coins == Coins::Transferable)
+
+		// the split is chosen from the cached balance, but the write is guarded
+		// against the row's own columns, so a cache that outran the database costs
+		// the player a refused purchase rather than a negative balance
+		const CoinDelta spend = SpendDelta(player, amount, coins);
+		if (not ApplyCoinDelta(player, spend.regular, spend.transferable))
 		{
-			transferable -= amount;
+			return false;
 		}
-		else
-		{
-			const uint32_t fromRegular = std::min(regular, amount);
-			regular -= fromRegular;
-			transferable -= amount - fromRegular;
-		}
-		player->setCoins(regular, transferable);
-		saveCoins(player);
+
 		record(player->getAccount(), Mode::Normal, -static_cast<int32_t>(amount), coins, description);
 		return true;
-	}
-
-	void System::saveCoins(const PlayerPtr& player) const
-	{
-		Database& db = Database::getInstance();
-		db.executeQuery(fmt::format("UPDATE `accounts` SET `coins` = {:d}, `coins_transferable` = {:d} WHERE `id` = {:d}", player->getCoins(), player->getTransferableCoins(), player->getAccount()));
 	}
 
 	void System::record(uint32_t accountId, Mode mode, int32_t amount, Coins coins, const std::string& description) const

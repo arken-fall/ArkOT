@@ -103,7 +103,6 @@ namespace BlackTek::Store
 
 			bool deliver(const PlayerPtr& player, const StoreCategory& category, const StoreProduct& product, uint8_t productType, const std::string& param) const;
 			void record(uint32_t accountId, HistoryEntry::Mode mode, int32_t amount, StoreProduct::Coins coins, const std::string& description) const;
-			void saveCoins(const PlayerPtr& player) const;
 			[[nodiscard]] std::vector<const StoreProduct*> search(const StoreWindow& window, std::string_view text) const;
 
 			Config config;
