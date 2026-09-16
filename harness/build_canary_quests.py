@@ -230,6 +230,8 @@ def main():
     # BlackTek disables a script: a # in front of its name.
     clashes, superseded = [], []
     for path in sorted((ROOT / "data/scripts/realmap").rglob("*.lua")):
+        if path.name.startswith("#"):       # already disabled, so it claims nothing
+            continue
         own = registrations(path.read_text(errors="replace"))
         shared = own & set(taken)
         if not shared:

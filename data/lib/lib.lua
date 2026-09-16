@@ -16,5 +16,7 @@ dofile('data/lib/realmap/miscellaneous.lua')
 dofile('data/lib/realmap/modalwindow.lua')
 dofile('data/lib/realmap/lionrock.lua')
 
--- The storage names Canary's map, npcs and quests read, on top of the pack's own
+-- The storage names Canary's map, npcs and quests read, on top of the pack's own,
+-- and the lib functions its quest scripts call
 dofile('data/lib/canary/storages.lua')
+dofile('data/lib/canary/functions.lua')
