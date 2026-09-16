@@ -18,7 +18,7 @@ World content ported   █████████████████░░
 Side systems           ██████████████░░░░░░  6 real, 6 with named gaps
 Quest content working  ███████████████░░░░░  726 of 978 Canary scripts
 Client feature surface ████████████░░░░░░░░  45 requests still unanswered
-Multi-world            ████████████████░░░░  phases 1-2 built, gated, booted; not yet two worlds
+Multi-world            ██████████████████░░  two worlds run live; no real client on login port yet
 Automated tests        ████████░░░░░░░░░░░░  59 tests; transport, ids, world identity, presence
 ```
 
@@ -138,12 +138,19 @@ world judges expiry by.
 **Port 7171 is a client-side constant.** A 15.25 client goes to HTTP login unless the port is exactly
 7171, so the in-binary login server has to live there, and anything colliding with it must move.
 
-**Not proven, and nothing should be trusted until it is:** two worlds actually running side by side;
-cross-world presence exercised live; and a real 15.25 client on the login port.
+**Two worlds have run side by side** (2026-09-16, one host, small map, isolated schemas). Live:
+the character list spanning both worlds; an account online on one world refused on the other, naming
+where; logout freeing it at once; a killed world's claim refused inside the lease and taken over after
+it; a killed world that restarted clearing its own claim in 2 s; a frozen world kicking exactly the
+one player whose claim was taken, the second it woke; a ban issued on one world enforced on the other
+with the right issuer; the Gamemaster and `allow_clones` exemptions; and wrong-world rejection. The
+full list is in `docs/deployment/multi-world.md`.
 
-**Done means:** two worlds running side by side, a world list in the client, characters that only
-appear on their own world, one coin balance across all of them, and a ban on one world that bars the
-account on the other.
+**Not proven yet:** a real 15.25 client on the login port, behaviour under player load, and worlds on
+separate hosts.
+
+**Done means:** a real 15.25 client picking a world from the in-binary world list and playing it,
+with everything above holding under real load.
 
 ---
 
@@ -227,6 +234,7 @@ Not urgent, but it's debt and it's ours.
 | A migration failure doesn't stop boot | `DatabaseManager::updateDatabase()` returns nothing, so a failed migration just stops migrating. `banned_by_name` has its own post-migration check now; nothing else does. |
 | Ports above 65535 silently disable a listener | A configured port like 65536 passes the `!= 0` check and wraps to 0 in the `uint16_t` cast, so the listener never binds. |
 | A failed coin transfer destroys coins | `System::transfer` debits the sender through the guarded path, then credits the recipient with an unguarded `UPDATE` whose failure is never checked or compensated. |
+| Database-channel warnings sit in a buffer | During the live multi-world run, reconcile warnings reached `logs/database/` only when the process exited cleanly. An operator tailing that log can't see presence problems as they happen. |
 | `DBTransaction::begin()` can unlock a mutex it never locked | It sets its started state before `BEGIN` can fail, so the destructor rolls back and unlocks. Undefined behaviour on a failed `BEGIN`. |
 
 ---

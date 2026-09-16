@@ -15,40 +15,52 @@ Multi-world has two phases, and both are in the tree:
 
 ---
 
-## Status: tested in parts, never run as two worlds
+## Status: two worlds run live; no real client on the login port yet
 
-**No two worlds have ever run side by side.** The pieces below have been exercised one at a time,
-against one database. Read this document as a checked design, not as a procedure a live
-multi-world deployment has followed.
+**Two worlds have run side by side** — on 2026-09-16, as two processes on one host against MySQL
+8.0.46, with isolated throwaway schemas provisioned by following this document. What has **not**
+happened is a real 15.25 client using the login port, and no measurement under player load. Read
+this document as a design that has been exercised end to end on one host, not as one that has
+carried real players.
 
-### What has been verified
+### What has been verified live, on two worlds
 
-| Verified | How |
+Two worlds, `Alpha` and `Beta`, each on the small `forgotten` map (0.69 GB resident each), sharing
+one auth schema. Every row below was observed against the running servers, not inferred.
+
+| Verified | Observed |
 | --- | --- |
-| The shipped auth-schema SQL works on **MySQL 8.0.46** | Gate G, three runs on 2026-09-16 against throwaway schemas provisioned by `auth_schema.sql`. The last two ran the shipped `harness/auth_schema_gate.sql`. |
-| **O1** — the per-world views are insertable and updatable | Gate: all views `IS_UPDATABLE = YES`; `INSERT` and `UPDATE` issued unqualified from the world schema land in the auth base tables. |
-| **O2** — cross-schema foreign keys | Gate: created, enforced (an orphan insert fails with `ERROR 1452`), and `ON DELETE CASCADE` works across schemas. |
-| The ban SQL | Gate: insert through the view; the guarded delete removes 1 row and 0 when resent, so history is written once. |
-| The presence SQL, including the takeover race | Gate: one claim wins and a competing claim gets 0 rows; wrong-token takeover 0, right token 1; expired holder, holder with no heartbeat row, and holder that is this world are all taken over; a takeover with the correct token but a **fresh** holder heartbeat changes 0 rows. Isolation recorded as `REPEATABLE-READ`. |
-| `ALTER` on a hoisted table is refused by the server | Gate: `ERROR 1347 ... is not BASE TABLE`. |
-| Migration 7 (database version 8) | A live boot against a real database ran it. |
-| Account bans end to end | Live: an active ban refused the login and named its issuer; an expired ban let the login through and left exactly one history row. |
-| Presence and registry logic | 59 unit tests in `tests/` (33 in `test_presence.cpp`). They cover pure logic only — no database. |
+| Provisioning fresh worlds with the shipped `auth_schema.sql` | Sections 1, 2a (first world only), 2c, 2d, 3 and 4 uncommented and run as shipped. Both worlds booted, and every migration from version 0 to 8 ran against account and ban tables that were already views. |
+| The cross-world character list | The login port on `Alpha` listed both worlds, with each character under the world it lives on — `Alpha` read `Beta`'s characters from `Beta`'s schema. |
+| One session per account, across worlds | With an account online on `Alpha`, logging it into `Beta` was refused: "Your account is already online on Alpha as Alpha Hero." |
+| Logout frees the account for other worlds | After a logout packet the claim was gone at once, and an immediate login on the other world succeeded. |
+| A crashed world | `Beta` killed with `SIGKILL` while holding a claim: a login on `Alpha` was refused while `Beta`'s heartbeat was under the lease, then taken over once it was 49 s old. |
+| A crashed world that restarts promptly | `Beta` killed and restarted at once: its startup cleared its stranded claim 2 s after the crash, and a cross-world login succeeded 5 s after it — no 45 s wait. |
+| A frozen world that recovers | `Beta` frozen with `SIGSTOP` for 64 s, its claim taken over by `Alpha`, then resumed. `Beta`'s own log, the second it resumed: "stalled past its lease; kicked 1 player(s)"; one beat later the follow-up check ran and kicked 0. |
+| Account-wide bans | A ban written through `Alpha`'s view refused a login on `Beta`, naming the issuer. The issuer's id also belonged to a *different* character on `Beta`, so looking the name up locally — as phase 1 did — would have named the wrong character. |
+| The exemptions | A Gamemaster account was online on both worlds at once and wrote no claim. With `allow_clones = true`, the same character logged in twice and wrote no claim. |
+| Wrong-world rejection | Announcing `Beta` on `Alpha`'s port was refused: "This is Alpha. Please pick that world in your client's world list." |
+| Clean shutdown | Stopping both worlds left 0 claims and 0 heartbeat rows. |
+| Cross-schema foreign keys | Section 4 applied to both live world schemas. |
+| The SQL on its own | Gate G, three runs, as recorded in `docs/plans/multi-world-phase2.md`, plus 59 unit tests. |
 
 ### What has not
 
 | Not verified | Why it matters |
 | --- | --- |
-| **Two worlds running side by side** | Nothing multi-world has happened on more than one process: not the cross-world character list, not a ban issued on one world and enforced on another, not two worlds sweeping the same expired ban. |
-| **Cross-world presence, live** | The presence SQL passed the gate and the logic passed unit tests, but no account has been refused on world B while online on world A, no world has been killed and taken over, and no stall has kicked a player. The 10 s / 45 s timings are derived, not measured. |
 | **A real 15.25 client on the login port** | No capture of a login packet exists. The field layout `ProtocolLogin::onRecvFirstMessage` skips is inferred from the *game* packet. If it is wrong, every login fails with "Invalid authentication token." Settle it with `harness/capture_proxy.py` between a real client and port 7171, decoded with `harness/packet_diff.py --decode`. |
+| **Behaviour under load** | The 10 s heartbeat and 45 s lease were exercised, but not measured with players online or with real network latency between worlds and the database. |
+| **Two worlds sweeping the same expired ban at boot** | The guarded delete was proven on the server (a resent delete changes 0 rows), but two worlds starting at the same moment have not been raced live. |
+| **Worlds on separate hosts** | The live run was one host. Presence judges time on the database's clock, so clock drift between hosts should not matter, but it has not been tried. |
 
 `harness/login_client.py` drives the login port, but it is built on the same guessed layout (its
 `--pre-rsa-bytes` and `--framing` options exist for exactly that reason), so it cannot settle the
 wire question.
 
-The cross-schema foreign keys in section 4 of `auth_schema.sql` passed the gate but have never been
-applied to a real world schema.
+**Presence warnings may not appear in `logs/database/` until the process exits.** During the live
+run, the database channel's file held its reconcile warnings in a buffer until a clean shutdown
+flushed them. To watch presence live, raise that channel's `print_level` in `config/logging.toml` so
+warnings also go to the console.
 
 ---
 

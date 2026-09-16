@@ -19,7 +19,7 @@ code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 | Item and appearance pipeline | Working |
 | World content | Canary's map and datapack, machine-ported |
 | Side systems (bestiary, prey, forge, wheel, store, market) | Real implementations, several with gaps |
-| Multi-world (one account, N worlds) | Identity, login routing, shared bans and one-session-per-account built and booted; not yet run as two worlds — see Roadmap |
+| Multi-world (one account, N worlds) | Two worlds run live side by side with shared bans and one session per account; no real client on the login port yet — see Roadmap |
 
 **Requirements to run the world:** ~12.8 GB RAM resident, GCC 14+, MySQL 8.0 (the multi-world schema is only proven there), a login
 webservice, and a 15.25 client. The world ships with the server; see First boot.
@@ -45,10 +45,10 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 | Market | Partial | Full 15.25 flow, but every item goes out with tier 0 even though forge tiers exist. |
 | Cyclopedia | Partial | All request types answered; the combat pages still send ~57 hard-coded zeros. |
 | Legacy 10.98 listeners | Retired | `game_port = 0`, and the legacy `ProtocolLogin`/`ProtocolOld` pair is not registered on a modern server; starting both generations is refused. |
-| Multi-world identity | Partial | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Booted and harness-tested; never run with more than one world. |
+| Multi-world identity | Partial | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Run live with two worlds. |
 | In-binary login | Partial | `ProtocolLoginModern` serves the world list on 7171, the only port a 15.25 client will take it on. `harness/login_client.py` gets a world list from it; no real client has reached it. |
 | Account-wide bans | Partial | A ban bars the account on every world and names its issuer. An expired ban is retired once, however many worlds notice. Verified live on one world. |
-| One session per account | Partial | An account may be online on one world at a time; Gamemaster-and-above accounts and `allow_clones` are exempt. Fails closed, and survives a crashed world within 45 s. Proven at the database layer; never exercised across two live worlds. |
+| One session per account | Partial | An account may be online on one world at a time; Gamemaster-and-above accounts and `allow_clones` are exempt. Fails closed, and survives a crashed world within 45 s. Exercised live across two worlds, including a killed world and a frozen one. |
 
 ## World content
 
@@ -92,7 +92,7 @@ that blocks a *player* jumps ahead of anything that merely annoys a developer.
 
 | Work | Done looks like |
 | --- | --- |
-| **Multi-world** | Two worlds actually running side by side. Identity, login routing, shared bans and one-session-per-account are built and booted on one world; what is left is running a second, and a real 15.25 client on the login port. |
+| **Multi-world** | A real 15.25 client choosing a world from the in-binary world list and playing it. Two worlds already run live side by side with shared bans and one session per account; the login packet a real client sends has never been captured. |
 | **Retire the old datapack's claim on this map** | The 312 surviving 10.98 scripts stop registering against Canary's ids, and the 1,034 duplicate item-event registrations per boot go to zero. Right now the wrong script can win a lever. |
 | **Boss rooms** | An equivalent of Canary's `BossLever` / `Encounter`, which unlocks the 239 quest scripts held back because nothing here answers them. This is the single biggest block of missing content. |
 | **Map-switch migration** | Character towns, positions and house ownership renumbered from the retired map to Canary's, so town 1 stops meaning two different places. |
