@@ -63,6 +63,19 @@ void ServiceManager::AbandonListeners()
 	}
 
 	acceptors.clear();
+
+	// Every listener that did bind left an accepting Connection parked in the
+	// ConnectionManager singleton, built from this object's io_context. That
+	// singleton is a function-local static, so it outlives main and would run
+	// ~Connection() - and the socket/timer members' own destructors - against a
+	// destroyed io_context. Release them here, while it is still alive, the same
+	// way Game::shutdown() pairs stop() with closeAll().
+	//
+	// closeAll() is the right tool precisely because it shuts each socket down
+	// directly instead of going through Connection::close(), which dispatches
+	// onto the connection's strand: with run() never called, that work would
+	// never execute and the objects would survive anyway.
+	ConnectionManager::getInstance().closeAll();
 }
 
 ServicePort::~ServicePort()

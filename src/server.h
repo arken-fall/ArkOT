@@ -113,10 +113,12 @@ class ServiceManager
 		void run();
 		void stop();
 
-		// Drops every listener registered so far. A boot that refuses after some
-		// ports already bound would otherwise still satisfy is_running(), and be
-		// announced as ONLINE. Only valid before run(), while nothing is yet
-		// executing io_context handlers; stop() is the counterpart once running.
+		// Drops every listener registered so far, along with the accepting
+		// connections they parked in the ConnectionManager. A boot that refuses
+		// after some ports already bound would otherwise still satisfy
+		// is_running(), and be announced as ONLINE. Only valid before run(),
+		// while nothing is yet executing io_context handlers; stop() paired with
+		// ConnectionManager::closeAll() is the counterpart once running.
 		void AbandonListeners();
 
 		template <typename ProtocolType>
