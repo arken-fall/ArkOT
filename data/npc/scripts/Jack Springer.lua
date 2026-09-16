@@ -13,6 +13,136 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
+local function greetCallback(cid)
+	local player = Player(cid)
+
+	if player then
+		if player:getLevel() >= 250 then
+			if player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Questline) < 1 then
+				npcHandler:setMessage(MESSAGE_GREET, "Welcome, |PLAYERNAME|! There is much we have to {discuss}.")
+			elseif player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Questline) >= 3 then
+				npcHandler:setMessage(MESSAGE_GREET, "Hello, stranger! You look suspicious to me. I don't think we have anything to discuss.")
+			else
+				npcHandler:setMessage(MESSAGE_GREET, "Welcome, |PLAYERNAME|! Is there anything to {report}?")
+			end
+		else
+			npcHandler:setMessage(MESSAGE_GREET, "Hello, stranger! Sorry, but I never heard about you. I'm looking for more experienced help.")
+		end
+	end
+
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	local storages = {
+		Storage.Quest.U12_20.GraveDanger.ScarlettKilled,
+		Storage.Quest.U12_20.GraveDanger.Graves.Progress,
+		Storage.Quest.U12_20.GraveDanger.Graves.Edron,
+		Storage.Quest.U12_20.GraveDanger.Graves.DarkCathedral,
+		Storage.Quest.U12_20.GraveDanger.Graves.Ghostlands,
+		Storage.Quest.U12_20.GraveDanger.Graves.Cormaya,
+		Storage.Quest.U12_20.GraveDanger.Graves.FemorHills,
+		Storage.Quest.U12_20.GraveDanger.Graves.Ankrahmun,
+		Storage.Quest.U12_20.GraveDanger.Graves.Kilmaresh,
+		Storage.Quest.U12_20.GraveDanger.Graves.Vengoth,
+		Storage.Quest.U12_20.GraveDanger.Graves.Darashia,
+		Storage.Quest.U12_20.GraveDanger.Graves.Thais,
+		Storage.Quest.U12_20.GraveDanger.Graves.Orclands,
+		Storage.Quest.U12_20.GraveDanger.Graves.IceIslands,
+	}
+
+	if msgcontains(msg, "late") then
+		if player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Questline) < 1 then
+			npcHandler:say({
+				"While you travel and fight the threat where it arises, we will put all our resources into researching the ultimate plans of the legion. Perhaps I can tell you more when you {report} back. ...",
+				"Don't forget that you'll need very potent holy water for your task. If you need some, just ask me for a {trade}.",
+			}, cid)
+			for _, stor in pairs(storages) do
+				player:setStorageValue(stor, 0)
+			end
+			player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Stage, 0)
+			player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Questline, 1)
+			npcHandler.topic[playerId] = 2
+		else
+			npcHandler:say({
+				"While you travel and fight the threat where it arises, we will put all our resources into researching the ultimate plans of the legion. Perhaps I can tell you more when you {report} back. ...",
+				"Don't forget that you'll need very potent holy water for your task. If you need some, just ask me for a {trade}.",
+			}, cid)
+			npcHandler.topic[playerId] = 2
+		end
+	elseif msgcontains(msg, "report") and npcHandler.topic[playerId] == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Stage) < 1 then
+			if player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Graves.Progress) >= 12 then
+				npcHandler:say("By now the cultists of the Shiron'Fal seem to have abandoned their search. But this is sadly no good news. It seems they gathered enough lich-knights to proceed with their {ultimate} plan.", cid)
+				npcHandler.topic[playerId] = 3
+			else
+				npcHandler:say("Sadly, I have no news yet. But I can give you information about the {locations} of the graves that we learned about. If you need more holy water just ask me for a {trade}.", cid)
+			end
+		else
+			if player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Bosses.KingZelos.Killed) >= 1 then
+				if player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Questline) >= 3 and player:getStorageValue(Storage.Quest.U12_20.HandOfTheInquisitionOutfits.Addon2) < 1 and player:removeItem(31737, 1) then
+					npcHandler:say("Here is your second addon for your efforts!", cid)
+					player:addOutfit(1243, 2)
+					player:addOutfit(1244, 2)
+					player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Stage, 2)
+					player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Questline, 3)
+					player:setStorageValue(Storage.Quest.U12_20.HandOfTheInquisitionOutfits.Addon2, 1)
+				elseif player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Questline) >= 3 and player:getStorageValue(Storage.Quest.U12_20.HandOfTheInquisitionOutfits.Addon1) < 1 and player:removeItem(31738, 1) then
+					npcHandler:say("Here is your first addon for your efforts!", cid)
+					player:addOutfit(1243, 1)
+					player:addOutfit(1244, 1)
+					player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Stage, 2)
+					player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Questline, 3)
+					player:setStorageValue(Storage.Quest.U12_20.HandOfTheInquisitionOutfits.Addon1, 1)
+				elseif player:getStorageValue(Storage.Quest.U12_20.GraveDanger.Questline) < 3 and player:getStorageValue(Storage.Quest.U12_20.HandOfTheInquisitionOutfits.Outfits) < 1 then
+					npcHandler:say("Incredible! You averted a crisis that would have utterly crippled our defences aganist any other threat that is arising. Let me grant you the honor to be one of the hands of the inquisition alongside with the according outfit as a reward.", cid)
+					player:addOutfit(1243, 0)
+					player:addOutfit(1244, 0)
+					player:addAchievement("Inquisition's Hand")
+					player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Stage, 2)
+					player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Questline, 3)
+					player:setStorageValue(Storage.Quest.U12_20.HandOfTheInquisitionOutfits.Outfits, 1)
+				else
+					npcHandler:say("Indeed you averted us a great danger! We will ever be greatful to you hand of the inquisition!", cid)
+				end
+			else
+				npcHandler:say("You need to travel to the isle of the kings and end this threat before they raise king Zelos!", cid)
+			end
+		end
+	elseif msgcontains(msg, "ultimate") and npcHandler.topic[playerId] == 3 then
+		npcHandler:say({
+			"It became obvious that their goal is to raise an ancient and fallen king, to lead their lich-knights and raise even more of them. ...",
+			" With each lich-knight being able to raise and control lesser undead, this would lead to a chain-reaction. If they succeed, we might face an undead {threat} not seen since the corpse wars.",
+		}, cid)
+		npcHandler.topic[playerId] = 4
+	elseif msgcontains(msg, "threat") and npcHandler.topic[playerId] == 4 then
+		npcHandler:say({
+			"You have to travel to the isle of the kings. There, hidden beneath the isle of the kings is the shamefully hidden grave of king Zelos. It is him, they are trying to raise. ...",
+			"With some luck you will arrive before the ritual's completion. But be warned. At least four risen lich-knights will be present, to raise 'their king'. ...",
+			"Hopefully the ritual will bind some of their powers but they will still be formidable foes. You will have to act quick because with each moment you take to defeat the knights ...",
+			"The ritual will progress and the king will become stronger up to a point where you might be unable to defeat him. Due to the efforts and sacrifices of the death cultists, the king will be active at some capacity and you will have to confront him. ...",
+			"Remember, the further the ritual progresses when you face him, he will become considerably more powerful. So time is of the essence. ...",
+			"All I can do right now is to wish you good luck and may the gods bless you.",
+		}, cid)
+		player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Stage, 1)
+		player:setStorageValue(Storage.Quest.U12_20.GraveDanger.Questline, 2)
+	end
+
+	return true
+end
+
+npcHandler:setMessage(MESSAGE_SENDTRADE, "Of course, my friend.")
+
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 keywordHandler:addKeyword({ "discuss" }, StdModule.say, { npcHandler = npcHandler, text = "I need your help in a matter of utmost {urgency}." })
 keywordHandler:addKeyword({ "urgency" }, StdModule.say, { npcHandler = npcHandler, text = "The situation is complicated and it's even hard to say where to {start} best, just to describe it to you." })
 keywordHandler:addKeyword({ "start" }, StdModule.say, { npcHandler = npcHandler, text = "You see, several incidents in history can be traced back to a single {source}." })

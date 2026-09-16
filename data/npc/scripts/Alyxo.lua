@@ -7,4 +7,171 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
+local function greetCallback(cid)
+	local player = Player(cid)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Access) < 1 then
+		npcHandler:setMessage(MESSAGE_GREET, "How could I help you?") -- It needs to be revised, it's not the same as the global
+		npcHandler.topic[playerId] = 1
+	elseif (player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.JamesfrancisTask) >= 0 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.JamesfrancisTask) <= 50) and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Mission) < 3 then
+		npcHandler:setMessage(MESSAGE_GREET, "How could I help you?") -- It needs to be revised, it's not the same as the global
+		npcHandler.topic[playerId] = 15
+	elseif player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Mission) == 4 then
+		npcHandler:setMessage(MESSAGE_GREET, "How could I help you?") -- It needs to be revised, it's not the same as the global
+		player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Mission, 5)
+		npcHandler.topic[playerId] = 20
+	end
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	-- Mission 3 Steal The Ambassador Ring
+	if msgcontains(msg, "mission") then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 1 then
+			npcHandler.topic[playerId] = 1
+		end
+		npcHandler:say({ "Could you kill 3 bosses for me?" }, cid) -- needs review, this is not the speech of the global
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 1 then
+			npcHandler:say({ "Come back as soon as you kill all 3 bosses." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss, 2)
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Bragrumol, 1)
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Mozradek, 1)
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Xogixath, 1)
+			npcHandler.topic[playerId] = 2
+		else
+			npcHandler:say({ "Sorry, you do not have access." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	-- Mission 3 Steal The Ambassador Ring
+	if msgcontains(msg, "mission") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 2 then
+			npcHandler:say({ "Did you manage to face all 3 bosses?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 3
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 3 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Bragrumol) == 2 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Mozradek) == 2 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Xogixath) == 2 then
+			npcHandler:say({ "I am very satisfied." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss, 3)
+			npcHandler.topic[playerId] = 4
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	if msgcontains(msg, "mission") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 3 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 3 then
+			npcHandler:say({ "Could you help me with some more work?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 5
+			npcHandler.topic[playerId] = 5
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 5 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 3 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss) == 3 then
+			npcHandler:say({ "Kill 300 members of the Fafnar cult, help me find Ivory Lyre and help me find an animal to stone." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Twelve.Boss, 4)
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar, 1)
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Lyre, 1)
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Presente, 1)
+			npcHandler.topic[playerId] = 6
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	if msgcontains(msg, "report") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 300 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 300 then
+			npcHandler:say({ "Have you finished killing the 300 members of Fafnar's cult?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 7
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 7 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 300 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 300 then
+			npcHandler:say({ "Thanks. You killed the 300 members of the Fafnar cult." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar, 301)
+			npcHandler.topic[playerId] = 8
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	if msgcontains(msg, "report") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Lyre) == 3 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Lyre) == 3 then
+			npcHandler:say({ "Did you manage to find Lyre?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 9
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 9 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Lyre) == 3 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Lyre) == 3 and player:getItemById(31447, 1) then
+			player:removeItem(31447, 1)
+			npcHandler:say({ "Thanks. I was looking for Lyre for a long time." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Lyre, 4)
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	if msgcontains(msg, "report") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Presente) == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Presente) == 2 then
+			npcHandler:say({ "Did you manage to find Small Tortoise?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 11
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 11 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Presente) == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Presente) == 2 and player:getItemById(31445, 1) then
+			player:removeItem(31445, 1)
+			npcHandler:say({ "Thanks. I was looking for Small Tortoise." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Presente, 3)
+			npcHandler.topic[playerId] = 12
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	if msgcontains(msg, "small tortoise") then
+		if player:getItemById(31445, 1) then
+			npcHandler:say({ "Do you want me to stone a small tortoise?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 15
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 15 then
+		if player:getItemById(31445, 1) then
+			player:removeItem(31445, 1)
+			player:addItem(31446, 1)
+			npcHandler:say({ "Here's your Small Petrified Tortoise." }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 16
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	if msgcontains(msg, "mission") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 301 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 301 then
+			npcHandler:say({ "Did you finish the 3 jobs I gave you?" }, cid) -- needs review, this is not the speech of the global
+			npcHandler.topic[playerId] = 13
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 13 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 301 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Thirteen.Fafnar) == 301 then
+			player:addAchievement("Sculptor Apprentice", 'Congratulations! You earned the achievement "Sculptor Apprentice".')
+			player:addItem(31574, 1)
+			npcHandler:say({ "Congratulations, you have completed the 3 jobs I gave you." }, cid) -- needs review, this is not the speech of the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Fourteen.Remains, 1)
+			npcHandler.topic[playerId] = 14
+		else
+			npcHandler:say({ "Sorry." }, cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	return true
+end
+
+npcHandler:setMessage(MESSAGE_WALKAWAY, "Well, bye then.")
+
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

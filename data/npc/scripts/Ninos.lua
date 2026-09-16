@@ -14,4 +14,32 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if msgcontains(msg, "measurements") then
+		local player = Player(cid)
+		if player:getStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission07) >= 1 and player:getStorageValue(Storage.Quest.U7_24.ThePostmanMissions.MeasurementsBenjamin) ~= 1 then
+			npcHandler:say("Oh they don't change that much since in the old days as... <tells a boring and confusing story about a cake, a parcel, himself and two squirrels, at least he tells you his measurements in the end> ", cid)
+			player:setStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission07, player:getStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission07) + 1)
+			player:setStorageValue(Storage.Quest.U7_24.ThePostmanMissions.MeasurementsBenjamin, 1)
+			npcHandler.topic[playerId] = 0
+		else
+			npcHandler:say("...", cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	return true
+end
+
+npcHandler:setMessage(MESSAGE_GREET, "Hello. How may I help you |PLAYERNAME|? Ask me for a {trade} if you want to buy something. I can also explain the {mail} system.")
+npcHandler:setMessage(MESSAGE_FAREWELL, "It was a pleasure to help you, |PLAYERNAME|.")
+
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

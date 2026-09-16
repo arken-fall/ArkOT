@@ -7,4 +7,95 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
+local function greetCallback(cid)
+	local player = Player(cid)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Access) < 1 then
+		npcHandler:setMessage(MESSAGE_GREET, "How could I help you?") -- It needs to be revised, it's not the same as the global
+		npcHandler.topic[playerId] = 1
+	elseif (player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.JamesfrancisTask) >= 0 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.JamesfrancisTask) <= 50) and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Mission) < 3 then
+		npcHandler:setMessage(MESSAGE_GREET, "How could I help you?") -- It needs to be revised, it's not the same as the global
+		npcHandler.topic[playerId] = 15
+	elseif player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Mission) == 4 then
+		npcHandler:setMessage(MESSAGE_GREET, "How could I help you?") -- It needs to be revised, it's not the same as the global
+		player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.First.Mission, 5)
+		npcHandler.topic[playerId] = 20
+	end
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if msgcontains(msg, "mission") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 1 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 1 then
+			npcHandler:say({ "Could you help me do a ritual?" }, cid) -- It needs to be revised, it's not the same as the global
+			npcHandler.topic[playerId] = 1
+			npcHandler.topic[playerId] = 1
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 1 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 1 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 1 then
+			player:addItem(31717, 1) -- Yonans List
+			player:addItem(31613, 1) -- Pick Enchanted
+			npcHandler:say({ "Here is the list with the missing ingredients to complete the ritual." }, cid) -- It needs to be revised, it's not the same as the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan, 2)
+			npcHandler.topic[playerId] = 2
+			npcHandler.topic[playerId] = 2
+		else
+			npcHandler:say({ "Sorry." }, cid)
+		end
+	end
+	if msgcontains(msg, "mission") and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 2 then
+			npcHandler:say({ "Did you bring all the materials I informed you about? " }, cid) -- It needs to be revised, it's not the same as the global
+			npcHandler.topic[playerId] = 3
+			npcHandler.topic[playerId] = 3
+		end
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 3 and player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 2 then
+		if player:getStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan) == 2 and player:getItemById(9651, 3) and player:getItemById(31325, 12) and player:getItemById(31333, 10) then
+			player:removeItem(9651, 3)
+			player:removeItem(31325, 12)
+			player:removeItem(31333, 10)
+			npcHandler:say({ "Thank you this stage of the ritual is complete." }, cid) -- It needs to be revised, it's not the same as the global
+			player:setStorageValue(Storage.Quest.U12_20.KilmareshQuest.Eighth.Yonan, 3)
+			npcHandler.topic[playerId] = 4
+			npcHandler.topic[playerId] = 4
+		else
+			npcHandler:say({ "Sorry." }, cid) -- It needs to be revised, it's not the same as the global
+		end
+	end
+
+	if msgcontains(msg, "regalia of suon") then
+		npcHandler:say({ "You have all parts of the famous Regalia of Suon! Only a few of them were ever forged, back in the times of the old empire. You are holding a very rare and precious treasure, my friend. ... As you have all four pieces, I could combine them into the full insignia. Shall I do this for you?" }, cid)
+		npcHandler.topic[playerId] = 5
+	elseif msgcontains(msg, "yes") and npcHandler.topic[playerId] == 5 then
+		if player:getItemById(31572, 1) and player:getItemById(31573, 1) and player:getItemById(31574, 1) and player:getItemById(31575, 1) then
+			if player:addItem(31576, 1) then -- regalia of suon
+				player:removeItem(31572, 1) -- blue and golden cordon
+				player:removeItem(31573, 1) -- sun medal
+				player:removeItem(31574, 1) -- sunray emblem
+				player:removeItem(31575, 1) -- golden bijou
+				npcHandler:say({ "Well then, let me have a look." }, cid)
+			end
+		else
+			npcHandler:say({ "Sorry, you dont have the necessary items." }, cid) -- It needs to be revised, it's not the same as the global
+		end
+	end
+
+	return true
+end
+
+npcHandler:setMessage(MESSAGE_WALKAWAY, "Well, bye then.")
+
+npcHandler:setCallback(CALLBACK_ONADDFOCUS, onAddFocus)
+npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

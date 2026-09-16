@@ -2,4 +2,8 @@
 <npc name="Cael" script="Cael.lua" walkinterval="2000" floorchange="0">
 	<health now="100" max="100" />
 	<look type="66" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="didgeridoo,3952,5000;war drum,3953,1000;Dragon Statue Kit,11129,2500;Dragon Throne Kit,11203,5000" />
+	</parameters>
 </npc>

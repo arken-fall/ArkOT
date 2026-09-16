@@ -5,29 +5,30 @@ NpcSystem.parseParameters(npcHandler)
 function onCreatureAppear(cid)			npcHandler:onCreatureAppear(cid)			end
 function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
-function onThink()				npcHandler:onThink()					end
+function onThink()		npcHandler:onThink()		end
 
 local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
 	if not npcHandler:isFocused(cid) then
 		return false
 	end
 
-	local player = Player(cid)
-
 	if msgcontains(msg, "weapons") then
-		if player:getStorageValue(Storage.secretService.AVINMission06) == 1 then
+		if player:getStorageValue(Storage.Quest.U8_1.SecretService.AVINMission06) == 1 then
 			npcHandler:say("Crate of weapons you say.. for me?", cid)
-			npcHandler.topic[cid] = 1
+			npcHandler.topic[playerId] = 1
 		end
 	elseif msgcontains(msg, "yes") then
-		if npcHandler.topic[cid] == 1 then
-			if player:removeItem(7707, 1) then
-				player:setStorageValue(Storage.secretService.AVINMission06, 2)
-				npcHandler:say("Why thank you |PLAYERNAME|.", cid)
+		if npcHandler.topic[playerId] == 1 then
+			if player:removeItem(405, 1) then
+				player:setStorageValue(Storage.Quest.U8_1.SecretService.AVINMission06, 2)
+				npcHandler:say("I'm wondering why you are doing this. Well, we accept the gift. Don't think that this makes you a friend though.", cid)
 			else
 				npcHandler:say("You don't have any crate of weapons!", cid)
 			end
-			npcHandler.topic[cid] = 0
+			npcHandler.topic[playerId] = 0
 		end
 	end
 	return true
@@ -37,4 +38,5 @@ npcHandler:setMessage(MESSAGE_WALKAWAY, "I hope you have a cold day, friend.")
 npcHandler:setMessage(MESSAGE_FAREWELL, "I hope you have a cold day, friend.")
 npcHandler:setMessage(MESSAGE_GREET, "Welcome, to my cool home.")
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

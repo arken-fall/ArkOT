@@ -94,6 +94,56 @@ def number(value, fallback=0):
     return value if isinstance(value, (int, float)) else fallback
 
 
+# Canary hands a dialog callback the npc and the creature; the TFS system this
+# server inherited hands it a creature id, and keeps the conversation topic in a
+# table rather than behind getters. Everything else in a callback body - the
+# storages it reads, the items it takes, the text it says - is the same Lua.
+CALLBACK_REWRITES = [
+    (r"local function (\w+)\(npc, creature, type, message\)", r"local function \1(cid, type, msg)"),
+    (r"local function (\w+)\(npc, creature\)", r"local function \1(cid)"),
+    (r"npcHandler:checkInteraction\(npc, creature\)", "npcHandler:isFocused(cid)"),
+    (r"npcHandler:removeInteraction\(npc, creature\)", "npcHandler:releaseFocus(cid)"),
+    (r"npcHandler:resetNpc\(creature\)", "npcHandler:resetNpc(cid)"),
+    # a call that takes the npc and the creature takes just the id here, however
+    # many lines its first argument runs to
+    (r",\s*npc,\s*creature\b", ", cid"),
+    (r"npcHandler:setTopic\(([^,]+),\s*([^)]+)\)", r"npcHandler.topic[\1] = \2"),
+    (r"npcHandler:getTopic\(([^)]+)\)", r"npcHandler.topic[\1]"),
+    (r"\bMsgContains\(", "msgcontains("),
+    (r"\bPlayer\(creature\)", "Player(cid)"),
+    (r"\bplayer:getId\(\)", "cid"),
+    (r"\bcreature\b", "cid"),
+    (r"\bmessage\b", "msg"),
+]
+# the same callback slot, named differently on each side
+CALLBACK_NAMES = {
+    "CALLBACK_REMOVE_INTERACTION": "CALLBACK_ONRELEASEFOCUS",
+    "CALLBACK_SET_INTERACTION": "CALLBACK_ONADDFOCUS",
+    "CALLBACK_ON_TRADE_REQUEST": "CALLBACK_ONTRADEREQUEST",
+}
+# lines reaching for something only Canary has: a keyword handler method, a table
+# of its own. They are single statements, so the line goes and the npc still talks.
+CANARY_ONLY_LINE = re.compile(r"^[^\n]*\b(?:addCustomGreetKeyword|VOCATION|TOWNS_LIST|GetFormattedShopCategoryNames)\b[^\n]*$",
+                              re.M)
+# what has no counterpart here: the npc object itself, which Canary passes around
+# for shop windows and speech
+UNMAPPED = re.compile(r"\bnpc[:.]\w+|\bnpc\b(?!Handler)")
+
+
+def as_blacktek(body):
+    """A Canary callback in the shape the TFS npc system calls."""
+    for pattern, replacement in CALLBACK_REWRITES:
+        body = re.sub(pattern, replacement, body)
+    return body
+
+
+def named_here(text):
+    """Canary's callback slots under the names this npc system knows them by."""
+    for theirs, ours in CALLBACK_NAMES.items():
+        text = text.replace(theirs, ours)
+    return text
+
+
 class Npc:
     def __init__(self, path, items, report):
         self.path = path
@@ -177,6 +227,12 @@ class Npc:
         line - the nearest line at or above it that begins in the first column -
         or the dialog would start on a block with no head and never parse.
         """
+        # Canary makes its handler first and writes everything else after it, so
+        # the slice opens there and carries the callbacks along with the keywords
+        handler = re.search(r"^local npcHandler = NpcHandler:new\(keywordHandler\)\s*$", self.text, flags=re.M)
+        if handler:
+            return handler.end() + 1
+
         keyword = self.text.find("keywordHandler:addKeyword")
         if keyword < 0:
             return -1
@@ -204,19 +260,37 @@ class Npc:
         def comment(match):
             self.notes.append("callback commented out: " + match.group(0).splitlines()[0].strip())
             return "\n".join("-- " + line for line in match.group(0).splitlines())
-        # only the functions the npc hands to setCallback: a travel or greeting
-        # helper of the npc's own takes its own arguments and carries over as written
+
+        def translate(match):
+            rewritten = as_blacktek(match.group(0))
+            if UNMAPPED.search(re.sub(r"--[^\n]*", "", rewritten)):
+                return comment(match)
+            self.notes.append("callback carried over: " + match.group(1))
+            return rewritten
+
+        # a function the npc hands to setCallback is translated into the shape this
+        # system calls; one that still needs Canary's npc object is commented out
         callbacks = set(re.findall(r"^npcHandler:setCallback\([^,]+,\s*(\w+)\s*\)", body, flags=re.M))
         if callbacks:
-            body = re.sub(rf"^local function (?:{'|'.join(sorted(callbacks))})\(.*?^end\b", comment,
+            body = re.sub(rf"^local function ({'|'.join(sorted(callbacks))})\(.*?^end\b", translate,
                           body, flags=re.M | re.S)
-        body = re.sub(r"^npcHandler:setCallback\(.*?\)\s*$", comment, body, flags=re.M)
+            still_commented = {name for name in callbacks
+                               if re.search(rf"^-- local function {name}\b", body, flags=re.M)}
+            if still_commented:
+                body = re.sub(rf"^npcHandler:setCallback\([^,]+,\s*(?:{'|'.join(sorted(still_commented))})\s*\)\s*$",
+                              comment, body, flags=re.M)
         # npcConfig and npcType belong to Canary's side of the split: the body is XML here
         body = re.sub(r"^npcConfig\.\w+ = \{.*?^\}\s*$\n?", "", body, flags=re.M | re.S)
         body = re.sub(r"^npcConfig\.\w+ = .*$\n?", "", body, flags=re.M)
         body = re.sub(r"^npcType\.\w+ = function\b[^\n]*\bend\s*$\n?", "", body, flags=re.M)
         body = re.sub(r"^npcType\.\w+ = function\b.*?^end\b\n?", "", body, flags=re.M | re.S)
         body = re.sub(r"^npcType[:.]\w+\(.*?\)\s*$\n?", "", body, flags=re.M)
+        body = named_here(body)
+
+        def drop(match):
+            self.notes.append("line only Canary answers commented out: " + match.group(0).strip()[:70])
+            return "-- " + match.group(0)
+        body = CANARY_ONLY_LINE.sub(drop, body)
         return body.strip()
 
     def script(self):
@@ -245,6 +319,8 @@ def main():
     parser.add_argument("--out", default=str(ROOT / "data/npc"))
     parser.add_argument("--spawns", default=str(ROOT / "data/world/canary-spawn.xml"))
     parser.add_argument("--report", default=None)
+    parser.add_argument("--replace-quest-npcs", action="store_true",
+                        help="also rewrite npcs ArkOT already has, when Canary's dialogue carries this map's quests")
     args = parser.parse_args()
 
     source = Path(args.canary).expanduser() / "data-otservbr-global/npc"
@@ -254,7 +330,21 @@ def main():
 
     # what ArkOT already defines, wherever this run happens to write
     known = {path.stem.lower() for path in (ROOT / "data/npc").glob("*.xml")}
-    wanted = {name for name in spawned_names(args.spawns) if name.lower() not in known}
+    spawned = spawned_names(args.spawns)
+    wanted = {name for name in spawned if name.lower() not in known}
+
+    # The 10.98 pack wrote its own dialogue for the same names, against the map it
+    # shipped with: its travel destinations are positions on that map, and the quest
+    # steps it sets are the pack's numbering. Where Canary's own npc carries this
+    # map's quests, that one is the one this world wants.
+    replaced = []
+    if args.replace_quest_npcs:
+        for path in sorted(source.rglob("*.lua")):
+            text = path.read_text(errors="replace")
+            name = registered_name(text)
+            if name in spawned and name.lower() in known and "Storage.Quest." in text:
+                wanted.add(name)
+                replaced.append(name)
 
     written, report = [], []
     for path in sorted(source.rglob("*.lua")):
@@ -271,6 +361,9 @@ def main():
 
     missing = sorted(wanted - set(written))
     lines = [f"# Canary npc port: {len(written)} npcs written to {out}", ""]
+    if replaced:
+        lines += [f"## Rewritten over the pack's own dialogue, for the quests they carry ({len(replaced)})",
+                  *[f"- {name}" for name in sorted(replaced)], ""]
     if missing:
         lines += [f"## Spawned but not found in Canary's npc folder ({len(missing)})", *[f"- {name}" for name in missing], ""]
     if report:

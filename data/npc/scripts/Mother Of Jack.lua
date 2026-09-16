@@ -8,13 +8,51 @@ function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)
 function onThink()		npcHandler:onThink()		end
 
 local voices = {
-	{ text = 'JAAAAACK? EVERYTHING ALRIGHT DOWN THERE?' },
-	{ text = 'Oh dear, I can\'t find anything in here!' },
-	{ text = 'There is still some dust on the drawer over there. What where you thinking, Jane?' },
-	{ text = 'Jane!' }
+	{text = 'JAAAAACK? EVERYTHING ALRIGHT DOWN THERE?'},
+	{text = 'Oh dear, I can\'t find anything in here!'},
+	{text = 'There is still some dust on the drawer over there. What where you thinking, Jane?'},
+	{text = 'Jane!'}
 }
-
 npcHandler:addModule(VoiceModule:new(voices))
 
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if msgcontains(msg, "jack") then
+		if player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 5 then
+			if player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.Mother) < 1 then
+				npcHandler:say("What about him? He's downstairs as he always has been. He never went away from home any further than into the forest nearby. He rarely ever took a walk to Edron, did he?", cid)
+				npcHandler.topic[playerId] = 1
+			end
+		end
+	elseif msgcontains(msg, "no") then
+		if npcHandler.topic[playerId] == 2 then
+			npcHandler:say("Thought so. Of course he wouldn't do anything wrong. And he went where? Edron. Hm. I can see nothing wrong with that. But... he wasn't there often, was he?", cid)
+			npcHandler.topic[playerId] = 3
+		end
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 then
+			npcHandler:say("What...? But he wasn't up to something, was he?", cid)
+			npcHandler.topic[playerId] = 2
+		elseif npcHandler.topic[playerId] == 3 then
+			npcHandler:say({
+				"Oh my... he did what? Why was he there? Edron Academy? ...",
+				"I see... this cannot be. Spectrofuss? Who? Jack! When? How? But why did he do that? Jack!! JACK!! When I find him he owes me an EXPLANATION. Thanks for telling me what he is actually doing in his FREE TIME. ...",
+				"JAAAAACK!",
+			}, cid)
+			npcHandler.topic[playerId] = 0
+			player:setStorageValue(Storage.Quest.U8_7.JackFutureQuest.Mother, 1)
+		end
+	end
+	return true
+end
+
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 npcHandler:setMessage(MESSAGE_GREET, "I demand an explanation of you entering our house without any invitation.")
+
 npcHandler:addModule(FocusModule:new())

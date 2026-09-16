@@ -4,41 +4,7 @@
 	<look type="159" head="3" body="86" legs="87" feet="76" />
 	<parameters>
 		<parameter key="module_shop" value="1" />
-		<parameter key="shop_sellable" value="
-			black pearl,2144,280;
-			blue crystal shard,18413,1500;
-			blue crystal splinter,18418,400;
-			brown crystal splinter,18417,400;
-			cyan crystal fragment,18419,800;
-			giant shimmering pearl,7632,3000;
-			giant shimmering pearl,7633,3000;
-			gold ingot,9971,5000;
-			green crystal fragment,18421,800;
-			green crystal shard,18415,1500;
-			green crystal splinter,18416,400;
-			red crystal fragment,18420,800;
-			small amethyst,2150,200;
-			small diamond,2145,300;
-			small emerald,2149,250;
-			small ruby,2147,250;
-			small sapphire,2146,250;
-			small topaz,9970,200;
-			violet crystal shard,18414,1500;
-			wedding ring,2121,100;
-			white pearl,2143,160;" />
-		<parameter key="shop_buyable" value="
-			black pearl,2144,560;
-			bronze goblet,5807,2000;
-			golden amulet,2130,6600;
-			golden goblet,5805,5000;
-			ruby necklace,2133,3560;
-			silver goblet,5806,3000;
-			small amethyst,2150,400;
-			small diamond,2145,600;
-			small emerald,2149,500;
-			small ruby,2147,500;
-			small sapphire,2146,500;
-			wedding ring,2121,990;
-			white pearl,2143,320;" />
+		<parameter key="shop_buyable" value="bounty talisman,49830,5000;black pearl,2144,560;bronze goblet,5807,2000;golden amulet,2130,6600;golden goblet,5805,5000;ruby necklace,2133,3560;silver goblet,5806,3000;small amethyst,2150,400;small diamond,2145,600;small emerald,2149,500;small ruby,2147,500;small sapphire,2146,500;wedding ring,2121,990;white pearl,2143,320" />
+		<parameter key="shop_sellable" value="amber with a bug,36318,41000;amber with a dragonfly,36319,56000;amber,36320,20000;ancient coin,30497,350;black pearl,2144,280;blue crystal shard,18413,1500;blue crystal splinter,18418,400;brown crystal splinter,18417,400;brown giant shimmering pearl,7633,3000;coral brooch,30498,750;crunor idol,34277,30000;cyan crystal fragment,18419,800;dragon figurine,34275,45000;gemmed figurine,30499,3500;giant amethyst,36316,60000;giant emerald,34282,90000;giant ruby,34281,70000;giant sapphire,34283,50000;giant topaz,36317,80000;gold ingot,9971,5000;gold nugget,2157,850;greater guardian gem,44687,10000;greater marksman gem,44690,10000;greater mystic gem,44696,10000;greater sage gem,44693,10000;green crystal fragment,18421,800;green crystal shard,18415,1500;green crystal splinter,18416,400;green giant shimmering pearl,7632,3000;guardian gem,44686,5000;lesser guardian gem,44685,1000;lesser marksman gem,44688,1000;lesser mystic gem,44694,1000;lesser sage gem,44691,1000;lion figurine,37130,10000;marksman gem,44689,5000;mystic gem,44695,5000;onyx chip,24849,400;opal,24850,500;ornate locket,34278,18000;prismatic quartz,31051,450;red crystal fragment,18420,800;sage gem,44692,5000;skull coin,36278,12000;small amethyst,2150,200;small diamond,2145,300;small emerald,2149,250;small enchanted amethyst,7762,200;small enchanted emerald,7761,250;small enchanted ruby,7760,250;small enchanted sapphire,7759,250;small ruby,2147,250;small sapphire,2146,250;small topaz,9970,200;tiger eye,31050,350;unicorn figurine,34276,50000;violet crystal shard,18414,1500;white pearl,2143,160;white silk flower,37338,9000" />
 	</parameters>
 </npc>

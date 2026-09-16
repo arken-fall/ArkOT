@@ -5,184 +5,212 @@ NpcSystem.parseParameters(npcHandler)
 function onCreatureAppear(cid)			npcHandler:onCreatureAppear(cid)			end
 function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
-function onThink()				npcHandler:onThink()					end
+function onThink()		npcHandler:onThink()		end
 
 local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
 	if not npcHandler:isFocused(cid) then
 		return false
 	end
 
-	local player = Player(cid)
-
 	if msgcontains(msg, "mission") then
-		if player:getStorageValue(Storage.thievesGuild.Quest) == 1 and player:getStorageValue(Storage.thievesGuild.Mission01) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission01, 1)
+		if player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 1 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission01) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission01, 1)
 			npcHandler:say({
-				'Your first job is quite easy. The Thaian officials are unwilling to share the wealth they\'ve accumulated in their new town Port Hope. ...',
-				'They insist that most resources belong to the crown. This is quite sad, especially ivory is in high demand. Collect 10 elephant tusks and bring them to me.'
+				"Your first job is quite easy. The Thaian officials are unwilling to share the wealth they've accumulated in their new town Port Hope. ...",
+				"They insist that most resources belong to the crown. This is quite sad, especially ivory is in high demand. Collect 10 elephant tusks and bring them to me.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission01) == 1 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 2
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 2 and player:getStorageValue(Storage.thievesGuild.Mission02) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission02, 1)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission01) == 1 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 2
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 2 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission02) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission02, 1)
 			npcHandler:say({
-				'A client of our guild would like to get a certain vase. Unfortunately, it\'s not for sale. Well, by the original owner, that is. ...',
-				'We, on the other hand, would gladly sell him the vase. Therefore, it would come in handy if we get this vase in our hands. ...',
-				'Luckily, the walls of the owner\'s house are covered with vines, that will make a burglary quite easy. ...',
-				'You\'ll still need some lock picks to get the chest open in which the vase is stored. Must be your lucky day, as I\'m selling lock picks for a fair price. ...',
-				'You might need some of them to get that chest open. The soon to be ex-owner of that vase is Sarina, the proprietor of Carlin\'s general store.'
+				"A client of our guild would like to get a certain vase. Unfortunately, it's not for sale. Well, by the original owner, that is. ...",
+				"We, on the other hand, would gladly sell him the vase. Therefore, it would come in handy if we get this vase in our hands. ...",
+				"Luckily, the walls of the owner's house are covered with vines, that will make a burglary quite easy. ...",
+				"You'll still need some lock picks to get the chest open in which the vase is stored. Must be your lucky day, as I'm selling lock picks for a fair price. ...",
+				"You might need some of them to get that chest open. The soon to be ex-owner of that vase is Sarina, the proprietor of Carlin's general store.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission02) == 2 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 3
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 3 and player:getStorageValue(Storage.thievesGuild.Mission03) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission03, 1)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission02) == 2 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 3
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 3 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission03) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission03, 1)
 			npcHandler:say({
-				'Our beloved king will hold a great festivity at the end of the month. Unfortunately he forgot to invite one of our guild\'s representatives. ...',
-				'Of course it would be rude to point out this mistake to the king. It will be your job to get us an invitation to the ball. ...',
-				'Moreover, It will be a great chance to check the castle for, well, opportunities. I\'m sure you understand. However, it\'s up to that pest Oswald to give out invitations, so he\'s the man you\'re looking for.'
+				"Our beloved king will hold a great festivity at the end of the month. Unfortunately he forgot to invite one of our guild's representatives. ...",
+				"Of course it would be rude to point out this mistake to the king. It will be your job to get us an invitation to the ball. ...",
+				"Moreover, It will be a great chance to check the castle for, well, opportunities. I'm sure you understand. However, it's up to that pest Oswald to give out invitations, so he's the man you're looking for.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission03) == 2 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 4
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 4 and player:getStorageValue(Storage.thievesGuild.Mission04) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission04, 1)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission03) == 2 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 4
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 4 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04, 1)
 			npcHandler:say({
-				'Your next mission is somewhat bigger and I\'m sure much fun for you. Some new-rich merchant is being a bit more greedy than it\'s good for him. ...',
-				'The good thing is he\'s as stupid as greedy, so we have a little but cunning plan. We arranged the boring correspondence in advance, so you\'ll come in when the fun starts. ...',
-				'You\'ll disguise yourself as the dwarven ambassador and sell that fool the old dwarven bridge, south of Kazordoon. ...',
-				'Well, actually it is a bit more complicated than that. Firstly, you\'ll have to get forged documents. Ask around in the criminal camp to find a forger. ...',
-				'Secondly, you\'ll need a disguise. Percybald in Carlin is an eccentric actor that might help you with that. ...',
-				'As soon as you got both things, travel to Venore and find the merchant Nurik. Trade the false documents for the famous painting of Mina Losa and bring it to me.'
+				"Your next mission is somewhat bigger and I'm sure much fun for you. Some new-rich merchant is being a bit more greedy than it's good for him. ...",
+				"The good thing is he's as stupid as greedy, so we have a little but cunning plan. We arranged the boring correspondence in advance, so you'll come in when the fun starts. ...",
+				"You'll disguise yourself as the dwarven ambassador and sell that fool the old dwarven bridge, south of Kazordoon. ...",
+				"Well, actually it is a bit more complicated than that. Firstly, you'll have to get forged documents. Ask around in the criminal camp to find a forger. ...",
+				"Secondly, you'll need a disguise. Percybald in Carlin is an eccentric actor that might help you with that. ...",
+				"As soon as you got both things, travel to Venore and find the merchant Nurik. Trade the false documents for the famous painting of Mina Losa and bring it to me.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission04) == 7 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 5
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 5 and player:getStorageValue(Storage.thievesGuild.Mission05) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission05, 1)
-			npcHandler:say('Some smugglers underneath Tiquanda, north west of Port Hope owe us some debts. Go there and steal their Golden Goblet and bring it to me.', cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission05) == 1 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 6
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 6 and player:getStorageValue(Storage.thievesGuild.Mission06) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission06, 1)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04) == 7 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 5
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 5 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission05) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission05, 1)
 			npcHandler:say({
-				'Your next job will be kidnapping. You\'ll get us the only creature that this scrupulous trader Theodore Loveless in Liberty Bay holds dear. ...',
-				'His little goldfish! To get that fish, you\'ll have to get in his room somehow. ...',
-				'As you might know I sell lock picks, but I fear unless you\'re extremely lucky, you won\'t crack this expensive masterpiece of a lock. However, get us that fish, regardless how.'
+				"Your next mission will lead you to Tiquanda. There is a hidden smugglers cave, north of town. ...",
+				"These smugglers think they don't have to pay us respect and try to withhold our share of the profit. Recently, they got hold of a certain valuable goblet. ...",
+				"Find them and get us this goblet as rightful payment. If you have to bash some noses during your mission, even better.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission06) == 3 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 7
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 7 and player:getStorageValue(Storage.thievesGuild.Mission07) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission07, 1)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission05) == 1 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 6
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 6 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission06) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission06, 1)
 			npcHandler:say({
-				'We\'d like to ease our lives somewhat. Therefore, we would appreciate the cooperation with one of the Venore city guards. ...',
-				'Find some dirt about one of them. It\'s unimportant what it is. As soon as we have a foothold, we\'ll convince him to cooperate. Bring me whatever you may find.'
+				"Your next job will be kidnapping. You'll get us the only cid that this scrupulous trader Theodore Loveless in Liberty Bay holds dear. ...",
+				"His little goldfish! To get that fish, you'll have to get in his room somehow. ...",
+				"As you might know I sell lock picks, but I fear unless you're extremely lucky, you won't crack this expensive masterpiece of a lock. However, get us that fish, regardless how.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission07) == 1 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 8
-		elseif player:getStorageValue(Storage.thievesGuild.Quest) == 8 and player:getStorageValue(Storage.thievesGuild.Mission08) < 1 then
-			player:setStorageValue(Storage.thievesGuild.Mission08, 1)
-			player:addItem(8701, 1)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission06) == 3 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 7
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 7 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission07) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission07, 1)
 			npcHandler:say({
-				'Competition might be an interesting challenge but our guild isn\'t really keen on competition. ...',
-				'Unfortunately, we are lacking some good fighters, which is quite a disadvantage against certain other organisations. However, I think you\'re a really good fighter ...',
-				'Travel to the Plains of Havoc and find the base of our competitors under the ruins of the dark cathedral ...',
-				'On the lowest level, you\'ll find a wall with two trophies. Place a message of our guild on the wall, right between the trophies. On your way, get rid of as many of our competitors as you can.'
+				"We'd like to ease our lives somewhat. Therefore, we would appreciate the cooperation with one of the Venore city guards. ...",
+				"Find some dirt about one of them. It's unimportant what it is. As soon as we have a foothold, we'll convince him to cooperate. Bring me whatever you may find.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission08) == 2 then
-			npcHandler:say('Have you finished your mission?', cid)
-			npcHandler.topic[cid] = 9
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission07) == 1 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 8
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) == 8 and player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission08) < 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission08, 1)
+			player:addItem(7873, 1)
+			npcHandler:say({
+				"Competition might be an interesting challenge but our guild isn't really keen on competition. ...",
+				"Unfortunately, we are lacking some good fighters, which is quite a disadvantage against certain other organisations. However, I think you're a really good fighter ...",
+				"Travel to the Plains of Havoc and find the base of our competitors under the ruins of the dark cathedral ...",
+				"On the lowest level, you'll find a wall with two trophies. Place a msg of our guild on the wall, right between the trophies. On your way, get rid of as many of our competitors as you can.",
+			}, cid)
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission08) == 2 then
+			npcHandler:say("Have you finished your mission?", cid)
+			npcHandler.topic[playerId] = 9
 		end
 	elseif msgcontains(msg, "yes") then
-		if npcHandler.topic[cid] == 1 then
-			player:setStorageValue(Storage.thievesGuild.Quest, 1)
+		if npcHandler.topic[playerId] == 1 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 1)
 			npcHandler:say({
-				'Excellent. You\'ll learn this trade from scratch. Our operations cover many fields of work. Some aren\'t even illegal. ...',
-				'Well, as long as you don\'t get caught at least. Ask me for a mission whenever you\'re ready.'
+				"Excellent. You'll learn this trade from scratch. Our operations cover many fields of work. Some aren't even illegal. ...",
+				"Well, as long as you don't get caught at least. Ask me for a mission whenever you're ready.",
 			}, cid)
-			npcHandler.topic[cid] = 0
-		elseif npcHandler.topic[cid] == 2 then
-			if player:removeItem(3956, 10) then
-				player:setStorageValue(Storage.thievesGuild.Mission01, 2)
-				player:setStorageValue(Storage.thievesGuild.Quest, 2)
-				npcHandler:say('What a fine material. That will be worth a coin or two. So far, so good. Ask me for another mission if you\'re ready for it.', cid)
-				npcHandler.topic[cid] = 0
+			npcHandler.topic[playerId] = 0
+		elseif npcHandler.topic[playerId] == 2 then
+			if player:removeItem(3044, 10) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission01, 2)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 2)
+				npcHandler:say("What a fine material. That will be worth a coin or two. So far, so good. Ask me for another mission if you're ready for it.", cid)
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 3 then
-			if player:removeItem(8760, 1) then
-				player:setStorageValue(Storage.thievesGuild.Mission02, 3)
-				player:setStorageValue(Storage.thievesGuild.Quest, 3)
-				npcHandler:say('What an ugly vase. But who am I to question the taste of our customers? Anyway, I might have another mission in store for you.', cid)
-				npcHandler.topic[cid] = 0
+		elseif npcHandler.topic[playerId] == 3 then
+			if player:removeItem(227, 1) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission02, 3)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 3)
+				npcHandler:say("What an ugly vase. But who am I to question the taste of our customers? Anyway, I might have another mission in store for you.", cid)
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 4 then
-			if player:removeItem(8761, 1) then
-				player:setStorageValue(Storage.thievesGuild.Mission03, 3)
-				player:setStorageValue(Storage.thievesGuild.Quest, 4)
+		elseif npcHandler.topic[playerId] == 4 then
+			if player:removeItem(7933, 1) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission03, 3)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 4)
 				npcHandler:say({
-					'Ah, the key to untold riches. Don\'t worry, we\'ll make sure that no one will connect you to the disappearance of certain royal possessions. ...',
-					'You\'re too valuable to us. Speaking about your value, I might have some other mission for you.'
+					"Ah, the key to untold riches. Don't worry, we'll make sure that no one will connect you to the disappearance of certain royal possessions. ...",
+					"You're too valuable to us. Speaking about your value, I might have some other mission for you.",
 				}, cid)
-				npcHandler.topic[cid] = 0
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 5 then
-			if player:removeItem(8699, 1) then
-				player:setStorageValue(Storage.thievesGuild.Mission04, 8)
-				player:setStorageValue(Storage.thievesGuild.Quest, 5)
-				npcHandler:say('Excellent, that serves this fool right. I fear in your next mission, you\'ll have to get your hands dirty. Just ask me to learn more about it.', cid)
-				npcHandler.topic[cid] = 0
+		elseif npcHandler.topic[playerId] == 5 then
+			if player:removeItem(7871, 1) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04, 8)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 5)
+				npcHandler:say("Excellent, that serves this fool right. I fear in your next mission, you'll have to get your hands dirty. Just ask me to learn more about it.", cid)
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 6 then
-			if player:removeItem(8698, 1) then
-				player:setStorageValue(Storage.thievesGuild.Mission05, 2)
-				player:setStorageValue(Storage.thievesGuild.Quest, 6)
-				npcHandler:say('That goblet is hardly worth all this trouble but we had to insist on our payment. However, I assume you are eager for more missions, so just ask.', cid)
-				npcHandler.topic[cid] = 0
+		elseif npcHandler.topic[playerId] == 6 then
+			if player:removeItem(7369, 1) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission05, 2)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 6)
+				npcHandler:say("That goblet is hardly worth all this trouble but we had to insist on our payment. However, I assume you are eager for more missions, so just ask.", cid)
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 7 then
-			if player:removeItem(8766, 1) then
-				player:setStorageValue(Storage.thievesGuild.Mission06, 4)
-				player:setStorageValue(Storage.thievesGuild.Quest, 7)
-				npcHandler:say('This little goldfish will bring us a hefty ransom! Just ask me if you\'re ready for another mission.', cid)
-				npcHandler.topic[cid] = 0
+		elseif npcHandler.topic[playerId] == 7 then
+			if player:removeItem(7936, 1) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission06, 4)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 7)
+				npcHandler:say("This little goldfish will bring us a hefty ransom! Just ask me if you're ready for another mission.", cid)
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 8 then
-			if player:removeItem(8763, 1) then
-				player:setStorageValue(Storage.thievesGuild.Mission07, 2)
-				player:setStorageValue(Storage.thievesGuild.Quest, 8)
+		elseif npcHandler.topic[playerId] == 8 then
+			if player:removeItem(7935, 1) then
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission07, 2)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 8)
 				npcHandler:say({
-					'Excellent, that little letter will do the trick for sure ...',
-					'I think you\'re really capable and if you finish another mission, I\'ll allow you full access to our black market of lost and found items. Just ask me to learn more about that mission.'
+					"Excellent, that little letter will do the trick for sure ...",
+					"I think you're really capable and if you finish another mission, I'll allow you full access to our black market of lost and found items. Just ask me to learn more about that mission.",
 				}, cid)
-				npcHandler.topic[cid] = 0
+				npcHandler.topic[playerId] = 0
 			end
-		elseif npcHandler.topic[cid] == 9 then
-			player:setStorageValue(Storage.thievesGuild.Mission08, 3)
-			player:setStorageValue(Storage.thievesGuild.Quest, 9)
-			player:setStorageValue(Storage.thievesGuild.Door, 1)
+		elseif npcHandler.topic[playerId] == 9 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission08, 3)
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline, 9)
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Door, 1)
 			npcHandler:say({
-				'Once again you\'ve finished your job, and I\'ll keep my promise. From now on, you can trade with old Black Bert somewhere upstairs to get access to certain items that mightbe of value to someone like you. ...',
-				'If you like, you can also enter the room to the left and pick one item of your choice.'
+				"Once again you've finished your job, and I'll keep my promise. From now on, you can trade with old Black Bert somewhere upstairs to get access to certain items that mightbe of value to someone like you. ...",
+				"If you like, you can also enter the room to the left and pick one item of your choice.",
 			}, cid)
-			npcHandler.topic[cid] = 0
+			npcHandler.topic[playerId] = 0
 		end
-	elseif msgcontains(msg, 'thieves') then
-		if player:getStorageValue(Storage.thievesGuild.Quest) < 1 then
-			npcHandler:say('Hm. Well, we could use some fresh blood. Ahum. Do you want to join the thieves guild, |PLAYERNAME|?', cid)
-			npcHandler.topic[cid] = 1
+	elseif msgcontains(msg, "thieves") or msgcontains(msg, "join") then
+		if player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Questline) < 1 then
+			npcHandler:say("Hm. Well, we could use some fresh blood. Ahum. Do you want to join the thieves guild, |PLAYERNAME|?", cid)
+			npcHandler.topic[playerId] = 1
 		end
-	elseif msgcontains(msg, 'lock pick') then
-		npcHandler:say('Yes, I sell lock picks. Ask me for a trade.', cid)
+	elseif msgcontains(msg, "lock pick") then
+		npcHandler:say("Yes, I sell lock picks. Ask me for a trade.", cid)
 	end
 	return true
 end
 
-npcHandler:setMessage(MESSAGE_WALKAWAY, 'Good bye, |PLAYERNAME|!')
-npcHandler:setMessage(MESSAGE_FAREWELL, 'Good bye, |PLAYERNAME|!')
-npcHandler:setMessage(MESSAGE_GREET, 'Greetings, |PLAYERNAME|!')
+npcHandler:setMessage(MESSAGE_WALKAWAY, "Good bye, |PLAYERNAME|!")
+npcHandler:setMessage(MESSAGE_FAREWELL, "Good bye, |PLAYERNAME|!")
+npcHandler:setMessage(MESSAGE_GREET, "Greetings, |PLAYERNAME|! Why do you disturb me?")
+
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+-- Dialogue keywords the NPC answers on the official server
+keywordHandler:addKeyword({ "first dragon" }, StdModule.say, { npcHandler = npcHandler, text = "One dragon is as bad as the other." })
+keywordHandler:addKeyword({ "ab'dendriel" }, StdModule.say, { npcHandler = npcHandler, text = "The elves are a curious lot. Even though they distrust humans, it's quite easy to steal from them. To scam them, however, is not that easy. ... Elven laws are also very cruel. They might kill you for a minor occurrence or throw you into Hellgate." })
+keywordHandler:addKeyword({ "liberty bay" }, StdModule.say, { npcHandler = npcHandler, text = "There are many opportunities in Liberty Bay. The poor are eager allies against the rich, and the latter are often VERY rich. Still, the laws are quite strict, and poor or not, the locals are somewhat suspicious towards strangers." })
+keywordHandler:addKeyword({ "ankrahmun" }, StdModule.say, { npcHandler = npcHandler, text = "Ankrahmun is great for business despite its cruel laws. It's far too tempting to get all those treasures into your fingers to let the opportunity pass." })
+keywordHandler:addKeyword({ "kazordoon" }, StdModule.say, { npcHandler = npcHandler, text = "The dwarfs aren't easy to deal with. Of course, they have many treasures. Still, dwarfs will hold a grudge against you for decades and they might dedicate their lives to hunt you. ... If an operation in Kazordoon is not getting you a huge profit, it's wiser to leave it." })
+keywordHandler:addKeyword({ "port hope" }, StdModule.say, { npcHandler = npcHandler, text = "The city is promising but still a bit underdeveloped. Give it some years to grow and then it's ripe for harvest. For now, we try not to disturb such profitable growth." })
+keywordHandler:addKeyword({ "svargrond" }, StdModule.say, { npcHandler = npcHandler, text = "Too far away to bother about and not worth the travel. The few people that emigrated from Carlin are not wealthy, neither are the barbarians that live there. ... Not to mention the violence with which they treat strangers that annoy them." })
+keywordHandler:addKeyword({ "darashia" }, StdModule.say, { npcHandler = npcHandler, text = "A neat little town for business. A bit too far away for my taste, but as long as you don't mess it up, you can earn a living there. Still, the people there have an odd philosophy, so you might need to adjust your practices somewhat." })
+keywordHandler:addKeyword({ "disturb" }, StdModule.say, { npcHandler = npcHandler, text = "My job, uh... what should I say... well, no need to invent something, I guess. I'm the leader of the thieves guild." })
+keywordHandler:addKeyword({ "carlin" }, StdModule.say, { npcHandler = npcHandler, text = "We have hardly any business in Carlin. The laws are quite harsh and the city guard in the hands of an overzealous family which makes bribery complicated. ... With the exception of some alcohol smuggle, there is little to be gained there. And even there you have to deal with nasty competitors." })
+keywordHandler:addKeyword({ "fibula" }, StdModule.say, { npcHandler = npcHandler, text = "A backwater town, but useful as hiding place when you are wanted for something." })
+keywordHandler:addKeyword({ "oswald" }, StdModule.say, { npcHandler = npcHandler, text = "Oswald? He lives near the crossroads." })
+keywordHandler:addKeyword({ "venore" }, StdModule.say, {
+	npcHandler = npcHandler,
+	text = "Venore can be a gold mine but if you aren't careful, you might end up dead in the swamp. There are people in Venore that don't like it if their terrain is trespassed. ... If you steal from the wrong guys, you're dead. If you scam the wrong person, you're dead. If you leave an unfavourable impression on the wrong person, you're dead. ... Well, I guess you got the idea.",
+})
+keywordHandler:addKeyword({ "edron" }, StdModule.say, { npcHandler = npcHandler, text = "Edron is peaceful and many people there live in opulence. So now and then it might be profitable to pay Edron a visit. On the other hand, it's a rather small town and word about your trickeries might spread faster than you'd appreciate." })
+keywordHandler:addKeyword({ "thais" }, StdModule.say, { npcHandler = npcHandler, text = "Isn't this a nasty little place? All that fools, the yelling, the backstabbing, the swindle. I just love it." })
+keywordHandler:addKeyword({ "name" }, StdModule.say, { npcHandler = npcHandler, text = "They call me Dorian." })
+keywordHandler:addKeyword({ "job" }, StdModule.say, { npcHandler = npcHandler, text = "My job, uh... what should I say... well, no need to invent something, I guess. I'm the leader of the thieves guild." })
+
 npcHandler:addModule(FocusModule:new())

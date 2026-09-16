@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <npc name="Henricus" script="Henricus.lua" walkinterval="2000" floorchange="0">
 	<health now="100" max="100" />
-	<look type="132" head="79" body="0" legs="96" feet="0" addons="0" />
+	<look type="132" head="79" legs="96" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="holy water,7494,1000" />
+	</parameters>
 </npc>

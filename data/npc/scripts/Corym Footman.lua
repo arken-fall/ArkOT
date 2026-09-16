@@ -7,4 +7,43 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
+local HiddenThreats = Storage.Quest.U11_50.HiddenThreats
+-- local function greetCallback(npc, creature, message)
+-- 	local player = Player(creature)
+-- 
+-- 	if player:getStorageValue(HiddenThreats.CorymRescued08) < 0 then
+-- 		npcHandler:setMessage(MESSAGE_GREET, {
+-- 			"Every man is the architect of his own fortune. We have nearly died of {hunger}.",
+-- 		})
+-- 	else
+-- 		npcHandler:setMessage(MESSAGE_GREET, "What we get to eat is really ridiculous.")
+-- 	end
+-- 	return true
+-- end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if msgcontains(msg, "hunger") then
+		npcHandler:say({
+			"What we get to eat is really ridiculous. Particularly in view of the fact that we should dig up an insane amount of ores.",
+		}, cid)
+		if player:getStorageValue(HiddenThreats.CorymRescued08) < 0 then
+			player:setStorageValue(HiddenThreats.CorymRescueMission, player:getStorageValue(HiddenThreats.CorymRescueMission) + 1)
+			player:setStorageValue(HiddenThreats.CorymRescued08, 1)
+		end
+	end
+	return true
+end
+
+-- Greeting message
+npcHandler:setMessage(MESSAGE_FAREWELL, "Good bye, |PLAYERNAME|.")
+
+-- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

@@ -2,4 +2,8 @@
 <npc name="Carlos" script="Carlos.lua" walkinterval="2000" floorchange="0">
 	<health now="100" max="100" />
 	<look type="132" head="114" body="94" legs="86" feet="114" addons="3" />
+	<parameters>
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_sellable" value="ham,2671,2;meat,2666,2" />
+	</parameters>
 </npc>

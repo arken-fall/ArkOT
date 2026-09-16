@@ -7,6 +7,7 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
+-- Wooden Stake Quest
 local stakeKeyword = keywordHandler:addKeyword({ "stake" }, StdModule.say, {
 	npcHandler = npcHandler,
 	text = {

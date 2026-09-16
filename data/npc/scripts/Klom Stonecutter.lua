@@ -15,6 +15,178 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
+local count = {}
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	local time = 20 * 60 * 60 -- 20 hours
+
+	if msgcontains(msg, "subterraneans") then
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean) == 2 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskSubterranean) > 0 then
+			npcHandler:say("I don't need your help for now. Come back later.", cid)
+			npcHandler.topic[playerId] = 1
+		end
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean) == 2 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskSubterranean) <= 0 then
+			npcHandler:say({
+				"Vermin. Everywhere. We get a lot of strange four-legged crawlers and worms down here lately. It's getting out of hand and... well, I need a real killer for this. ",
+				"Prepared to get rid of some seriously foul creepers for us?",
+			}, cid)
+			npcHandler.topic[playerId] = 2
+		end
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean) < 1 then
+			npcHandler:say({
+				"Vermin. Everywhere. We get a lot of strange four-legged crawlers and worms down here lately. It's getting out of hand and... well, I need a real killer for this. ",
+				"Prepared to get rid of some seriously foul creepers for us?",
+			}, cid)
+			npcHandler.topic[playerId] = 2
+		elseif (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean) == 1) and (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Organisms) < 50) then
+			npcHandler:say("Come back when you have finished your job.", cid)
+			npcHandler.topic[playerId] = 1
+		elseif (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean) == 1) and (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Organisms) >= 50) then
+			npcHandler:say("I'l say I'm blown away but a Klom Stonecutter is not that easily impressed. Still, your got your hands dirt for us and I appreciate that.", cid)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskSubterranean, os.time() + time)
+			player:addItem(27654, 1)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points, player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points) + 1)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean, 2)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif npcHandler.topic[playerId] == 2 and msgcontains(msg, "yes") then
+		npcHandler:say("Alright, good. Those things are strolling about and I ain't gonna have that. If it moves more than two legs, destroy it. If it moves legs and tentacles, destroy it again.", cid)
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Questline) < 1 then
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Questline, 1)
+		end
+		player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Subterranean, 1)
+		player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Organisms, 0)
+		npcHandler.topic[playerId] = 1
+	end
+
+	if msgcontains(msg, "home") then
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home) == 2 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskHome) > 0 then
+			npcHandler:say("I don't need your help for now. Come back later.", cid)
+			npcHandler.topic[playerId] = 1
+		end
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home) == 2 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskHome) <= 0 then
+			npcHandler:say({
+				"We need to find a way to drive off the exiles from these caves. Countless makeshift homes are popping up at every corner. Destroy them and get the Lost out of hiding to eliminate them. ... ",
+				"If you can capture a few of them, you'll receive a bonus. Just bring 'em to the border of our outpost and we will take care of the rest. ... ",
+				"Are you ready for that? ",
+			}, cid)
+			npcHandler.topic[playerId] = 22
+		end
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home) < 1 then
+			npcHandler:say({
+				"We need to find a way to drive off the exiles from these caves. Countless makeshift homes are popping up at every corner. Destroy them and get the Lost out of hiding to eliminate them. ... ",
+				"If you can capture a few of them, you'll receive a bonus. Just bring 'em to the border of our outpost and we will take care of the rest. ... ",
+				"Are you ready for that? ",
+			}, cid)
+			npcHandler.topic[playerId] = 22
+		elseif (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home) == 1) and (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.LostExiles) < 20 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Prisoners) < 3) then
+			npcHandler:say("Come back when you have finished your job.", cid)
+			npcHandler.topic[playerId] = 1
+		elseif (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home) == 1) and (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.LostExiles) >= 20 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Prisoners) < 3) then
+			npcHandler:say("So you did it. Well, that won't be the last of 'em but this sure helps our situation down here. Return to me later if you want to help me again!", cid)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskHome, os.time() + time)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home, 2)
+			player:addItem(27654, 1)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points, player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points) + 1)
+			npcHandler.topic[playerId] = 1
+		elseif (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home) == 1) and (player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.LostExiles) >= 20 and player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Prisoners) >= 3) then
+			npcHandler:say("So you did it. And you even made prisoners, the bonus is yours! Well, that won't be the last of 'em but this sure helps our situation down here. Return to me later if you want to help me again!", cid)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.TimeTaskHome, os.time() + time)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home, 2)
+			player:addItem(27654, 2)
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points, player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points) + 2)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif npcHandler.topic[playerId] == 22 and msgcontains(msg, "yes") then
+		npcHandler:say("Very well, now try to find some of their makeshift homes and tear'em down. There's bound to be some stragglers you can 'persuade' to surrender, eliminate any resistance. Get back here when you're done.", cid)
+		if player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Questline) < 1 then
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Questline, 1)
+		end
+		player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Home, 1)
+		player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.LostExiles, 0)
+		player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Prisoners, 0)
+		npcHandler.topic[playerId] = 1
+	end
+
+	local plural = ""
+
+	if msgcontains(msg, "suspicious devices") or msgcontains(msg, "suspicious device") then
+		npcHandler:say("If you bring me any suspicious devices on creatures you slay down here, I'll make it worth your while by telling the others of your generosity. How many do you want to offer?", cid)
+		npcHandler.topic[playerId] = 55
+	elseif npcHandler.topic[playerId] == 55 then
+		count[playerId] = tonumber(msg)
+		if count[playerId] then
+			if count[playerId] > 1 then
+				plural = plural .. "s"
+			end
+			npcHandler:say("You want to offer " .. count[playerId] .. " suspicious device" .. plural .. ". Which leader shall have it, (Gnomus) of the {gnomes}, (Klom Stonecutter) of the {dwarves} or the {scouts} (Lardoc Bashsmite)?", cid)
+			npcHandler.topic[playerId] = 56
+		else
+			npcHandler:say("Don't waste my time.", cid)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif msgcontains(msg, "gnomes") and npcHandler.topic[playerId] == 56 then
+		if player:getItemCount(27653) >= count[playerId] then
+			npcHandler:say("Done.", cid)
+			if count[playerId] > 1 then
+				plural = plural .. "s"
+			end
+			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You earned " .. count[playerId] .. " point" .. plural .. " on the gnomes mission.")
+			player:removeItem(27653, count[playerId])
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Gnomes.Points, player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Gnomes.Points) + count[playerId])
+		else
+			npcHandler:say("You don't have enough suspicious devices.", cid)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif msgcontains(msg, "dwarves") and npcHandler.topic[playerId] == 56 then
+		if player:getItemCount(27653) >= count[playerId] then
+			npcHandler:say("Done.", cid)
+			if count[playerId] > 1 then
+				plural = plural .. "s"
+			end
+			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You earned " .. count[playerId] .. " point" .. plural .. " on the dwarves mission.")
+			player:removeItem(27653, count[playerId])
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points, player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points) + count[playerId])
+		else
+			npcHandler:say("You don't have enough suspicious devices.", cid)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif msgcontains(msg, "scouts") and npcHandler.topic[playerId] == 56 then
+		if player:getItemCount(27653) >= count[playerId] then
+			npcHandler:say("Done.", cid)
+			if count[playerId] > 1 then
+				plural = plural .. "s"
+			end
+			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You earned " .. count[playerId] .. " point" .. plural .. " on the scouts mission.")
+			player:removeItem(27653, count[playerId])
+			player:setStorageValue(Storage.Quest.U11_50.DangerousDepths.Scouts.Points, player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Scouts.Points) + count[playerId])
+		else
+			npcHandler:say("You don't have enough suspicious devices.", cid)
+			npcHandler.topic[playerId] = 1
+		end
+	end
+
+	if msgcontains(msg, "status") then
+		npcHandler:say("So you want to know what we all think about your deeds? What leader's opinion are you interested in, the {gnomes} (Gnomus), the {dwarves} (Klom Stonecutter) or the {scouts} (Lardoc Bashsmite)?", cid)
+		npcHandler.topic[playerId] = 5
+	elseif msgcontains(msg, "gnomes") and npcHandler.topic[playerId] == 5 then
+		npcHandler:say("The gnomes are still in need of your help, member of Bigfoot's Brigade. Prove your worth by answering their calls! (" .. math.max(player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Gnomes.Points), 0) .. "/10)", cid)
+	elseif msgcontains(msg, "dwarves") and npcHandler.topic[playerId] == 5 then
+		npcHandler:say("The dwarves are still in need of your help, member of Bigfoot's Brigade. Prove your worth by answering their calls! (" .. math.max(player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Dwarves.Points), 0) .. "/10)", cid)
+	elseif msgcontains(msg, "scouts") and npcHandler.topic[playerId] == 5 then
+		npcHandler:say("The scouts are still in need of your help, member of Bigfoot's Brigade. Prove your worth by answering their calls! (" .. math.max(player:getStorageValue(Storage.Quest.U11_50.DangerousDepths.Scouts.Points), 0) .. "/10)", cid)
+	end
+
+	return true
+end
+
 keywordHandler:addKeyword({ "help" }, StdModule.say, { npcHandler = npcHandler, text = "Well, the biggest problem we need to address are the ever charging {subterraneans} around here. And on top of that, there's the threat of the Lost, who quite made themselves at {home} in these parts." })
 keywordHandler:addKeyword({ "job" }, StdModule.say, { npcHandler = npcHandler, text = "Maintainin' this whole operation, the dwarven involvement 'course. Don't know about them gnomes but if I ain't gettin' those dwarves in line, there'll be chaos down here. I also oversee the {defences} and {counterattacks}." })
 keywordHandler:addKeyword({ "defences" }, StdModule.say, {
@@ -47,9 +219,10 @@ npcHandler:setMessage(MESSAGE_GREET, {
 })
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Well, bye then.")
 
--- npcHandler:setCallback(CALLBACK_SET_INTERACTION, onAddFocus)
--- npcHandler:setCallback(CALLBACK_REMOVE_INTERACTION, onReleaseFocus)
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_ONADDFOCUS, onAddFocus)
+npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
+
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

@@ -1,133 +1,175 @@
- local keywordHandler = KeywordHandler:new()
+local keywordHandler = KeywordHandler:new()
 local npcHandler = NpcHandler:new(keywordHandler)
 NpcSystem.parseParameters(npcHandler)
 
- 
-function onCreatureAppear(cid) npcHandler:onCreatureAppear(cid) end
-function onCreatureDisappear(cid) npcHandler:onCreatureDisappear(cid) end
-function onCreatureSay(cid, type, msg) npcHandler:onCreatureSay(cid, type, msg) end
-function onThink() npcHandler:onThink() end
+function onCreatureAppear(cid)			npcHandler:onCreatureAppear(cid)			end
+function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
+function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
+function onThink()		npcHandler:onThink()		end
 
-function creatureSayCallback(cid, type, msg)
-	if(not npcHandler:isFocused(cid)) then
-		return false
-	end
-	
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
 
-	if(msgcontains(msg, "mission") or msgcontains(msg, "task")) then
-		if(getPlayerStorageValue(cid, 41600) < 1) and getPlayerStorageValue(cid, 43600) <= os.time() then
-			npcHandler:say("Oh, you want some work? You can help us, alright. Did you know that the people of the city think those rabbit feet are actually lucky charms?", cid)
-			npcHandler.topic[cid] = 1
-		elseif(getPlayerStorageValue(cid, 41600) == 1) then
+	if msgcontains(msg, "mission") or msgcontains(msg, "task") then
+		-- Checks if the mission has not yet started and the cooldown has expired
+		if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03) < 1 then
+			if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time) <= os.time() then
+				npcHandler:say("Oh, you want some work? You can help us, alright. Did you know that the people of the city think those rabbit feet are actually lucky charms?", cid)
+				npcHandler.topic[playerId] = 1
+			else
+				npcHandler:say("You need to wait some hours to take another mission again or you are still on a mission.", cid)
+			end
+
+		-- Checks if the player is already on the rabbit feet collection mission
+		elseif getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03) == 1 then
 			npcHandler:say("Good to see you back. Now, did you bring us the lucky charms?", cid)
-			npcHandler.topic[cid] = 3
-			
-			
-			elseif getPlayerStorageValue(cid, 43600) > os.time() then
-			npcHandler:say("You need wait some hours to take other mission again or you are still on a mission.", cid)
-			
-	------------------------ FINISH MISSION 01 ------------------------
-		elseif(getPlayerStorageValue(cid, 41600) == 2) then
-			selfSay("Of course, of course, there is indeed something you can help us with. Remember that we also have some tasks for you. So, are you ready for another quest to help the men of the forest?", cid)
-			selfSay("There is a problem with one of our deer stands. Right. Well, there are two problems, our deer stands - and some of the walls of the buildings in the camp are broken. ...", cid)
-			selfSay("You know, the guys built all of that themselves. Sure, at first it didn't quite work out as we planned and in the end we had to tear down half the forest - but - it was worth it. ...", cid)
-			selfSay("Still, most of the camp is kind of... broken now. And someone with a good hammer and a steady hand needs to fix that. Or I am afraid we will have to freeze... during the cold evenings... well you know, hard times. ...", cid)
-			npcHandler:say("So what do you say, in for this one?", cid)
-			npcHandler.topic[cid] = 4
-		elseif(getPlayerStorageValue(cid, 41600) == 3) and getPlayerStorageValue(cid, 41500) > 4 then
-			npcHandler:say("Ah there you are. So, did you repair all the broken structures?", cid)
-			npcHandler.topic[cid] = 5
-	------------------------ FINISH MISSION 02 ------------------------
-		elseif(getPlayerStorageValue(cid, 41600) == 4) then
-			selfSay("Oh my good friend, good to see you! Today you will help us with a very important task. Very important indeed. ...", cid)
-			selfSay("You know, a large group of merchants is travelling from Thais to Venore and they are crossing the forest to shorten their way - can you believe it? ...", cid)
-			npcHandler:say("They will enter the forest near our camp which is where you come in - uhm I mean you do want to help us with this, right?", cid)
-			npcHandler.topic[cid] = 6
-		elseif(getPlayerStorageValue(cid, 41600) == 5) and getPlayerStorageValue(cid, 41660) == 4 then
-			npcHandler:say("You did it!! And I assume you took only what you needed? Heh. No, I know it. Because my men took the rest. Thanks for helping us, you did a very good job. In fact I have a little 'extra' for you here, thanks again.", cid)
-				------------------ RESET STORAGE --------------------
-				setPlayerStorageValue(cid, 41600, - 1) -- reset storage
-				setPlayerStorageValue(cid, 41500, - 1) -- reset storage
-				setPlayerStorageValue(cid, 41650, - 1) -- reset storage
-				setPlayerStorageValue(cid, 41660, - 1) -- reset storage
-				-----------------------------------------------------
-				setPlayerStorageValue(cid, 43600, os.time() + 20 * 60 * 60) -- set time to start mission again
-				setPlayerStorageValue(cid, 42620, 2) -- quest log
-			------------------- ITEM RANDOM --------------------
-			items = { 
-				[0] = {id = 2152, count = 3, chance = 100},
-				[1] = {id = 2169, count = 1, chance = 80}, 
-				[2] = {id = 13247, count = 1, chance = 25}, 
-			} 
-			for i = 0, #items do 
-			if (items[i].chance > math.random(1, 100)) then 
-			doPlayerAddItem(cid, items[i].id, items[i].count) 
-			----------------------------------------------------
-			npcHandler.topic[cid] = 0	
+			npcHandler.topic[playerId] = 3
+
+		-- Checks if Mission 03 is completed and the cooldown has expired
+		elseif getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03) == 2 then
+			if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time) <= os.time() then
+				npcHandler:say({
+					"Of course, of course, there is indeed something you can help us with. Remember that we also have some tasks for you. So, are you ready for another quest to help the men of the forest?",
+					"There is a problem with one of our deer stands. Right. Well, there are two problems, our deer stands - and some of the walls of the buildings in the camp are broken. ...",
+					"You know, the guys built all of that themselves. Sure, at first it didn't quite work out as we planned and in the end we had to tear down half the forest - but - it was worth it. ...",
+					"Still, most of the camp is kind of... broken now. And someone with a good hammer and a steady hand needs to fix that. Or I am afraid we will have to freeze... during the cold evenings... well you know, hard times. ...",
+					"So what do you say, in for this one?",
+				}, cid)
+				npcHandler.topic[playerId] = 4
+			else
+				npcHandler:say("You need to wait some hours to take another mission again or you are still on a mission.", cid)
+			end
+
+		-- Checks if Mission 04 is completed and the cooldown has expired
+		elseif (getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03) == 3) and getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.RottinStart) >= 4 then
+			if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time) <= os.time() then
+				npcHandler:say("Ah there you are. So, did you repair all the broken structures?", cid)
+				npcHandler.topic[playerId] = 5
+			else
+				npcHandler:say("You need to wait some hours to take another mission again or you are still on a mission.", cid)
+			end
+
+		-- Checks if Mission 05 is completed and the cooldown has expired
+		elseif getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03) == 4 then
+			if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time) <= os.time() then
+				npcHandler:say({
+					"Oh |PLAYERNAME| my good friend, good to see you! Today you will help us with a very important task. Very important indeed. ...",
+					"You know, a large group of merchants is travelling from Thais to Venore and they are crossing the forest to shorten their way - can you believe it? ...",
+					"They will enter the forest near our camp which is where you come in - uhm I mean you do want to help us with this, right?",
+				}, cid)
+				npcHandler.topic[playerId] = 6
+			else
+				npcHandler:say("You need to wait some hours to take another mission again or you are still on a mission.", cid)
+			end
+
+		-- Checks if Mission 06 is completed and the cooldown has expired
+		elseif (getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03) == 5) and getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Corpse) == 4 then
+			if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time) <= os.time() then
+				npcHandler:say("You did it!! And I assume you took only what you needed? Heh. No, I know it. Because my men took the rest. Thanks for helping us, you did a very good job. In fact I have a little 'extra' for you here, thanks again.", cid)
+				-- Checks if this is the first time the quest is completed
+				if getPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.FirstTime) == 0 then
+					player:addExperience(1000, true) -- Adds 1000 experience on the first time
+					setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.FirstTime, 1) -- Marks the quest as completed for the first time
+				else
+					player:addExperience(100, true) -- Adds 100 experience on subsequent completions
+				end
+				-- Resets storage values to start new missions
+				setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03, -1) -- reset storage
+				setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.RottinStart, -1) -- reset storage
+				setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Trap, -1) -- reset storage
+				setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Corpse, -1) -- reset storage
+				-- Sets the time to start a new mission
+				setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time, os.time() + configManager.getNumber(configKeys.BOSS_DEFAULT_TIME_TO_FIGHT_AGAIN)) -- set time to start mission again
+				setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Questline, 2) -- quest log
+				-- Gives a reward item to the player
+				local items = {
+					[0] = { id = 3035, count = 3, chance = 100 },
+					[1] = { id = 3053, count = 1, chance = 80 },
+					[2] = { id = 12260, count = 1, chance = 25 },
+				}
+				for i = 0, #items do
+					if items[i].chance > math.random(1, 100) then
+						doPlayerAddItem(cid, items[i].id, items[i].count)
+						npcHandler.topic[playerId] = 0
+					end
+				end
+			else
+				npcHandler:say("You need to wait some hours to take another mission again or you are still on a mission.", cid)
 			end
 		end
-	end
-	------------------------ FINISH MISSION 03 ------------------------
-	elseif(msgcontains(msg, "yes")) then
-		if(npcHandler.topic[cid] == 1) then
-			npcHandler:say("Good, because that is exactly what you will help us with - getting more 'lucky charms'. If we won't get our hands on new charms in time, we will surely have to starve... during the autumn. That would be a hard time for all of us. So... you in?", cid)
-			npcHandler.topic[cid] = 2
-		elseif(npcHandler.topic[cid] == 2) then
-			selfSay("Fine, now hurry into the woods and find some rabbits. Find them and kill them that is. Use a sharp, thin knife to get the rabbit foot and be careful not to destroy it - no one would buy it in a bad condition after all. ...", cid)
-			selfSay("Once you gathered some rabbit feet, put one of our - handcrafted by the guys - ribbons on each of them. That will make two lucky charms per rabbit. ...", cid)
-			selfSay("We will need at least seven. And seven is a lucky number, don't you think? Heh. ...", cid)
-			npcHandler:say("If you need some more ribbons just come back to me and ask.", cid)
-			setPlayerStorageValue(cid, 41600, 1)
-			setPlayerStorageValue(cid, 42600, 1) -- quest log
-			doPlayerAddItem(cid, 13158, 7)
-			npcHandler.topic[cid] = 0
-		elseif(npcHandler.topic[cid] == 3) and getPlayerItemCount(cid, 13160) >= 7 then
-			npcHandler:say("Good hunt. That will be enough to help us uhm... get through the winter yes. Now if you want to help us getting even more lucky charms, you can always ask.", cid)
-			doPlayerRemoveItem(cid, 13160, 7)
-			setPlayerStorageValue(cid, 41600, 2) 
-			setPlayerStorageValue(cid, 42600, 2) -- quest log
-			npcHandler.topic[cid] = 0
-			
-			elseif(npcHandler.topic[cid] == 3) and getPlayerItemCount(cid, 13160) <= 6 then
-			npcHandler:say("You do not have sufficient rabbit's foot.", cid)
-			
-		------------------------ FINISH MISSION 01 ------------------------
-		elseif(npcHandler.topic[cid] == 4) then 
-			npcHandler:say("Good, good. Do you remember the old saying? If it ain't broken, it was not made by us. Now, off you go!", cid)
-			setPlayerStorageValue(cid, 41600, 3) 
-			setPlayerStorageValue(cid, 42610, 1) -- quest log
-			npcHandler.topic[cid] = 0
-		elseif(npcHandler.topic[cid] == 5) then 
-			selfSay("Mmmmh, I have to say - good workmanship. No doubt. Yes, the person who made that tool you used to fix all this was a pure professional. Something I can't say about your work, though. ...", cid)
-			npcHandler:say("The walls look as if they will come off in a matter of hours. Oh well, you can always come back and repair this mess, ask me for a task if you want to. Yeah, yeah and here's your reward for today.", cid)
-			setPlayerStorageValue(cid, 41600, 4) 
-			setPlayerStorageValue(cid, 42610, 2) -- quest log
-			doPlayerAddItem(cid, 2152, 5)
-			npcHandler.topic[cid] = 0
-		------------------------ FINISH MISSION 02 ------------------------
-		elseif(npcHandler.topic[cid] == 6) then 
-			selfSay("Right, now before the merchants enter the woods, you will install several traps - nothing too dangerous, just nets and ropes. ...", cid)
-			selfSay("When they enter said area which is located close to our hidden camp, they will be trapped and you can... lighten their heavy burden of valuable goods. ...", cid)
-			selfSay("There is but a tiny little catch - we cannot help you laying these traps. You know, some of the guys became sick recently, we talk about several broken legs here, one almost lost his arm ...", cid)
-			npcHandler:say("So... it's entirely up to you, will you do this or not?", cid)
-			npcHandler.topic[cid] = 7
-		elseif(npcHandler.topic[cid] == 7) then 
-			selfSay("Alright very good. Now the only thing you need to do is taking these traps and moving out to the area I have marked on your map where you need to place them. ...", cid)
-			selfSay("Once you did that go to the large high seat near the camp and watch for the travelling merchants. ...", cid)
-			selfSay("Once all of them are trapped in the nets, you can go down and gather anything of value you can find. But only take what we... you really need - around 100 gold should be enough for any man to take. ...", cid)
-			selfSay("We have manners after all, haven't we. ...", cid)
-			selfSay("My men will take their share of course and... help you relieve the merchants of any valuables. ...", cid)
-			selfSay("You're done if you get at least... let's say 5 of these fools. Return to me and you will be rewarded. ...", cid)
-			npcHandler:say("Off you go and - good hunt, heh.", cid)
-			doPlayerAddItem(cid, 13173, 5)
-			setPlayerStorageValue(cid, 41600, 5) 
-			setPlayerStorageValue(cid, 42620, 1) -- quest log
-			npcHandler.topic[cid] = 0
 		------------------------ FINISH MISSION 03 ------------------------
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 then
+			npcHandler:say("Good, because that is exactly what you will help us with - getting more 'lucky charms'. If we won't get our hands on new charms in time, we will surely have to starve... during the autumn. That would be a hard time for all of us. So... you in?", cid)
+			npcHandler.topic[playerId] = 2
+		elseif npcHandler.topic[playerId] == 2 then
+			npcHandler:say({
+				"Fine, now hurry into the woods and find some rabbits. Find them and kill them that is. Use a sharp, thin knife to get the rabbit foot and be careful not to destroy it - no one would buy it in a bad condition after all. ...",
+				"Once you gathered some rabbit feet, put one of our - handcrafted by the guys - ribbons on each of them. That will make two lucky charms per rabbit. ...",
+				"We will need at least seven. And seven is a lucky number, don't you think? Heh. ...",
+				"If you need some more ribbons just come back to me and ask.",
+			}, cid)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03, 1)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Questline, 1) -- quest log
+			doPlayerAddItem(cid, 12171, 7)
+			npcHandler.topic[playerId] = 0
+		elseif (npcHandler.topic[playerId] == 3) and getPlayerItemCount(cid, 12173) >= 7 then
+			npcHandler:say("Good hunt. That will be enough to help us uhm... get through the winter yes. Now if you want to help us getting even more lucky charms, you can always ask.", cid)
+			doPlayerRemoveItem(cid, 12173, 7)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03, 2)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Questline, 4) -- quest log
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time, os.time() + (20 * 3600)) -- 20 hours
+			npcHandler.topic[playerId] = 0
+		elseif (npcHandler.topic[playerId] == 3) and getPlayerItemCount(cid, 12173) <= 6 then
+			npcHandler:say("You do not have sufficient rabbit's foot.", cid)
+			------------------------ FINISH MISSION 01 ------------------------
+		elseif npcHandler.topic[playerId] == 4 then
+			npcHandler:say("Good, good. Do you remember the old saying? If it ain't broken, it was not made by us. Now, off you go!", cid)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03, 3)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Questline, 3) -- quest log
+			npcHandler.topic[playerId] = 0
+		elseif npcHandler.topic[playerId] == 5 then
+			npcHandler:say({
+				"Mmmmh, I have to say - good workmanship. No doubt. Yes, the person who made that tool you used to fix all this was a pure professional. Something I can't say about your work, though. ...",
+				"The walls look as if they will come off in a matter of hours. Oh well, you can always come back and repair this mess, ask me for a task if you want to. Yeah, yeah and here's your reward for today.",
+			}, cid)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03, 4)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Questline, 6) -- quest log
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Time, os.time() + (20 * 3600)) -- 20 hours
+			doPlayerAddItem(cid, 3035, 5)
+			npcHandler.topic[playerId] = 0
+			------------------------ FINISH MISSION 02 ------------------------
+		elseif npcHandler.topic[playerId] == 6 then
+			npcHandler:say({
+				"Right, now before the merchants enter the woods, you will install several traps - nothing too dangerous, just nets and ropes. ...",
+				"When they enter said area which is located close to our hidden camp, they will be trapped and you can... lighten their heavy burden of valuable goods. ...",
+				"There is but a tiny little catch - we cannot help you laying these traps. You know, some of the guys became sick recently, we talk about several broken legs here, one almost lost his arm ...",
+				"So... it's entirely up to you, will you do this or not?",
+			}, cid)
+			npcHandler.topic[playerId] = 7
+		elseif npcHandler.topic[playerId] == 7 then
+			npcHandler:say({
+				"Alright very good. Now the only thing you need to do is taking these traps and moving out to the area I have marked on your map where you need to place them. ...",
+				"Once you did that go to the large high seat near the camp and watch for the travelling merchants. ...",
+				"Once all of them are trapped in the nets, you can go down and gather anything of value you can find. But only take what we... you really need - around 100 gold should be enough for any man to take. ...",
+				"We have manners after all, haven't we. ...",
+				"My men will take their share of course and... help you relieve the merchants of any valuables. ...",
+				"You're done if you get at least... let's say 5 of these fools. Return to me and you will be rewarded. ...",
+				"Off you go and - good hunt, heh.",
+			}, cid)
+			doPlayerAddItem(cid, 12186, 5)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Mission03, 5)
+			setPlayerStorageValue(cid, Storage.Quest.U8_7.RottinWoodAndTheMarriedMen.Questline, 5) -- quest log
+			npcHandler.topic[playerId] = 0
+			------------------------ FINISH MISSION 03 ------------------------
 		end
 	end
 	return true
 end
 
+npcHandler:setMessage(MESSAGE_GREET, "Hunter's greeting! I assume you want something from me since you came all the way out here on your own. This is a dangerous place to be, I doubt that all my men will accept strangers like I do. You don't seem to have any problems with that, though.")
+
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

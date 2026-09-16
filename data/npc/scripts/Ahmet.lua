@@ -5,38 +5,94 @@ NpcSystem.parseParameters(npcHandler)
 function onCreatureAppear(cid)			npcHandler:onCreatureAppear(cid)			end
 function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
-function onThink()				npcHandler:onThink()					end
+function onThink()		npcHandler:onThink()		end
 
+local ThreatenedDreams = Storage.Quest.U11_40.ThreatenedDreams
 local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
 	if not npcHandler:isFocused(cid) then
 		return false
 	end
-	local player = Player(cid)
-	if msgcontains(msg, 'documents') then
-		if player:getStorageValue(Storage.thievesGuild.Mission04) == 2 then
-			player:setStorageValue(Storage.thievesGuild.Mission04, 3)
+
+	if msgcontains(msg, "documents") then
+		if player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04) == 2 then
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04, 3)
 			npcHandler:say({
-				'You need some forged documents? But I will only forge something for a friend. ...',
-				'The nomads at the northern oasis killed someone dear to me. Go and kill at least one of them, then we talk about your document.'
+				"You need some forged documents? But I will only forge something for a friend. ...",
+				"The nomads at the northern oasis killed someone dear to me. Go and kill at least one of them, then we talk about your document.",
 			}, cid)
-		elseif player:getStorageValue(Storage.thievesGuild.Mission04) == 4 then
-			npcHandler:say('The slayer of my enemies is my friend! For a mere 1000 gold I will create the documents you need. Are you interested?', cid)
-			npcHandler.topic[cid] = 1
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.RewardOasis) == 1 then
+			npcHandler:say("The slayer of my enemies is my friend! For a mere 1000 gold I will create the documents you need. Are you interested?", cid)
+			npcHandler.topic[playerId] = 1
 		end
-	elseif msgcontains(msg, 'yes') then
-		if npcHandler.topic[cid] == 1 then
-			if player:removeMoney(1000) then
-				player:addItem(8694, 1)
-				player:setStorageValue(Storage.thievesGuild.Mission04, 5)
-				npcHandler:say('And here they are! Now forget where you got them from.', cid)
+	elseif msgcontains(msg, "mission") or msgcontains(msg, "quest") then
+		if player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.StealFromThieves) < 1 then
+			npcHandler:say({
+				"What are you talking about?? I was robbed!!!! Someone catch those filthy thieves!!!!! GUARDS! ...",
+				"<nothing happens>....<SIGH> Like usual, they hide at the slightest sign of trouble! YOU! Want to earn some quick money?",
+			}, cid)
+			npcHandler.topic[playerId] = 2
+		elseif player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.StealFromThieves) == 1 or player:getStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.StealFromThieves) == 2 then
+			npcHandler:say("Did you find my stuff?", cid)
+			npcHandler.topic[playerId] = 3
+		end
+	elseif msgcontains(msg, "book") then
+		npcHandler:say("I see: You want me to add an additional story to this book. A legend about how it brings ill luck to kill a white deer. I could do that, yes. It costs 5000 gold, however. Are you still interested?", cid)
+		npcHandler.topic[playerId] = 5
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 then
+			if player:removeMoneyBank(1000) then
+				player:addItem(7866, 1)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.Mission04, 5)
+				npcHandler:say("And here they are! Now forget where you got them from.", cid)
 			else
-				npcHandler:say('You don\'t have enough money.', cid)
+				npcHandler:say("You don't have enough money.", cid)
 			end
-			npcHandler.topic[cid] = 0
+			npcHandler.topic[playerId] = 0
+		elseif npcHandler.topic[playerId] == 2 then
+			npcHandler:say({
+				"Of course you do! Go hunt down the thieves and bring back the stuff they have stolen from me. ...",
+				" I saw them running out of town and then to the north. Maybe they hide at the oasis.",
+			}, cid)
+			npcHandler.topic[playerId] = 0
+			player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.StealFromThieves, 1)
+		elseif npcHandler.topic[playerId] == 3 then
+			if player:removeItem(235, 1) then
+				npcHandler:say("GREAT! If you ever need a job as my personal security guard, let me know. Here is the reward I promised you.", cid)
+				player:setStorageValue(Storage.Quest.U8_2.TheThievesGuildQuest.StealFromThieves, 3)
+				player:addItem(3031, 100)
+				player:addItem(3725, 100)
+				npcHandler.topic[playerId] = 0
+			else
+				npcHandler:say("Come back when you find my stuff.", cid)
+				npcHandler.topic[playerId] = 0
+			end
+		elseif npcHandler.topic[playerId] == 5 then
+			if player:getStorageValue(ThreatenedDreams.Mission01[1]) == 1 and player:getStorageValue(ThreatenedDreams.Mission01.PoacherChest) == 1 then
+				if player:getItemCount(25235) >= 1 and player:getMoney() >= 5000 then
+					player:removeMoney(5000)
+					npcHandler:say({
+						"Well then. Here, take the book, I added the story. Oh, just a piece of advice: Not to inflame prejudice but poachers are of rather simple disposition. I doubt they are ardent readers. ...",
+						"So if you want to make sure they read this anytime soon, perhaps don't hide the book in a shelf or chest. Make sure to place it somewhere where they will find it easily, like very obviously on a table or something.",
+					}, cid)
+					player:setStorageValue(ThreatenedDreams.Mission01[1], 2)
+					npcHandler.topic[playerId] = 0
+				else
+					npcHandler:say("You need 5000 gps and book with ancient legends.", cid)
+				end
+			else
+				npcHandler:say("You are not in this mission.", cid)
+				npcHandler.topic[playerId] = 0
+			end
 		end
 	end
 	return true
 end
 
+npcHandler:setMessage(MESSAGE_GREET, "Be mourned pilgrim in flesh. I'm selling general goods. Just ask me for a {trade}.")
+
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

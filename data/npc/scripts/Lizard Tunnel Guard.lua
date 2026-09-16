@@ -9,9 +9,12 @@ function onThink()		npcHandler:onThink()		end
 
 local function greetCallback(cid)
 	local player = Player(cid)
-	if player:getStorageValue(Storage.WrathoftheEmperor.Questline) >= 2 then
-		player:setStorageValue(Storage.WrathoftheEmperor.GuardcaughtYou, 1)
-		player:setStorageValue(Storage.WrathoftheEmperor.CrateStatus, 0)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U8_6.WrathOfTheEmperor.Questline) >= 2 then
+		player:setStorageValue(Storage.Quest.U8_6.WrathOfTheEmperor.GuardcaughtYou, 1)
+		player:removeCondition(CONDITION_OUTFIT)
+		player:removeItem(11328, 1)
 		player:teleportTo(Position(33361, 31206, 8))
 		player:say("The guards have spotted you. You were forcibly dragged into a small cell. It looks like you need to build another disguise.", TALKTYPE_MONSTER_SAY)
 	end
@@ -19,4 +22,5 @@ local function greetCallback(cid)
 end
 
 npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+
 npcHandler:addModule(FocusModule:new())

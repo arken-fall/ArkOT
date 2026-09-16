@@ -13,4 +13,63 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
+local config = {
+-- 	[VOCATION.BASE_ID.SORCERER] = "S O R C E R E R",
+-- 	[VOCATION.BASE_ID.DRUID] = "D R U I D",
+-- 	[VOCATION.BASE_ID.PALADIN] = "P A L A D I N",
+-- 	[VOCATION.BASE_ID.KNIGHT] = "K N I G H T",
+}
+
+local function greetCallback(cid)
+	local playerId = cid:getId()
+	npcHandler:setMessage(MESSAGE_GREET, "Hello " .. (Player(cid):getSex() == PLAYERSEX_FEMALE and "beautiful lady" or "handsome gentleman") .. ", welcome to the atrium of Pumin's Domain. We require some information from you before we can let you pass. Where do you want to go?")
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	local vocation = player:getVocation()
+	local vocationId = vocation:getId()
+	local vocationBaseId = vocation:getBaseId()
+
+	if msgcontains(msg, "pumin") then
+		if player:getStorageValue(Storage.Quest.U7_9.ThePitsOfInferno.ThronePumin) == 1 then
+			npcHandler:say("I'm not sure if you know what you are doing but anyway. Your name is?", cid)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif msgcontains(msg, player:getName()) then
+		if npcHandler.topic[playerId] == 1 then
+			npcHandler:say("Alright |PLAYERNAME|. Vocation?", cid)
+			npcHandler.topic[playerId] = 2
+		end
+	elseif msgcontains(msg, Vocation(vocationId):getName()) then
+		if npcHandler.topic[playerId] == 2 then
+			npcHandler:say(config[vocationBaseId] .. ", is that right?! What do you want from me?", cid)
+			npcHandler.topic[playerId] = 3
+		end
+	elseif msgcontains(msg, "356") then
+		if npcHandler.topic[playerId] == 3 then
+			player:setStorageValue(Storage.Quest.U7_9.ThePitsOfInferno.ThronePumin, 2)
+			npcHandler:say("Sorry, you need Form 145 to get Form 356. Come back when you have it", cid)
+			npcHandler.topic[playerId] = 0
+		elseif player:getStorageValue(Storage.Quest.U7_9.ThePitsOfInferno.ThronePumin) == 7 then
+			player:setStorageValue(Storage.Quest.U7_9.ThePitsOfInferno.ThronePumin, 8)
+			npcHandler:say("You are better than I thought! Congratulations, here you are: Form 356!", cid)
+		end
+	end
+	return true
+end
+
+npcHandler:setMessage(MESSAGE_WALKAWAY, "Good bye and don't forget me!")
+npcHandler:setMessage(MESSAGE_FAREWELL, "Good bye and don't forget me!")
+
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+
 npcHandler:addModule(FocusModule:new())

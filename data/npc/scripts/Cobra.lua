@@ -5,15 +5,21 @@ NpcSystem.parseParameters(npcHandler)
 function onCreatureAppear(cid)			npcHandler:onCreatureAppear(cid)			end
 function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
-function onThink()				npcHandler:onThink()					end
+function onThink()		npcHandler:onThink()		end
 
 local function greetCallback(cid)
 	local player = Player(cid)
+	local playerId = cid
+
 	if player:getCondition(CONDITION_POISON) then
-		player:sendTextMessage(MESSAGE_STATUS_WARNING, "Venture the path of decay!")
+		player:sendTextMessage(MESSAGE_GAME_HIGHLIGHT, "Venture the path of decay!")
 		player:getPosition():sendMagicEffect(CONST_ME_TELEPORT)
 		player:teleportTo(Position(33396, 32836, 14))
 		player:getPosition():sendMagicEffect(CONST_ME_TELEPORT)
+		if player:getStorageValue(Storage.Quest.U7_4.TheAncientTombs.ThalasTreasure) <= 1 then
+			player:setStorageValue(Storage.Quest.U7_4.TheAncientTombs.ThalasTreasure, 2)
+		end
+
 		return false
 	else
 		npcHandler:say("Begone! Hissssss! You bear not the mark of the cobra!", cid)
@@ -23,4 +29,5 @@ local function greetCallback(cid)
 end
 
 npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+
 npcHandler:addModule(FocusModule:new())

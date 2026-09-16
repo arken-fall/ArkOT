@@ -5,6 +5,86 @@ NpcSystem.parseParameters(npcHandler)
 function onCreatureAppear(cid)			npcHandler:onCreatureAppear(cid)			end
 function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
-function onThink()				npcHandler:onThink()					end
+function onThink()		npcHandler:onThink()		end
+
+local config = {
+	towns = {
+-- 		["venore"] = TOWNS_LIST.VENORE,
+-- 		["thais"] = TOWNS_LIST.THAIS,
+-- 		["kazordoon"] = TOWNS_LIST.KAZORDOON,
+-- 		["carlin"] = TOWNS_LIST.CARLIN,
+-- 		["ab'dendriel"] = TOWNS_LIST.AB_DENDRIEL,
+-- 		["liberty bay"] = TOWNS_LIST.LIBERTY_BAY,
+-- 		["port hope"] = TOWNS_LIST.PORT_HOPE,
+-- 		["ankrahmun"] = TOWNS_LIST.ANKRAHMUN,
+-- 		["darashia"] = TOWNS_LIST.DARASHIA,
+-- 		["edron"] = TOWNS_LIST.EDRON,
+	},
+}
+
+-- local function greetCallback(npc, creature)
+-- 	local player = Player(creature)
+-- 	local playerId = player:getId()
+-- 
+-- 	if player:getStorageValue(Storage.Quest.U9_80.AdventurersGuild.CharosTrav) > 6 then
+-- 		npcHandler:say("Sorry, you have traveled a lot.", npc, creature)
+-- 		npcHandler:resetNpc(npc, creature)
+-- 		return false
+-- 	else
+-- 		npcHandler:setMessage(
+-- 			MESSAGE_GREET,
+-- 			"Hello young friend! I can attune you to a city of your choice. \z
+-- 		If you step to the teleporter here you will not appear in the city you came from as usual, \z
+-- 		but the city of your choice. Is it what you wish?"
+-- 		)
+-- 	end
+-- 	return true
+-- end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if npcHandler.topic[playerId] == 0 then
+		if msgcontains(msg, "yes") then
+			npcHandler:say("Fine. You have " .. -player:getStorageValue(Storage.Quest.U9_80.AdventurersGuild.CharosTrav) + 7 .. " \z
+			attunements left. What is the new city of your choice? Thais, Carlin, Ab'Dendriel, Kazordoon, Venore, \z
+			Ankrahmun, Edron, Darashia, Liberty Bay or Port Hope?", cid)
+			npcHandler.topic[playerId] = 1
+		end
+	elseif npcHandler.topic[playerId] == 1 then
+		local cityTable = config.towns[msg:lower()]
+		if cityTable then
+			player:setStorageValue(Storage.Quest.U9_80.AdventurersGuild.CharosTrav, player:getStorageValue(Storage.Quest.U9_80.AdventurersGuild.CharosTrav) + 1)
+			player:setStorageValue(Storage.Quest.U9_80.AdventurersGuild.Stone, cityTable)
+			npcHandler:say("Goodbye traveler!", cid)
+		else
+			npcHandler:say("Sorry, I don't know about this place.", cid)
+		end
+	end
+	return true
+end
+
+npcHandler:setCallback(CALLBACK_ONADDFOCUS, onAddFocus)
+npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
+-- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+-- Dialogue keywords the NPC answers on the official server
+keywordHandler:addKeyword({ "anything else" }, StdModule.say, { npcHandler = npcHandler, text = "Sorry, I don't know about this place." })
+keywordHandler:addKeyword({ "first dragon" }, StdModule.say, { npcHandler = npcHandler, text = "I heard he now lives at the dragon cemetery." })
+keywordHandler:addKeyword({ "discovering" }, StdModule.say, {
+	npcHandler = npcHandler,
+	text = "We are currently working on a huge and very ambitious project: We try to chart the world of Tibia! I know what you might think: Are there so many undiscovered places on this world? And the answer is: Yes! ... There are many secret, hidden or hardly accessible places and sites. We want to create a detailed and accurate map of our world - and we are searching for assistance concerning this project. ... So, if you want to discover Tibia's secrets, go out and discover our world, step by step and area by area. If you contribute to this project to a certain extent, you can gain the right to wear our Discoverer outfit.",
+})
+keywordHandler:addKeyword({ "service" }, StdModule.say, { npcHandler = npcHandler, text = "I can attune you to a city of your choice. If you step to the teleporter here you will not appear in the city you came from as usual, but the city of your choice. Is it what you wish?" })
+keywordHandler:addKeyword({ "area" }, StdModule.say, { npcHandler = npcHandler, text = "As an area we regard larger regions surrounding - for example - the big cities of Tibia. The Kazordoon mountains would be such an area as well as the Venorean swamps or the island of Oramond." })
+keywordHandler:addKeyword({ "map" }, StdModule.say, {
+	npcHandler = npcHandler,
+	text = "We are currently working on a huge and very ambitious project: We try to chart the world of Tibia! I know what you might think: Are there so many undiscovered places on this world? And the answer is: Yes! ... There are many secret, hidden or hardly accessible places and sites. We want to create a detailed and accurate map of our world - and we are searching for assistance concerning this project. ... So, if you want to discover Tibia's secrets, go out and discover our world, step by step and area by area. If you contribute to this project to a certain extent, you can gain the right to wear our Discoverer outfit.",
+})
 
 npcHandler:addModule(FocusModule:new())

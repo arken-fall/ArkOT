@@ -7,6 +7,183 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
+local quests = {
+	[1] = { stg = Storage.Quest.U11_80.TheSecretLibrary.SmallIslands.Questline, value = 4 },
+	[2] = { stg = Storage.Quest.U11_80.TheSecretLibrary.LiquidDeath.Questline, value = 8 },
+	[3] = { stg = Storage.Quest.U11_80.TheSecretLibrary.Asuras.Questline, value = 7 },
+	[4] = { stg = Storage.Quest.U11_80.TheSecretLibrary.FalconBastion.Questline, value = 3 },
+	[5] = { stg = Storage.Quest.U11_80.TheSecretLibrary.Darashia.Questline, value = 9 },
+	[6] = { stg = Storage.Quest.U11_80.TheSecretLibrary.MoTA.Questline, value = 8 },
+}
+
+local function startMission(pid, storage, value)
+	local player = Player(pid)
+	if player then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.Questlog) < 1 then
+			player:setStorageValue(Storage.Quest.U11_80.TheSecretLibrary.Questlog, 1)
+		end
+		if player:getStorageValue(storage) < value then
+			player:setStorageValue(storage, value)
+		end
+	end
+end
+
+local function isQuestDone(pid)
+	local player = Player(pid)
+	if player then
+		for i = 1, #quests do
+			if player:getStorageValue(quests[i].stg) ~= quests[i].value then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	local currentStorage = player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission)
+	if currentStorage < 0 then
+		currentStorage = 0
+	end
+
+	if msgcontains(msg, "search") then
+		npcHandler:say({
+			"I gathered some lore on my own, but I desperately need more information that you might provide me. ...",
+			"My leads are the {museum} in thais, something strange in the darashian {desert}, rumors about {fishmen}, an ancient {order}, the mysterious {asuri}, or a lost {isle}?",
+		}, cid)
+	elseif msgcontains(msg, "museum") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.MoTA.Questline) == 7 then
+			npcHandler:say({
+				"This is ...",
+				"An astonishing find to say the least! I'm certain it will help the efforts of accessing the library a lot!",
+			}, cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, currentStorage + 1)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.MoTA.Questline, 8)
+		elseif player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.MoTA.Questline) < 1 then
+			npcHandler:say("I have heard that it was recently planned to expand the Museum of Tibian Arts. In the course of these activities unexpected difficulties occurred.", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.MoTA.Questline, 1)
+		end
+	elseif msgcontains(msg, "desert") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.Darashia.Questline) == 8 then
+			npcHandler:say("That's simply a scientific sensation. It will provide me with lots of much needed knowledge!", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, currentStorage + 1)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.Darashia.Questline, 9)
+		elseif player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.Darashia.Questline) < 1 then
+			npcHandler:say("There are rumors of a mysterious statue in the desert next to Darashia. Nobody really knows the meaning of it.", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.Darashia.Questline, 1)
+		end
+	elseif msgcontains(msg, "fishmen") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.LiquidDeath.Questline) == 7 then
+			npcHandler:say("You brought incredible news. This book proves an invaluable clue!", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, currentStorage + 1)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LiquidDeath.Questline, 8)
+		elseif player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.LiquidDeath.Questline) < 1 then
+			npcHandler:say({
+				"Sightings of strange fishmen in Tiquanda are stirring up the region. You should be careful when investigating this. ...",
+				"As far as I know a scholar in Edron already dealt with fish-like creatures before.",
+			}, cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LiquidDeath.Questline, 1)
+		end
+	elseif msgcontains(msg, "order") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.FalconBastion.Questline) == 2 then
+			npcHandler:say("You brought incredible news. This book proves an invaluable clue!", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, currentStorage + 1)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.FalconBastion.Questline, 3)
+		elseif player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.FalconBastion.Questline) < 1 then
+			npcHandler:say({
+				"Our world has seen many noble knights and orders throughout the centuries. Most of them vanished a long time ago but only few under such mysterious circumstances as the Order of the Falcon. ...",
+				"This noble alliance of honourable knights once resided in Edron to serve the king. Legend has it they vanished practically over night. Rumor has it their disappearance is connected to a forbidden book.",
+			}, cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.FalconBastion.Questline, 1)
+		end
+	elseif msgcontains(msg, "asuri") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.Asuras.Questline) == 6 then
+			npcHandler:say("This is incredible! Thank you so much for digging out that hint!", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, currentStorage + 1)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.Asuras.Questline, 7)
+		elseif player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.Asuras.Questline) < 1 then
+			npcHandler:say({
+				"There's a beautiful but very dangerous palace in the Tiquandan jungle. The young women who live there are actually demons and they are luring unsuspecting mortals in there. ...",
+				"A lucky survivor told me about a portal at the very top of the palace that may lead to another asuri hideout.",
+			}, cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.Asuras.Questline, 1)
+		end
+	elseif msgcontains(msg, "isle") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.SmallIslands.Questline) == 3 then
+			npcHandler:say("Thank you so much for your efforts to provide this valuable piece of the puzzle!", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, currentStorage + 1)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.SmallIslands.Questline, 4)
+		elseif player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.SmallIslands.Questline) < 1 then
+			npcHandler:say("Talk to Captain Charles in Port Hope. He told me that he once ran ashore on a small island where he discovered a small ruin. The architecture was like nothing he had seen before.", cid)
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.SmallIslands.Questline, 1)
+		end
+	elseif msgcontains(msg, "progress") then
+		if player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission) < 6 then
+			npcHandler:say({
+				"About what of your mission s do you want to report? The {museum}, the darashian {desert}, the rumors about strange {fishmen}, the ancient {order}, the mysterious {asuri}, or the lost {isle}? ...",
+				"Or shall me {check} how much information we acquired?",
+			}, cid)
+		end
+	elseif msgcontains(msg, "check") then
+		if isQuestDone(cid) and player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission) == 6 then
+			npcHandler:say({
+				"Marvellous! With this information combined we have all that's needed! ...",
+				"So let me see. ...",
+				"Hmm, interesting. And we shouldn't forget about the chant! Yes, excellent! ...",
+				"So listen: To enter the veiled library, travel to the white raven monastery on the Isle of Kings and enter its main altar room. ...",
+				"There, use an ordinary scythe on the right of the two monuments, while concentrating on this glyph here and chant the words: Chamek Athra Thull Zathroth ...",
+				"Oh, and one other thing. For your efforts I want to reward you with one of my old outfits, back from my adventuring days. May it suit you well! ...",
+				"Hurry now my friend. Time is of essence!",
+			}, cid)
+			player:addOutfit(1069, 0)
+			player:addOutfit(1070, 0)
+			player:addAchievement("Battle Mage")
+			startMission(cid, Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission, 7)
+			npcHandler.topic[playerId] = 0
+		else
+			npcHandler:say("You're still searching for informations.", cid)
+		end
+	end
+
+	if msgcontains(msg, "addon") and player:getStorageValue(Storage.Quest.U11_80.TheSecretLibrary.LibraryPermission) == 7 then
+		npcHandler:say("Are you interested in one or two addons to your battle mage outfit?", cid)
+		npcHandler.topic[playerId] = 1
+	elseif msgcontains(msg, "book") and npcHandler.topic[playerId] == 3 then
+		if player:getStorageValue(Storage.Quest.U11_80.BattleMageOutfits.Addon1) < 1 and player:getItemCount(28792) > 5 then
+			player:removeItem(28792, 5)
+			player:addOutfit(1069, 1)
+			player:addOutfit(1070, 1)
+			npcHandler:say("Very good! You gained the first addon to the battle mage outfit.", cid)
+			startMission(cid, Storage.Quest.U11_80.BattleMageOutfits.Addon1, 1)
+			npcHandler.topic[playerId] = 0
+		elseif player:getStorageValue(Storage.Quest.U11_80.BattleMageOutfits.Addon2) < 1 and player:getItemCount(28793) > 20 then
+			player:removeItem(28793, 20)
+			player:addOutfit(1069, 2)
+			player:addOutfit(1070, 2)
+			npcHandler:say("Very good! You gained the second addon to the battle mage outfit.", cid)
+			startMission(cid, Storage.Quest.U11_80.BattleMageOutfits.Addon2, 1)
+			npcHandler.topic[playerId] = 0
+		end
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 then
+			npcHandler:say("I provide two addons. For the first one I need you to bring me five sturdy books. For the second addon you need twenty epaulettes. Do you want one of these addons?", cid)
+			npcHandler.topic[playerId] = 2
+		elseif npcHandler.topic[playerId] == 2 then
+			npcHandler:say("What do you have for me: the sturdy books or the epaulettes?", cid)
+			npcHandler.topic[playerId] = 3
+		end
+	end
+
+	return true
+end
+
 keywordHandler:addKeyword({ "looking" }, StdModule.say, { npcHandler = npcHandler, text = "I need the help of some competent {adventurers} to handle a threat to all creation." })
 keywordHandler:addKeyword({ "value" }, StdModule.say, { npcHandler = npcHandler, text = "This leaves us with no choice but to take action into our own {hands}." })
 keywordHandler:addKeyword({ "threat" }, StdModule.say, { npcHandler = npcHandler, text = "I guess you know about the {background} and there is no need to tell you that the forces from beyond managed to acquire the parts of the godbreaker in a coup." })
@@ -92,8 +269,7 @@ keywordHandler:addKeyword({ "rumors" }, StdModule.say, {
 npcHandler:setMessage(MESSAGE_GREET, "Greetings seekers of knowledge. You seem to be just the person I'm {looking} for.")
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Well, bye then.")
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
---
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

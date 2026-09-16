@@ -12,6 +12,8 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
+-- Travel
+local TheNewFrontier = Storage.Quest.U8_54.TheNewFrontier
 local function addTravelKeyword(keyword, text, cost, destination, condition, action)
 	if condition then
 		keywordHandler:addKeyword({ keyword }, StdModule.say, { npcHandler = npcHandler, text = "Never heard about a place like this." }, condition)

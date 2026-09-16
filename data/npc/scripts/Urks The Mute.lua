@@ -7,6 +7,8 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
+-- Travel
+local TheNewFrontier = Storage.Quest.U8_54.TheNewFrontier
 local function addTravelKeyword(keyword, text, cost, discount, destination, condition, action)
 	if condition then
 		keywordHandler:addKeyword({ keyword }, StdModule.say, {

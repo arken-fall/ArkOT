@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <npc name="Gnomally" script="Gnomally.lua" walkinterval="2000" floorchange="0">
 	<health now="100" max="100" />
-	<look type="507" head="52" body="90" legs="90" feet="90" addons="0" />
+	<look type="507" head="52" body="90" legs="90" feet="90" />
 	<parameters>
-		<parameter key="message_greet" value="Oh, hello! I'm the gnome-human relations assistant. I am here for you to trade your tokens for equipment, resupply you with mission items and talk to you about your relations to us gnomes! ..." />
+		<parameter key="module_shop" value="1" />
+		<parameter key="shop_buyable" value="bell,18343,50;gnomish crystal package,18313,1000;gnomish extraction crystal,18213,50;gnomish repair crystal,18219,50;gnomish spore gatherer,18332,50;little pig,18339,150" />
 	</parameters>
 </npc>
