@@ -1069,3 +1069,12 @@ that heals through it: the Mass Healing spell and the monsters' own heals
 
 **Verified.** On the rig, a normal (non-GM) character at 403 health drank a
 health potion and came out at 560, inside the potion's 125-175 range.
+
+**Primal pack beasts.** Eleven creature files end by registering a weaker,
+loot-less twin of themselves through the Primal Ordeal's
+RegisterPrimalPackBeast, which lives in a Canary quest lib; without it each
+of those files failed after registering the creature itself. The helper is
+now data/scripts/lib/primal_pack_beast.lua (with its own table copy, which
+this project has no helper for), so the rig registers 1,696 monster types and
+the only registrations still failing are the five Soul War bosses that want
+that quest's lib.
