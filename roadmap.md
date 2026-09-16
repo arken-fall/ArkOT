@@ -18,8 +18,8 @@ World content ported   █████████████████░░
 Side systems           ██████████████░░░░░░  6 real, 6 with named gaps
 Quest content working  ███████████████░░░░░  726 of 978 Canary scripts
 Client feature surface ████████████░░░░░░░░  45 requests still unanswered
-Multi-world            █████████████░░░░░░░  phase 1 builds, 13 new tests green, never run
-Automated tests        ███████░░░░░░░░░░░░░  26 tests; transport, ids and world identity
+Multi-world            ████████████████░░░░  phases 1-2 built, gated, booted; not yet two worlds
+Automated tests        ████████░░░░░░░░░░░░  59 tests; transport, ids, world identity, presence
 ```
 
 The world itself is real and loads clean: 17.9M tiles, 1,696 monster types, 16,704 zones, 993
@@ -82,52 +82,68 @@ numbering, and character creation offering towns that exist.
 ### 4. Multi-world
 
 One account, many worlds. Decided: a character belongs to one world for life, coins follow the
-account, what a purchase unlocks stays with the character.
+account, what a purchase unlocks stays with the character. Also decided: a ban bars the account on
+every world, and an account may be online on only one world at a time.
 
-The design landed on 2026-09-16 and phase 1 is written, compiling and passing its tests. Three
-owner decisions shaped it: N processes with one world each, per-world databases plus one shared
-auth schema, and an in-binary `ProtocolLogin` rather than teaching the external login service about
-N worlds.
+Two phases are built, compile clean on GCC 14, pass 59 tests, and have been through two full
+multi-agent reviews. Plans: `docs/plans/multi-world-phase1.md` and `multi-world-phase2.md`.
 
-What exists now:
+**Phase 1 — world identity and login routing.**
 
 | Piece | What it does |
 | --- | --- |
-| `BlackTek::World::Registry` | `config/worlds.toml` is the world list; a process refuses to boot if its own row disagrees with its ip, port or schema |
-| `tests/test_world_registry.cpp` | 13 cases, one per refusal, plus the no-file single-world path |
+| `BlackTek::World::Registry` | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema |
 | Wrong-world rejection | The preamble we used to print and throw away now refuses a client that dialled the wrong world, after XTEA so the message is readable |
-| `auth_schema.sql` | `accounts`, `account_sessions` and `store_history` hoist to one schema; each world gets views of the same name, so no existing query changes and the third-party login service still works |
-| Cross-world character list | One schema-qualified query per world on the one connection. No index table: each world's `players` is the source of truth |
-| Coin delta | `SET coins = <absolute>` became a guarded `coins + delta`. Two worlds can no longer overwrite each other's spending |
-| In-binary login | `ProtocolLoginModern` on 7171 serves the registry as a real world list; `ONLINE_OFFLINE_CHARLIST`, which squatted on the world-id byte, is gone |
-| `harness/login_client.py` | Drives the login port end to end and prints each world with its characters underneath |
-| `docs/deployment/multi-world.md` | What each world owns, what every world shares, and every refusal the server can boot with |
+| Shared auth schema | `accounts`, `account_sessions` and `store_history` live in one schema; each world reaches them through views of the same name, so no existing query changes and the third-party login service still works |
+| Cross-world character list | One schema-qualified query per world on the one connection; each world's `players` is the source of truth |
+| In-binary login | `ProtocolLoginModern` on 7171 serves the registry as a real world list |
+| Coin delta | `SET coins = <absolute>` became a guarded `coins + delta`, so two worlds can't overwrite each other's spending |
 
-Build is clean on GCC 14 and `./blacktek_tests` reports 26 passed, 0 failed — the 13 new cases cover
-every registry refusal plus the no-file single-world path. **Nothing has served a player.** The
-tests do not reach `Connection::parsePacket`'s first-frame path, so the padding trim that runs on
-every modern game connection is still unproven by anything but reading.
+**Phase 2 — the account/world data split.**
 
-Two findings worth keeping:
+| Piece | What it does |
+| --- | --- |
+| Account-wide bans | `account_bans` and `account_ban_history` join the auth schema and carry `banned_by_name`; an expired ban is retired behind a guarded delete, so N worlds noticing it write one history row, not N |
+| One session per account | A claim in the auth schema, taken after the ban check and before the waiting list, released on logout after the save. Exempt: account type Gamemaster and above, and any world with `allow_clones` |
+| Crash recovery | Worlds heartbeat every 10 s; a world silent for 45 s loses its claims, and a recovering world kicks anyone whose claim was taken |
+| Migration version 8 | Adds `banned_by_name` and drops the foreign keys that deleted a GM's bans when the GM's character was deleted |
+| `harness/auth_schema_gate.sql` | Proves the whole database design on a given server; re-run whenever `auth_schema.sql` or the MySQL version changes |
 
-**Port 7171 is a client-side constant.** `entergame.lua` sends any 15.25 client to HTTP login
-unless the port is exactly 7171, so an in-binary login server has to live there. It cannot be moved
-out of a collision — the other listener has to move — and 7171 is also `status_port`'s built-in
-default and what docker-compose maps. Boot now refuses on a collision rather than letting
-`ServiceManager::add` print and silently disable one of the two listeners.
+**What has been proven, not just read:**
 
-**The login connection's world-name preamble is empty.** The client only learns a world name from
-the character list, so on the login connection it sends a bare `\n`. That single byte is why an
-in-binary login port needs explicit transport work rather than the game port's sniffing heuristic.
+- The gate passed three times on the real server. Views are writable, cross-schema foreign keys are
+  enforced and cascade, a resent ban delete writes nothing, and a login race is settled by the
+  primary key alone.
+- The server booted against the real database: migration 8 ran and left no foreign key pointing at
+  `players`.
+- `harness/modern_client.py` logs in and walks, which proves the first-frame padding trim that runs
+  on every modern game connection. `harness/login_client.py` gets a world list from port 7171.
+- An active ban refused login naming its issuer; an expired ban let the login through and left
+  exactly one history row.
 
-Not proven yet, and nothing should be trusted until it is: whether the per-world views are
-writable, whether InnoDB takes the cross-schema foreign keys, and what a real 15.25 client actually
-puts on the wire for a login packet — no capture of that exists, because the path has never worked.
-`auth_schema.sql` carries the exact statements for the first two; `harness/login_client.py` settles
-the third.
+**Findings worth keeping:**
 
-**Done means:** a world list in the client, characters that only appear on their own world, and one
-coin balance across all of them.
+**The database is MySQL 8.0, not MariaDB** — whatever docker-compose says. On it, unsigned arithmetic
+that would go below zero raises `ERROR 1690` instead of going negative. That broke the phase-1 coin
+guard silently: unaffordable purchases were refused by a database error rather than the guard, and
+logged as write failures. Found by testing on the server; the guard now casts to signed.
+
+**Detection can't bound a write it doesn't control.** The first presence design let a recovering
+world lose a claim to a takeover already in flight, then tried to catch it with a follow-up check.
+That can't work: `executeQuery` retries a lost connection indefinitely, so the takeover can land
+arbitrarily late. The takeover now re-checks at the moment it writes that the holder is still stale,
+and a recovering world measures its stall on the database's clock, which is the clock every other
+world judges expiry by.
+
+**Port 7171 is a client-side constant.** A 15.25 client goes to HTTP login unless the port is exactly
+7171, so the in-binary login server has to live there, and anything colliding with it must move.
+
+**Not proven, and nothing should be trusted until it is:** two worlds actually running side by side;
+cross-world presence exercised live; and a real 15.25 client on the login port.
+
+**Done means:** two worlds running side by side, a world list in the client, characters that only
+appear on their own world, one coin balance across all of them, and a ban on one world that bars the
+account on the other.
 
 ---
 
@@ -178,8 +194,8 @@ flowchart TD
     A --> C["Town and position migration"]
     B --> D["239 quest scripts load"]
     C --> E["Multi-world design<br/>done 2026-09-16"]
-    E --> F["World identity and login routing<br/>written, not compiled"]
-    F --> G["Account vs world data split<br/>auth schema written, unverified"]
+    E --> F["World identity and login routing<br/>built, booted, harness-tested"]
+    F --> G["Account vs world data split<br/>built, gated on MySQL 8.0, booted"]
     G --> H["N worlds live"]
     B --> I["Bestiary data for 972 monsters"]
     I --> J["Prey and charms cover the whole map"]
@@ -198,7 +214,7 @@ Not urgent, but it's debt and it's ours.
 
 | Item | Why it matters |
 | --- | --- |
-| 13 tests, transport and ids only | Nothing covers bestiary, prey, forge, wheel, store or quests. Those are checked by driving a real client by hand, which doesn't scale. |
+| 59 tests, transport, ids and multi-world only | Nothing covers bestiary, prey, forge, wheel, store or quests. Those are checked by driving a real client by hand, which doesn't scale. |
 | CI compiles but never tests | Both workflows build. Neither runs `./blacktek_tests`. |
 | docker-compose can't serve a world | Still targets 7171/7172/7173, never copies `config/`, and the map isn't where it expects. |
 | One unexplained segfault | After about 8 hours under a 20,000-bot load. Never reproduced, never explained. Predates the current map. |
@@ -207,6 +223,11 @@ Not urgent, but it's debt and it's ours.
 | `STATUS.md` is a lap behind | Last dated entry is 2026-09-14 and gate F still calls the retired 10.98 map the world. |
 | `bootstrap.sh` cannot finish | After the `x64-linux` install succeeds it runs `vcpkg install --triplet x64-linux-static`, and that triplet no longer exists. Premake and the dynamic deps are already done by then, so `make` still works — but the script always exits 1. |
 | Nothing pins the compiler | `bootstrap.sh` refuses GCC below 10 while the code needs 14+, so a default `c++` of 13 builds 62 errors deep into `console.h` before failing. |
+| docker-compose names the wrong database | It says `mariadb:latest`; the deployment runs `mysql:8.0`. They differ in exactly the arithmetic that broke the coin guard. |
+| A migration failure doesn't stop boot | `DatabaseManager::updateDatabase()` returns nothing, so a failed migration just stops migrating. `banned_by_name` has its own post-migration check now; nothing else does. |
+| Ports above 65535 silently disable a listener | A configured port like 65536 passes the `!= 0` check and wraps to 0 in the `uint16_t` cast, so the listener never binds. |
+| A failed coin transfer destroys coins | `System::transfer` debits the sender through the guarded path, then credits the recipient with an unguarded `UPDATE` whose failure is never checked or compensated. |
+| `DBTransaction::begin()` can unlock a mutex it never locked | It sets its started state before `BEGIN` can fail, so the destructor rolls back and unlocks. Undefined behaviour on a failed `BEGIN`. |
 
 ---
 

@@ -6,8 +6,10 @@ user               = "forgottenserver"
 pass               = "bt_test"
 database           = "blacktek"
 
-# The shared auth schema that holds `accounts`, `account_sessions` and
-# `store_history` for every world on this MySQL instance; see auth_schema.sql,
+# The shared auth schema that holds `accounts`, `account_sessions`,
+# `store_history`, `account_bans`, `account_ban_history` and the presence tables
+# (`world_presence`, `account_presence`) for every world on this MySQL instance;
+# see auth_schema.sql and docs/deployment/multi-world.md,
 # which creates it and the per-world views that make the existing unqualified
 # queries resolve into it.
 #

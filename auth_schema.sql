@@ -362,8 +362,9 @@ CREATE TABLE IF NOT EXISTS `__AUTH_SCHEMA__`.`account_presence` (
 -- world's ban `account_id`s to the merged ids), 2c and 2d only.
 --
 -- A world already hoisted in phase 1 has done 2a, the `players` /
--- `account_storage` / `account_viplist` lines of 2c, and the first three drops
--- of 2d: for it, run only 2b and the two ban-table drops of 2d.
+-- `account_storage` / `account_viplist` lines of 2c, and the 2d drops of
+-- `accounts`, `account_sessions` and `store_history`: for it, run only 2b and
+-- the two ban-table drops of 2d.
 --
 -- Run 2c and 2d for every world, including a brand new one imported from
 -- schema.sql: a fresh world schema still owns local `accounts`,
