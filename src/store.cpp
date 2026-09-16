@@ -61,15 +61,21 @@ namespace BlackTek::Store
 		// hold: the guard in the WHERE clause rejects any write that would take
 		// either column below zero, so a spend another world already made cannot be
 		// resurrected and no balance can go negative. Both columns are int UNSIGNED,
-		// hence a signed delta added to the column instead of a subtraction, which
-		// would underflow in SQL before the guard ever saw it. The caller's cached
-		// balance is only touched once the row is known to have changed.
+		// and MySQL does not let unsigned arithmetic go negative: `column` + (delta)
+		// whose result would fall below zero raises error 1690 (BIGINT UNSIGNED
+		// value is out of range) instead, even with a signed delta and even inside
+		// a WHERE clause. That error would fail the whole statement rather than let
+		// the guard refuse the row, so the guard casts each column to SIGNED before
+		// adding the delta, and an unaffordable change simply matches no row. The
+		// SET clause needs no cast: it is only evaluated for a row that passed the
+		// guard, where each sum is already known not to be negative. The caller's
+		// cached balance is only touched once the row is known to have changed.
 		bool ApplyCoinDelta(const PlayerPtr& player, int64_t regularDelta, int64_t transferableDelta)
 		{
 			Database& db = Database::getInstance();
 			const uint32_t accountId = player->getAccount();
 			if (not db.executeQuery(fmt::format(
-				"UPDATE `accounts` SET `coins` = `coins` + ({:d}), `coins_transferable` = `coins_transferable` + ({:d}) WHERE `id` = {:d} AND `coins` + ({:d}) >= 0 AND `coins_transferable` + ({:d}) >= 0",
+				"UPDATE `accounts` SET `coins` = `coins` + ({:d}), `coins_transferable` = `coins_transferable` + ({:d}) WHERE `id` = {:d} AND CAST(`coins` AS SIGNED) + ({:d}) >= 0 AND CAST(`coins_transferable` AS SIGNED) + ({:d}) >= 0",
 				regularDelta, transferableDelta, accountId, regularDelta, transferableDelta)))
 			{
 				Console::Database::Error("Store::System::ApplyCoinDelta: the coin write for account {:d} failed", accountId);
