@@ -61,7 +61,10 @@ CREATE TABLE `account_bans` (
     `reason` varchar(255) NOT NULL,
     `banned_at` bigint NOT NULL,
     `expires_at` bigint NOT NULL,
-    `banned_by` int NOT NULL
+    `banned_by` int NOT NULL,
+    -- the issuer's name, frozen at ban time; `banned_by` alone cannot name a
+    -- character once the ban is shared by several worlds
+    `banned_by_name` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
 -- --------------------------------------------------------
@@ -76,7 +79,8 @@ CREATE TABLE `account_ban_history` (
     `reason` varchar(255) NOT NULL,
     `banned_at` bigint NOT NULL,
     `expired_at` bigint NOT NULL,
-    `banned_by` int NOT NULL
+    `banned_by` int NOT NULL,
+    `banned_by_name` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
 -- --------------------------------------------------------
