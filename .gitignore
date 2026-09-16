@@ -56,3 +56,8 @@ blacktek.log
 /Black-Tek-Server.debug
 /Black-Tek-Server.release
 /Black-Tek-Server.running
+
+# Private Claude Code workflow: the cpp-* commands and agents, and the guide
+# that points at them. These stay on the machine and are never published.
+/.claude/
+/CLAUDE.md
