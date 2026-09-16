@@ -4526,6 +4526,18 @@ int LuaScriptInterface::luaDoTargetCombat(lua_State* L)
 		static_cast<uint32_t>(std::abs(normal_random(minDmg, maxDmg)))
 	);
 	strike->SetImpactEffect(effect);
+
+	// healing restores the target's health instead of striking it, the same split
+	// the Combat(table) constructor makes between an attack and a utility
+	if (combatType == static_cast<uint16_t>(BlackTek::Combat::DamageType::Healing))
+	{
+		strike->SetConfig(BlackTek::Combat::Config::IsUtility);
+		strike->SetConfig(BlackTek::Combat::Config::HealthTarget);
+		strike->heal_target(creature, target);
+		pushBoolean(L, true);
+		return 1;
+	}
+
 	strike->SetConfig(BlackTek::Combat::Config::Aggressive);
 	if (blockArmor)
 		strike->SetConfig(BlackTek::Combat::Config::BlockedByArmor);

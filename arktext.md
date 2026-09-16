@@ -1050,3 +1050,22 @@ from the corrected spawn file.
 **Verified.** On the rig: no npc XML or Lua errors at boot, 949 npcs spawned
 where the unported set managed 803, and a normal (non-GM) character greeted
 Iptar-Sin in Issavi, who answered by name and offered to heal.
+
+## 2026-09-15 — Healing that never healed
+
+**Symptom.** Drinking a health potion did nothing: no health, no message.
+
+**Cause.** `doTargetCombat` built the combat and always struck with it, marked
+aggressive. Healing in this engine is not a strike: it wants
+Config::HealthTarget and goes through `heal_target`, the way
+`Creature:addHealth` does it, which is also the split the Combat(table)
+constructor makes between an attack and a utility. A healing strike therefore
+resolved as an attack of a damage type that deals nothing.
+
+**Fix.** doTargetCombat sends a healing combat through heal_target as a
+utility on the target's health. Besides potions this brings back every script
+that heals through it: the Mass Healing spell and the monsters' own heals
+(icicle heal, frozen minion wave, heal monsters and the rest).
+
+**Verified.** On the rig, a normal (non-GM) character at 403 health drank a
+health potion and came out at 560, inside the potion's 125-175 range.
