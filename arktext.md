@@ -1075,6 +1075,9 @@ loot-less twin of themselves through the Primal Ordeal's
 RegisterPrimalPackBeast, which lives in a Canary quest lib; without it each
 of those files failed after registering the creature itself. The helper is
 now data/scripts/lib/primal_pack_beast.lua (with its own table copy, which
-this project has no helper for), so the rig registers 1,696 monster types and
-the only registrations still failing are the five Soul War bosses that want
-that quest's lib.
+this project has no helper for), loaded from data/lib/lib.lua as spell_lib
+already is: the scripts folder walks its own lib/ in whatever order the file
+system hands it back, which put the creatures first on the VM and the helper
+first on the rig. With it the rig registers 1,696 monster types and the only
+registrations still failing are the five Soul War bosses that want that
+quest's lib.
