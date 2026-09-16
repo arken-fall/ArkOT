@@ -1,0 +1,15 @@
+local postmanPackage = ItemEvent()
+postmanPackage:type("use")
+function postmanPackage.onUse(player, item, fromPosition, target, toPosition, isHotkey)
+	if target.actionid == 101 and target.itemid == 3221 then
+		if player:getStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission09) == 2 then
+			player:setStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission09, 3)
+			toPosition:sendMagicEffect(CONST_ME_MAGIC_GREEN)
+			item:transform(2859)
+		end
+	end
+	return true
+end
+
+postmanPackage:id(3217)
+postmanPackage:register()
