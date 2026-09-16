@@ -307,6 +307,12 @@ class ItemEvents final : public BaseEvents
 		{
 			return hook_counts[static_cast<size_t>(type)] != 0;
 		}
+		// whether anything at all answers for this item on this hook: the id it
+		// carries, the tile it lies on, or the category it belongs to
+		[[nodiscard]] bool hasEvent(const ItemConstPtr& item, BlackTek::ItemEvents::HookType hook, slots_t slot = CONST_SLOT_WHEREEVER)
+		{
+			return getEvent(item, hook, slot) != nullptr;
+		}
 		[[nodiscard]] BlackTek::ItemEvents::HookMask getCombatHookMask(const ItemConstPtr& item) noexcept;
 		void fireAttack(const ItemPtr& item, const PlayerPtr& holder, const CreaturePtr& defender, BlockType_t blockType, CombatType_t combatType, BlackTek::Combat::Origin origin, bool criticalDamage, bool leechedDamage);
 		void fireDefend(const ItemPtr& item, const PlayerPtr& holder, const CreaturePtr& attacker, BlockType_t blockType, CombatType_t combatType, BlackTek::Combat::Origin origin, bool criticalDamage, bool leechedDamage);

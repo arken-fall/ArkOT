@@ -922,6 +922,22 @@ const ItemEvent* ItemEvents::getEvent(const ItemConstPtr& item, BlackTek::ItemEv
 		}
 	}
 
+	// A lever or a statue the map places carries no id of its own worth registering,
+	// so a script registers the tile it stands on instead: event:position(...). Only
+	// an item lying on that tile answers to it, never one a player is carrying over
+	// it, and only once nothing more specific has claimed the item.
+	if (position_hook_counts[hookIndex] != 0)
+	{
+		if (const auto tile = item->getTileParent())
+		{
+			if (const auto* refs = position_refs.Find(BlackTek::ItemEvents::PackKey(tile->getPosition(), hook)))
+			{
+				if (const auto* event = BlackTek::ItemEvents::SelectEvent(*refs, probe))
+					return event;
+			}
+		}
+	}
+
 	return nullptr;
 }
 

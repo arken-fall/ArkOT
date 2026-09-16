@@ -764,6 +764,8 @@ class Item : public SharedObject
 		}
 
 		ItemPtr getContainerParent() const { return containerParent.lock(); }
+		// the tile this item lies on, and nothing if it is carried or in a container
+		[[nodiscard]] TilePtr getTileParent() const noexcept { return tileParent.lock(); }
 
 		// move to cpp
 		const Components::Stats::StandardStatPtr getCustomStat(uint32_t id)
