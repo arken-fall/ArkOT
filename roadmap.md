@@ -18,7 +18,7 @@ World content ported   █████████████████░░
 Side systems           ██████████████░░░░░░  6 real, 6 with named gaps
 Quest content working  ███████████████░░░░░  726 of 978 Canary scripts
 Client feature surface ████████████░░░░░░░░  45 requests still unanswered
-Multi-world            ██████████████████░░  two worlds run live; no real client on login port yet
+Multi-world            ███████████████████░  two public worlds live, real client plays both
 Automated tests        ████████░░░░░░░░░░░░  59 tests; transport, ids, world identity, presence
 ```
 
@@ -146,11 +146,32 @@ one player whose claim was taken, the second it woke; a ban issued on one world 
 with the right issuer; the Gamemaster and `allow_clones` exemptions; and wrong-world rejection. The
 full list is in `docs/deployment/multi-world.md`.
 
-**Not proven yet:** a real 15.25 client on the login port, behaviour under player load, and worlds on
-separate hosts.
+**Two public worlds are live on the production host** (2026-09-16). The single-world deployment was
+converted in place, backed up first: `ArkOT` (Canary map, port 7172, schema `blacktek`) and
+`ArkOT Test` (the small `forgotten` map, port 7272, schema `arkot_test`) share one auth schema. The
+website ([arkot-web](https://github.com/unbridledpc/arkot-web)) now reads the servers' own
+`config/worlds.toml` and does two new things:
 
-**Done means:** a real 15.25 client picking a world from the in-binary world list and playing it,
-with everything above holding under real load.
+- **Character creation picks a world.** The town list follows the chosen world's map, a name is
+  refused if any world has it, and the 10-character limit counts every world.
+- **It answers the client's HTTP login on 7171**, replacing the single-world login container. One
+  login returns every world and every character, each tagged with its world; the account page shows
+  the same list with a World column.
+
+Observed with a real 15.25 client: the owner created a character on `ArkOT Test` from the website,
+saw it next to the `ArkOT` characters after one login, and played it. Before that cutover, a staging
+copy of the site passed the same path with a throwaway account: characters on both worlds, one
+session key accepted by both game servers, and a login on `ArkOT Test` refused while the account was
+online on `ArkOT`. The in-binary login on 7171 is built but unused in production, because the shipped
+client logs in over HTTP.
+
+**A new world needs its game port forwarded.** The first live attempt on `ArkOT Test` failed with
+the client's "Connection refused (ERROR 111)": the server was listening and the VM firewall was open,
+but the router had no rule for 7272.
+
+**Not proven yet:** behaviour under player load, and worlds on separate hosts.
+
+**Done means:** everything above holding under real load.
 
 ---
 
@@ -203,7 +224,7 @@ flowchart TD
     C --> E["Multi-world design<br/>done 2026-09-16"]
     E --> F["World identity and login routing<br/>built, booted, harness-tested"]
     F --> G["Account vs world data split<br/>built, gated on MySQL 8.0, booted"]
-    G --> H["N worlds live"]
+    G --> H["Two public worlds live<br/>real client, one login"]
     B --> I["Bestiary data for 972 monsters"]
     I --> J["Prey and charms cover the whole map"]
     K["Engine work: chain combat<br/>ROOTED, FEARED, damage callbacks"] --> L["32 monster spells"]
@@ -235,6 +256,8 @@ Not urgent, but it's debt and it's ours.
 | Ports above 65535 silently disable a listener | A configured port like 65536 passes the `!= 0` check and wraps to 0 in the `uint16_t` cast, so the listener never binds. |
 | A failed coin transfer destroys coins | `System::transfer` debits the sender through the guarded path, then credits the recipient with an unguarded `UPDATE` whose failure is never checked or compensated. |
 | Database-channel warnings sit in a buffer | During the live multi-world run, reconcile warnings reached `logs/database/` only when the process exited cleanly. An operator tailing that log can't see presence problems as they happen. |
+| A character on another world gets the wrong refusal | A session key naming a character that lives on a different world is refused with "Your session has expired", because the lookup finds no character here. Still a refusal, and the real client never sends it, but the message misleads. |
+| `harness/modern_client.py` misreads frames over a network | It reads with `MSG_WAITALL` on a socket with a timeout, which Python makes non-blocking, so a large first frame arrives short off loopback. Loop on `recv` instead. |
 | `DBTransaction::begin()` can unlock a mutex it never locked | It sets its started state before `BEGIN` can fail, so the destructor rolls back and unlocks. Undefined behaviour on a failed `BEGIN`. |
 
 ---

@@ -15,15 +15,31 @@ Multi-world has two phases, and both are in the tree:
 
 ---
 
-## Status: two worlds run live; no real client on the login port yet
+## Status: two public worlds live, played on a real client
 
-**Two worlds have run side by side** — on 2026-09-16, as two processes on one host against MySQL
-8.0.46, with isolated throwaway schemas provisioned by following this document. What has **not**
-happened is a real 15.25 client using the login port, and no measurement under player load. Read
-this document as a design that has been exercised end to end on one host, not as one that has
-carried real players.
+**Two public worlds run on the production host** since 2026-09-16, converted in place from the
+single-world deployment: `ArkOT` (Canary map, port 7172, schema `blacktek`) and `ArkOT Test`
+(`forgotten` map, port 7272, schema `arkot_test`), one auth schema `arkot_auth`, MySQL 8.0.46. A real
+15.25 client logs in once through the website's HTTP login, sees every character with its world,
+and plays on either world. What has **not** happened is a measurement under player load, or worlds
+on separate hosts.
 
-### What has been verified live, on two worlds
+Before that, the whole design was exercised on one host with isolated throwaway schemas, as recorded
+below.
+
+### What has been verified on the production host
+
+| Verified | Observed |
+| --- | --- |
+| Live conversion of a single-world deployment | Backed up, then sections 1, 2, 3 and 4 of `auth_schema.sql` applied to the live schema. Both accounts and all 23 sessions survived, and every character still joined its account. The login container kept working through the views. |
+| Character creation on a chosen world | The website inserted into the chosen world's `players`, at a town read from that world's `towns`. |
+| One login, every world | The HTTP login returned both worlds and both characters, each tagged with its `worldid`. |
+| One session key, both game servers | The same key was accepted on 7172 and on 7272. |
+| One session per account, on real servers | Online on `ArkOT`, a login on `ArkOT Test` was refused: "Your account is already online on ArkOT as …". |
+| A real 15.25 client on the second world | The owner created `Arkit` on `ArkOT Test` from the website and played it after one login. |
+| The Gamemaster exemption | The owner's God account was online on `ArkOT Test` with no claim row. |
+
+### What has been verified live, on two worlds on one host
 
 Two worlds, `Alpha` and `Beta`, each on the small `forgotten` map (0.69 GB resident each), sharing
 one auth schema. Every row below was observed against the running servers, not inferred.
@@ -48,7 +64,7 @@ one auth schema. Every row below was observed against the running servers, not i
 
 | Not verified | Why it matters |
 | --- | --- |
-| **A real 15.25 client on the login port** | No capture of a login packet exists. The field layout `ProtocolLogin::onRecvFirstMessage` skips is inferred from the *game* packet. If it is wrong, every login fails with "Invalid authentication token." Settle it with `harness/capture_proxy.py` between a real client and port 7171, decoded with `harness/packet_diff.py --decode`. |
+| **A real 15.25 client on the in-binary login port** | Production doesn't depend on it: the shipped client logs in over HTTP. No capture of an in-binary login packet exists, and the field layout `ProtocolLogin::onRecvFirstMessage` skips is inferred from the *game* packet. If it is wrong, every login fails with "Invalid authentication token." Settle it with `harness/capture_proxy.py` between a real client and port 7171, decoded with `harness/packet_diff.py --decode`. |
 | **Behaviour under load** | The 10 s heartbeat and 45 s lease were exercised, but not measured with players online or with real network latency between worlds and the database. |
 | **Two worlds sweeping the same expired ban at boot** | The guarded delete was proven on the server (a resent delete changes 0 rows), but two worlds starting at the same moment have not been raced live. |
 | **Worlds on separate hosts** | The live run was one host. Presence judges time on the database's clock, so clock drift between hosts should not matter, but it has not been tried. |
@@ -254,6 +270,11 @@ Defaults matter here, because a key omitted from `server.toml` is not a disabled
 
 So a `server.toml` with no `status_port` collides with the login port and the boot is refused. The
 shipped file sets `status_port = 7184`.
+
+**Every world's game port must be reachable from outside** — through the host firewall *and* any
+router in front of it. The client dials the port straight from the world list, so a port that is
+listening but not forwarded fails only for that world, with the client's "Connection refused
+(ERROR 111)". That is exactly how the second production world first failed.
 
 With `auth_database` set, a world must also bind at least one game or login listener
 (`game_port`, `game_port_modern` or `login_port`). The status port does not count. See the refusal
@@ -722,6 +743,26 @@ because world 254 or 255 already has a row, that row is not the gate's — do no
 ---
 
 ## If you also deploy the login webservice
+
+### The production arrangement: the website answers the login
+
+The shipped client is preconfigured for HTTP login at `http://<host>:7171/login`. In production that
+request is answered by the website ([arkot-web](https://github.com/unbridledpc/arkot-web)), not by
+`opentibiabr/login-server`, which can describe only one world:
+
+- a small Caddy container publishes 7171 and rewrites every request to the site's `/api/login`;
+- the site mounts the game servers' `config/` read-only and sets `WORLDS_FILE` to its
+  `worlds.toml`, so its world list **is** the registry and cannot drift from it;
+- every world row may add `public_address`, the host the client should dial when `address` is a
+  bind address such as `127.0.0.1`. The server ignores keys it does not know, so this key is
+  website-only;
+- the site writes `account_sessions` the way the game servers read them: the id is the lowercase
+  hex SHA-256 of the key it hands the client.
+
+With that arrangement, the `SERVER_NAME`/`SERVER_IP`/`SERVER_PORT` rules below do not apply; they
+bind only a deployment that still runs `opentibiabr/login-server`.
+
+### The single-world login container
 
 The in-binary login listener on 7171 and an `opentibiabr/login-server` instance can both be live.
 They are different transports on different ports and the client's configured port picks one: 7171
