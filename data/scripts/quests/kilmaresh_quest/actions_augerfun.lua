@@ -7,7 +7,7 @@ function augerfun.onUse(player, item, fromPosition, target, toPosition, isHotkey
 			player:addItem(31335, 1)
 		end
 	else
-		player:sendTextMessage(MESSAGE_FAILURE, "Sorry, not possible.")
+		player:sendTextMessage(MESSAGE_STATUS_SMALL, "Sorry, not possible.")
 	end
 
 	return true

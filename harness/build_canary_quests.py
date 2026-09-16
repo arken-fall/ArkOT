@@ -41,6 +41,15 @@ STDLIB = {"lower", "upper", "format", "gsub", "find", "sub", "rep", "len", "byte
           "split", "splitTrimmed", "insert", "remove", "concat", "sort", "trim", "titleCase", "reverse", "unpack"}
 HANDLERS = {"onStepIn": "onStepOn", "onStepOut": "onStepOff"}
 HOOKS = {"stepin": "stepon", "stepout": "stepoff"}
+LUA_GLOBALS = {"math", "string", "table", "os", "io", "type", "pairs", "ipairs", "next", "tonumber", "tostring",
+               "print", "error", "assert", "select", "pcall", "unpack", "rawget", "rawset", "setmetatable",
+               "getmetatable", "require", "dofile", "load", "self", "bit32", "_G"}
+KEYWORDS = {"and", "or", "not", "if", "then", "else", "elseif", "end", "for", "do", "while", "repeat", "until",
+            "return", "break", "local", "function", "in", "nil", "true", "false"}
+# the same line of text, under the name this server gives that message class:
+# Canary's failure line is white at the foot of the window, its highlight red
+MESSAGES = {"MESSAGE_FAILURE": "MESSAGE_STATUS_SMALL", "MESSAGE_GAME_HIGHLIGHT": "MESSAGE_STATUS_CONSOLE_RED",
+            "MESSAGE_LOOK": "MESSAGE_INFO_DESCR"}
 
 
 def known_methods():
@@ -91,6 +100,8 @@ def converted(text):
     text = re.sub(r':type\("(\w+)"\)', lambda hook: f':type("{HOOKS.get(hook.group(1), hook.group(1))}")', text)
     for canary, blacktek in HANDLERS.items():
         text = re.sub(rf"\.{canary}\b", f".{blacktek}", text)
+    for canary, blacktek in MESSAGES.items():
+        text = re.sub(rf"\b{canary}\b", blacktek, text)
     return text
 
 
@@ -112,6 +123,44 @@ def table_functions():
         table = name[0].lower() + name[1:]
         tables[table] = set(re.findall(r'\{"(\w+)"', body))
     return tables
+
+
+def class_functions():
+    """The functions each class the engine registers answers to, e.g. Position.sendMagicEffect."""
+    engine = (ROOT / "src/luascript.cpp").read_text(errors="replace")
+    classes = {name: set() for name in re.findall(r'registerClass\("(\w+)"', engine)}
+    for name, method in re.findall(r'registerMethod\("(\w+)",\s*"(\w+)"', engine):
+        classes.setdefault(name, set()).add(method)
+    for path in (ROOT / "data").rglob("*.lua"):
+        for name, method in re.findall(r"^function (\w+)[.:](\w+)\(", path.read_text(errors="replace"), re.M):
+            if name in classes:
+                classes[name].add(method)
+    return classes
+
+
+def known_globals():
+    """Every name a script may reach for: the engine's classes and enums, and this server's own Lua."""
+    engine = (ROOT / "src/luascript.cpp").read_text(errors="replace")
+    names = set(re.findall(r'registerClass\("(\w+)"', engine))
+    names |= set(re.findall(r'registerTable\("(\w+)"', engine))
+    names |= set(re.findall(r'lua_register\(luaState, "(\w+)"', engine))
+    names |= set(re.findall(r'registerGlobal(?:Variable|Boolean|Method|Function)\("(\w+)"', engine))
+    names |= {enum.rsplit(":", 1)[-1] for enum in re.findall(r"registerEnum\(([\w:]+)\)", engine)}
+    for path in (ROOT / "data").rglob("*.lua"):
+        text = path.read_text(errors="replace")
+        names.update(re.findall(r"^(\w+)\s*=", text, re.M))
+        names.update(re.findall(r"^function (\w+)[.:(]", text, re.M))
+    return names | LUA_GLOBALS
+
+
+def bound_names(code):
+    """The names a script gives itself: its locals, its parameters, its loop variables."""
+    own = {group.strip() for groups in re.findall(r"\blocal\s+([\w\s,]+?)\s*=", code) for group in groups.split(",")}
+    own |= set(re.findall(r"\blocal function (\w+)", code))
+    own |= {group.strip() for groups in re.findall(r"\bfunction\s*[\w.:]*\(([^)]*)\)", code) for group in groups.split(",")}
+    own |= {group.strip() for groups in re.findall(r"\bfor\s+([\w\s,]+?)\s+(?:=|in)\b", code) for group in groups.split(",")}
+    own |= set(re.findall(r"\bfunction (\w+)", code))
+    return own - {""}
 
 
 def storage_names():
@@ -147,7 +196,7 @@ def code_only(text):
     return re.sub(r'"[^"\n]*"|\'[^\'\n]*\'', '""', text)
 
 
-def unported(text, methods, elsewhere, hooks, storages, tables):
+def unported(text, methods, elsewhere, hooks, storages, tables, classes, globals_):
     """What a converted script still reaches for that nothing here defines."""
     code = code_only(text)
     missing = {f":{name}()" for name in re.findall(r"[a-zA-Z_)\]\"]\s*:(\w+)\(", code) if name not in methods}
@@ -166,10 +215,24 @@ def unported(text, methods, elsewhere, hooks, storages, tables):
 
     missing |= {path for path in re.findall(r"\b(?:Global)?Storage(?:\.\w+)+", code) if path not in storages}
 
-    # a table the engine hands Lua only carries the functions it was given
+    # a table or a class the engine hands Lua only carries what it was given
     for table, function in re.findall(r"\b(\w+)\.(\w+)\(", code):
         if table in tables and function not in tables[table]:
             missing.add(f"{table}.{function}()")
+        elif (table in classes and table not in LUA_GLOBALS       # Lua's own libraries are not closed sets here
+                and function not in classes[table] and function not in methods):
+            missing.add(f"{table}.{function}()")
+
+    # a name the script neither binds itself nor finds here
+    own = bound_names(code)
+    for name in re.findall(r"(?<![\w.:])([A-Za-z_]\w*)\s*[.(\[]", code):
+        if name not in own and name not in globals_ and name not in methods and name not in KEYWORDS:
+            missing.add(name)
+
+    # an item added to a tile is matched by the item that moved, so a hook keyed by
+    # the tile's own action or unique id would never be reached
+    if re.search(r':type\("(?:additem|removeitem)"\)', code) and re.search(r":(?:aid|uid)\(", code):
+        missing.add("an additem hook keyed by aid or uid")
     return sorted(missing)
 
 
@@ -206,13 +269,14 @@ def main():
     out = Path(args.out)
     methods, elsewhere = known_methods(), canary_only(Path(args.canary).expanduser())
     hooks, storages, tables = accepted_hooks(), storage_names(), table_functions()
+    classes, globals_ = class_functions(), known_globals()
 
     written, skipped, quests = 0, {}, set()
     taken = {}
     for path in sorted(source.rglob("*.lua")):
         quest = path.relative_to(source).parts[0]
         text = converted(path.read_text(errors="replace"))
-        missing = unported(text, methods, elsewhere, hooks, storages, tables)
+        missing = unported(text, methods, elsewhere, hooks, storages, tables, classes, globals_)
         if missing:
             skipped.setdefault(quest, []).append(f"{path.relative_to(source)}: {', '.join(missing)}")
             continue
