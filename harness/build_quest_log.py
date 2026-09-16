@@ -276,8 +276,32 @@ def canary_relative(name):
     return re.sub(r"^Quest\.U\d+_\d+\.", "", name)
 
 
-def resolve(name, canary, pack, pack_folded):
-    """Canary storage reference -> (pack storage name, number) or None."""
+def load_canary_storages(path):
+    """The Canary numbering the server itself carries, one assignment per group."""
+    text = Path(path).read_text(errors="replace")
+    found = {}
+    for assignment in re.finditer(r"^Storage\.(\w+) = ", text, flags=re.M):
+        name = assignment.group(1)
+        value = Parser(text[assignment.end():]).value()
+        if isinstance(value, dict):
+            found.update({f"{name}.{key}": number for key, number in flatten(value).items()})
+        elif isinstance(value, int):
+            found[name] = value
+    return found
+
+
+def resolve(name, canary, pack, pack_folded, ported):
+    """Canary storage reference -> (storage name, number) or None.
+
+    A quest the port brought over writes Canary's own numbers, so the log has to
+    watch those same numbers or it will never see the quest start. Where the
+    server kept its own numbering for a quest the 10.98 pack already had, the
+    name is resolved against that table instead, as before.
+    """
+    own = re.sub(r"^Storage\.", "", name)
+    if own in ported:
+        return own, ported[own]
+
     relative = canary_relative(name)
     candidates = [relative]
     root, _, leaf = relative.partition(".")
@@ -297,13 +321,20 @@ def toml_string(text):
     return f'"{text}"'
 
 
-def written_values(storage_name, sources):
-    """Every literal value ArkOT's scripts write to Storage.<storage_name>."""
-    pattern = re.compile(r"setStorageValue\(\s*Storage\." + re.escape(storage_name) + r"\s*,\s*(-?\d+)\s*\)")
-    values = set()
+WRITE = re.compile(r"setStorageValue\(\s*Storage\.([A-Za-z0-9_.]+)\s*,\s*(-?\d+)\s*\)")
+
+
+def storage_writes(sources):
+    """Every literal value ArkOT's own scripts write, by storage name.
+
+    Read in one pass over the scripts rather than once per storage: the server
+    now carries thousands of them, and the quest log asks about hundreds.
+    """
+    written = {}
     for text in sources:
-        values.update(int(match) for match in pattern.findall(text))
-    return values
+        for name, value in WRITE.findall(text):
+            written.setdefault(name, set()).add(int(value))
+    return written
 
 
 def lower_keys(table):
@@ -318,20 +349,20 @@ def normalise(quest):
     return quest
 
 
-def resolved_missions(quest, canary, pack, pack_folded):
+def resolved_missions(quest, canary, pack, pack_folded, ported):
     return sum(1 for mission in quest["missions"].values()
-               if isinstance(mission.get("storageid"), Ref) and resolve(mission["storageid"].name, canary, pack, pack_folded))
+               if isinstance(mission.get("storageid"), Ref) and resolve(mission["storageid"].name, canary, pack, pack_folded, ported))
 
 
 def title_key(name):
     return re.sub(r"[^a-z0-9]", "", name.lower())
 
 
-def build_quest(quest, source, canary, pack, pack_folded, sources):
+def build_quest(quest, source, canary, pack, pack_folded, ported, written):
     report = {"file": source, "name": quest.get("name"), "kept": [], "dropped": [], "disagree": [], "dynamic": []}
 
     start = quest.get("startstorageid")
-    start_resolved = resolve(start.name, canary, pack, pack_folded) if isinstance(start, Ref) else None
+    start_resolved = resolve(start.name, canary, pack, pack_folded, ported) if isinstance(start, Ref) else None
     if not start_resolved:
         report["dropped"].append(f"start storage {getattr(start, 'name', start)}")
         return None, report
@@ -346,7 +377,7 @@ def build_quest(quest, source, canary, pack, pack_folded, sources):
     for number in sorted(k for k in missions if isinstance(k, int)):
         mission = missions[number]
         storage = mission.get("storageid")
-        resolved = resolve(storage.name, canary, pack, pack_folded) if isinstance(storage, Ref) else None
+        resolved = resolve(storage.name, canary, pack, pack_folded, ported) if isinstance(storage, Ref) else None
         if not resolved:
             report["dropped"].append(f"{mission.get('name')} ({getattr(storage, 'name', storage)})")
             continue
@@ -373,17 +404,21 @@ def build_quest(quest, source, canary, pack, pack_folded, sources):
         lines.append(f"    {{{', '.join(fields)}}}, # {resolved[0]}")
         report["kept"].append(mission["name"])
 
-        # questlines share one storage across missions, so values are pooled per storage
-        pooled = described_by_storage.setdefault(resolved[0], set())
-        pooled.update(range(start_value, end_value + 1))
+        # questlines share one storage across missions, so the spans are pooled per
+        # storage - kept as spans, since a counter mission's end runs to 999999
+        described_by_storage.setdefault(resolved[0], []).append((start_value, end_value))
         if ignore_end:
             open_ended.add(resolved[0])
 
-    for storage, described in described_by_storage.items():
-        ceiling = max(described) if storage in open_ended else None
-        unknown = sorted(v for v in written_values(storage, sources) if v > 0 and v not in described and not (ceiling is not None and v > ceiling))
+    for storage, spans in described_by_storage.items():
+        lowest = min(start for start, _ in spans)
+        highest = max(end for _, end in spans)
+        ceiling = highest if storage in open_ended else None
+        unknown = sorted(value for value in written.get(storage, ())
+                         if value > 0 and not any(start <= value <= end for start, end in spans)
+                         and not (ceiling is not None and value > ceiling))
         if unknown:
-            report["disagree"].append(f"{storage}: ArkOT writes {unknown}, the log covers {min(described)}..{max(described)}")
+            report["disagree"].append(f"{storage}: ArkOT writes {unknown}, the log covers {lowest}..{highest}")
 
     if not report["kept"]:
         return None, report
@@ -398,6 +433,7 @@ def main():
     parser.add_argument("--legacy-log", default=None, help="otservbr-global 2019 data/lib/core/quests.lua")
     parser.add_argument("--quest", action="append", help="catalog stem, e.g. 016_the_ancient_tombs (default: all)")
     parser.add_argument("--pack-storages", default=str(ROOT / "data/lib/realmap/051-storages.lua"))
+    parser.add_argument("--canary-storages", default=str(ROOT / "data/lib/canary/storages.lua"))
     parser.add_argument("--out", default=str(ROOT / "data/quests"))
     parser.add_argument("--report", default=None)
     args = parser.parse_args()
@@ -406,11 +442,13 @@ def main():
     canary = load_storages(datapack / "lib/core/storages.lua")
     pack = load_storages(args.pack_storages)
     pack_folded = {name.lower(): name for name in pack}
+    ported = load_canary_storages(args.canary_storages)
 
     sources = []
     for folder in ("data/scripts", "data/npc", "data/lib", "data/actions", "data/movements", "data/creaturescripts"):
         for path in (ROOT / folder).rglob("*.lua"):
             sources.append(path.read_text(errors="replace"))
+    written = storage_writes(sources)
 
     catalog = sorted((datapack / "lib/core/quests/catalog").glob("[0-9][0-9][0-9]_*.lua"))
     if args.quest:
@@ -430,9 +468,9 @@ def main():
         quest = normalise(Parser(path.read_text(errors="replace")).find_assignment("quest"))
         source = f"Canary {path.name}"
         older = legacy.get(title_key(quest["name"]))
-        if older and resolved_missions(older, canary, pack, pack_folded) > resolved_missions(quest, canary, pack, pack_folded):
+        if older and resolved_missions(older, canary, pack, pack_folded, ported) > resolved_missions(quest, canary, pack, pack_folded, ported):
             quest, source = older, "otservbr-global 2019 quests.lua"
-        toml, report = build_quest(quest, source, canary, pack, pack_folded, sources)
+        toml, report = build_quest(quest, source, canary, pack, pack_folded, ported, written)
         reports.append(report)
         if toml:
             (out / f"{path.stem[4:]}.toml").write_text(f"# generated by harness/build_quest_log.py from {source}\n" + toml)
