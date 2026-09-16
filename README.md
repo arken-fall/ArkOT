@@ -78,9 +78,11 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 
 ## Roadmap
 
+The short version is below. **[`roadmap.md`](roadmap.md) has the long one** — every open issue with
+its real count, what "done" looks like, and the order the work has to happen in.
+
 No dates. This is a small team, so the order below is intent rather than a schedule, and anything
-that blocks a *player* jumps ahead of anything that merely annoys a developer. Items leave the
-"Needs work" table above as they land here and get finished.
+that blocks a *player* jumps ahead of anything that merely annoys a developer.
 
 ### Now
 
