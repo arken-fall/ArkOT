@@ -19,7 +19,7 @@ code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 | Item and appearance pipeline | Working |
 | World content | Canary's map and datapack, machine-ported |
 | Side systems (bestiary, prey, forge, wheel, store, market) | Real implementations, several with gaps |
-| Multi-world (one account, N worlds) | Design stage — see Roadmap |
+| Multi-world (one account, N worlds) | Phase 1 written and compiling; never served a player — see Roadmap |
 
 **Requirements to run the world:** ~12.8 GB RAM resident, GCC 14+, MySQL/MariaDB, a login
 webservice, and a 15.25 client. The world ships with the server; see First boot.
@@ -44,7 +44,9 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 | Wheel of destiny | Partial | Slots, gems and stat bonuses apply; perks, instants and stages exist only as Lua getters nothing calls. |
 | Market | Partial | Full 15.25 flow, but every item goes out with tier 0 even though forge tiers exist. |
 | Cyclopedia | Partial | All request types answered; the combat pages still send ~57 hard-coded zeros. |
-| Legacy 10.98 listeners | Retired | Ship disabled (`game_port = 0`, `login_port = 0`); starting both generations is refused. |
+| Legacy 10.98 listeners | Retired | `game_port = 0`, and the legacy `ProtocolLogin`/`ProtocolOld` pair is not registered on a modern server; starting both generations is refused. |
+| Multi-world identity | Partial | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Never run with more than one world. |
+| In-binary login | Partial | `ProtocolLoginModern` serves the world list on 7171, the only port a 15.25 client will take it on. Compiles; no real client has reached it. |
 
 ## World content
 
@@ -73,7 +75,7 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 | No migration for the map switch | Character towns and positions still use the retired map's numbering; Canary puts Thais at town 8. |
 | 45 client requests unanswered | Imbuements, bosstiary, quick loot, depot search, party analyser and others are advertised or ignored rather than implemented. |
 | Thin automated coverage | 13 golden tests cover transport, id mapping and event dispatch; everything else is verified by driving a real client. |
-| Stale Docker and CI paths | The compose file still targets 7171/7172/7173 and cannot serve a world; CI builds but never runs the tests. |
+| Stale Docker and CI paths | The compose file still targets 7171/7172/7173 and cannot serve a world — and now 7171 means the in-binary login listener, so the mapping is actively misleading; CI builds but never runs the tests. |
 | One unexplained segfault | After ~8 hours under a 20,000-bot load; never reproduced, never root-caused. |
 
 ## Roadmap
@@ -166,7 +168,15 @@ make -j$(nproc) config=release_64 CC=gcc-14 CXX=g++-14
 ```
 
 GCC 14 or newer is required (the code is C++23 and uses `std::println`); `bootstrap.sh` still only
-refuses GCC below 10, so an older-but-not-ancient compiler gets all the way to a failing build.
+refuses GCC below 10, so an older-but-not-ancient compiler gets all the way to a failing build. It
+also does not pin one, so whether a fresh clone builds depends on where `c++` points — pass
+`CC`/`CXX` as above rather than trusting the default.
+
+`bootstrap.sh` itself fails part-way on current vcpkg: after the `x64-linux` install succeeds it
+runs `vcpkg install --triplet x64-linux-static` (`bootstrap.sh:205`), and that triplet no longer
+exists. Premake has already written both makefiles by then and the dynamic dependencies are
+installed, so the `make` line above works regardless — the failure is cosmetic unless you want a
+static release build.
 
 ## First boot
 
@@ -185,7 +195,10 @@ refuses GCC below 10, so an older-but-not-ancient compiler gets all the way to a
    `./Black-Tek-Server`.
 
 Ports come from `config/server.toml`: the modern game listener is **7183**, status is **7184**, and
-both legacy listeners are off. Real clients authenticate through an
+the login listener is **7171** — a client-side constant, since a 15.25 client only speaks the
+in-binary login protocol on that port and goes to HTTP login on any other. The legacy game listener
+is off (`game_port = 0`). Boot refuses if `login_port` collides with another listener. Real clients
+can still authenticate through an
 [opentibiabr/login-server](https://github.com/opentibiabr/login-server)-compatible webservice, which
 is not part of this repository.
 

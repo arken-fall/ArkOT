@@ -18,7 +18,8 @@ World content ported   █████████████████░░
 Side systems           ██████████████░░░░░░  6 real, 6 with named gaps
 Quest content working  ███████████████░░░░░  726 of 978 Canary scripts
 Client feature surface ████████████░░░░░░░░  45 requests still unanswered
-Automated tests        █████░░░░░░░░░░░░░░░  13 golden tests, transport and ids only
+Multi-world            █████████████░░░░░░░  phase 1 builds, 13 new tests green, never run
+Automated tests        ███████░░░░░░░░░░░░░  26 tests; transport, ids and world identity
 ```
 
 The world itself is real and loads clean: 17.9M tiles, 1,696 monster types, 16,704 zones, 993
@@ -83,13 +84,47 @@ numbering, and character creation offering towns that exist.
 One account, many worlds. Decided: a character belongs to one world for life, coins follow the
 account, what a purchase unlocks stays with the character.
 
-The design has to land before the code. The two decisions that shape everything are who owns the
-world list (the external login service already returns a `worlds[]` array) and whether it's one
-database per world or one database keyed by world id. The coins decision forces the second one to
-be deliberate, because the cheap option quietly forks the account row per world.
+The design landed on 2026-09-16 and phase 1 is written, compiling and passing its tests. Three
+owner decisions shaped it: N processes with one world each, per-world databases plus one shared
+auth schema, and an in-binary `ProtocolLogin` rather than teaching the external login service about
+N worlds.
 
-Useful thing we already have: the 15.25 client sends a plaintext world name before the game
-protocol starts. We read it, print it, and throw it away. The wire already carries what we need.
+What exists now:
+
+| Piece | What it does |
+| --- | --- |
+| `BlackTek::World::Registry` | `config/worlds.toml` is the world list; a process refuses to boot if its own row disagrees with its ip, port or schema |
+| `tests/test_world_registry.cpp` | 13 cases, one per refusal, plus the no-file single-world path |
+| Wrong-world rejection | The preamble we used to print and throw away now refuses a client that dialled the wrong world, after XTEA so the message is readable |
+| `auth_schema.sql` | `accounts`, `account_sessions` and `store_history` hoist to one schema; each world gets views of the same name, so no existing query changes and the third-party login service still works |
+| Cross-world character list | One schema-qualified query per world on the one connection. No index table: each world's `players` is the source of truth |
+| Coin delta | `SET coins = <absolute>` became a guarded `coins + delta`. Two worlds can no longer overwrite each other's spending |
+| In-binary login | `ProtocolLoginModern` on 7171 serves the registry as a real world list; `ONLINE_OFFLINE_CHARLIST`, which squatted on the world-id byte, is gone |
+| `harness/login_client.py` | Drives the login port end to end and prints each world with its characters underneath |
+| `docs/deployment/multi-world.md` | What each world owns, what every world shares, and every refusal the server can boot with |
+
+Build is clean on GCC 14 and `./blacktek_tests` reports 26 passed, 0 failed — the 13 new cases cover
+every registry refusal plus the no-file single-world path. **Nothing has served a player.** The
+tests do not reach `Connection::parsePacket`'s first-frame path, so the padding trim that runs on
+every modern game connection is still unproven by anything but reading.
+
+Two findings worth keeping:
+
+**Port 7171 is a client-side constant.** `entergame.lua` sends any 15.25 client to HTTP login
+unless the port is exactly 7171, so an in-binary login server has to live there. It cannot be moved
+out of a collision — the other listener has to move — and 7171 is also `status_port`'s built-in
+default and what docker-compose maps. Boot now refuses on a collision rather than letting
+`ServiceManager::add` print and silently disable one of the two listeners.
+
+**The login connection's world-name preamble is empty.** The client only learns a world name from
+the character list, so on the login connection it sends a bare `\n`. That single byte is why an
+in-binary login port needs explicit transport work rather than the game port's sniffing heuristic.
+
+Not proven yet, and nothing should be trusted until it is: whether the per-world views are
+writable, whether InnoDB takes the cross-schema foreign keys, and what a real 15.25 client actually
+puts on the wire for a login packet — no capture of that exists, because the path has never worked.
+`auth_schema.sql` carries the exact statements for the first two; `harness/login_client.py` settles
+the third.
 
 **Done means:** a world list in the client, characters that only appear on their own world, and one
 coin balance across all of them.
@@ -142,9 +177,9 @@ flowchart TD
     A["Retire the old pack's claim<br/>1,034 duplicate registrations"] --> B["Boss room system<br/>BossLever / Encounter"]
     A --> C["Town and position migration"]
     B --> D["239 quest scripts load"]
-    C --> E["Multi-world design"]
-    E --> F["World list and login routing"]
-    F --> G["Account vs world data split"]
+    C --> E["Multi-world design<br/>done 2026-09-16"]
+    E --> F["World identity and login routing<br/>written, not compiled"]
+    F --> G["Account vs world data split<br/>auth schema written, unverified"]
     G --> H["N worlds live"]
     B --> I["Bestiary data for 972 monsters"]
     I --> J["Prey and charms cover the whole map"]
@@ -170,6 +205,8 @@ Not urgent, but it's debt and it's ours.
 | `CloakOfTerrorHealthLoss` missing | A ported monster asks for a creature event we didn't bring across. 150 warnings every boot. |
 | 5 bestiary race-id collisions | Butterfly variants and the Druid's/Monk's Apparition pair share ids. |
 | `STATUS.md` is a lap behind | Last dated entry is 2026-09-14 and gate F still calls the retired 10.98 map the world. |
+| `bootstrap.sh` cannot finish | After the `x64-linux` install succeeds it runs `vcpkg install --triplet x64-linux-static`, and that triplet no longer exists. Premake and the dynamic deps are already done by then, so `make` still works — but the script always exits 1. |
+| Nothing pins the compiler | `bootstrap.sh` refuses GCC below 10 while the code needs 14+, so a default `c++` of 13 builds 62 errors deep into `console.h` before failing. |
 
 ---
 
