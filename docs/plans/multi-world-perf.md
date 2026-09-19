@@ -19,6 +19,17 @@ out where it appears, not summarised at the end.
 
 Landing order: **F1 → F5 → F4 → F2a → (F2b) →** F3 rejected.
 
+**Status (2026-09-19): steps 1-5 are done, deployed and running in production.**
+
+| Step | Commit | State |
+| --- | --- | --- |
+| 1 (F1) | `bb888b8` | Live. One query per world on the login character list. |
+| 2 (F5) | `c8bf004` | Live. Proven on the real server: a claim held through a restart was dropped by the one bulk delete, and the kicked player saved normally. |
+| 3 (F5 tests) | `c8bf004` | 62 tests pass. |
+| 4 (F4) | `c17c689` | Live. One read deadline per preamble. |
+| 5 (F2a) | `8fcd166` | Live. Both worlds beat every 10 s, ages of 1-10 s, no stalls in the first minutes. |
+| 6 (F2b) | — | Not done and not scheduled: it needs a measurement showing the remaining synchronous write costs the game thread enough to justify a new shared primitive. |
+
 F1 is isolated and touches no threading. F5 introduces the retirement lifecycle that F2b's ordering
 work reuses, and reduces shutdown's database traffic before shutdown ordering is perturbed. F4 is
 independent of the database seam and sits here so the seam changes stay reviewable alone.
