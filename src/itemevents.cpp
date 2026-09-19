@@ -1660,7 +1660,6 @@ bool ItemEvents::useMeleeWeapon(const ItemEvent* event, const PlayerPtr& player,
 
 		int32_t rawDmg = (GetMeleeWeaponDamage(player, item, false) * damageModifier) / 100;
 		auto strike = BlackTek::g_combat_registry.Create(fields.primary_damage_type, static_cast<uint32_t>(std::abs(rawDmg)));
-		strike->SetConfig(BlackTek::Combat::Config::TrueDamage);
 		strike->SetConfig(BlackTek::Combat::Config::BlockedByArmor);
 		strike->SetConfig(BlackTek::Combat::Config::BlockedByDefense);
 		strike->SetConfig(BlackTek::Combat::Config::Aggressive);
@@ -1808,7 +1807,6 @@ bool ItemEvents::useDistanceWeapon(const ItemEvent* event, const PlayerPtr& play
 
 			int32_t rawDmg = (GetDistanceWeaponDamage(player, target, item, false) * damageModifier) / 100;
 			auto strike = BlackTek::g_combat_registry.Create(fields.primary_damage_type, static_cast<uint32_t>(std::abs(rawDmg)));
-			strike->SetConfig(BlackTek::Combat::Config::TrueDamage);
 			strike->SetConfig(BlackTek::Combat::Config::BlockedByArmor);
 			strike->SetConfig(BlackTek::Combat::Config::Aggressive);
 			strike->setOrigin(BlackTek::Combat::Origin::Ranged);
