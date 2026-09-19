@@ -17,7 +17,7 @@ code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 | --- | --- |
 | 15.25 protocol, transport, login | Working, verified against a real client |
 | Item and appearance pipeline | Working |
-| World content | Canary's map and datapack, machine-ported |
+| World content | The community real map, plus a datapack machine-ported from Canary |
 | Side systems (bestiary, prey, forge, wheel, store, market) | Real implementations, several with gaps |
 | Multi-world (one account, N worlds) | Live: two public worlds on the production host, played on a real 15.25 client through one login that lists both — see Roadmap |
 
@@ -54,7 +54,7 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 
 | Thing | Count | Where it came from |
 | --- | --- | --- |
-| Map | 17,972,761 tiles, 23,359,570 items | Canary v3.6.1, converted to OTBM v2 with server ids |
+| Map | 17,972,761 tiles, 23,359,570 items | The community real map, from the copy Canary v3.6.1 ships; converted to OTBM v2 with server ids |
 | Zones | 16,704 (16,691 from spawns + 12 flag zones) | Converted from the map's spawn file |
 | Houses | 993 across 19 towns | The map's own house file |
 | Monster types | 1,696 loaded | 740 BlackTek, 133 SeeingBlue 10.98 pack, 839 Canary |
@@ -136,9 +136,14 @@ cross-check alongside the client's own parsers, and every place that happened sa
 `CONTRIBUTING.md` rather than Canary's conventions.
 
 **The world content in `data/` is different: it was machine-ported from Canary's open datapack.**
-The map, 839 monsters, 179 NPCs, 726 quest scripts, the quest log, the storage numbering and 27
-library functions are derived from that work, and it is redistributed here under the same
-**GPL-2.0** licence both projects use.
+839 monsters, 179 NPCs, 726 quest scripts, the quest log, the storage numbering and 27 library
+functions are derived from that work, and are redistributed here under the same **GPL-2.0** licence
+both projects use.
+
+The map is not Canary's and is not ours. It is the open-tibia real map, passed down and edited by
+the community for two decades - otserv, then otfans, then otland, then the forks that ship it today.
+Canary distributes one copy of it; that is the copy we converted, and the credit belongs to the
+mapmakers who built it, not to any one project that redistributes it.
 
 That porting was a one-time job and the server does not depend on it. Everything it produced is
 committed — the world, the scripts, the data — so a clone builds and runs with no Python, no Canary
@@ -151,8 +156,11 @@ With thanks to:
 - **[BlackTek Server](https://github.com/Black-Tek/BlackTek-Server)** — the base server this forks.
 - **[The Forgotten Server](https://github.com/otland/forgottenserver)** and
   **[OpenTibia](https://github.com/opentibia/server)** — the lineage underneath it.
-- **[Canary / otservbr](https://github.com/opentibiabr/canary)** — the datapack and map this world
-  is built from, and the reference implementation for modern protocol behaviour.
+- **[Canary / otservbr](https://github.com/opentibiabr/canary)** — the datapack this world's
+  content came from, the release copy of the real map we converted, and the reference
+  implementation we read for modern protocol behaviour.
+- **The open-tibia mapping community** — the real map itself, two decades of it, from otserv and
+  otfans through otland to the forks that carry it now.
 - **SeeingBlue and TimerTim** — the 10.98 real-map datapack whose monsters and quest libraries are
   still part of this tree.
 - **[mehah's OTClient](https://github.com/mehah/otclient)** — the client every feature here is
