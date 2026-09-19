@@ -6905,7 +6905,7 @@ void ProtocolGame::MoveDownCreature(NetworkMessage& msg, const CreatureConstPtr&
 		if (skip >= 0)
 		{
 			msg.addByte(skip);
-			msg.add(CommonCode::Zero);
+			msg.add(CommonCode::End);
 		}
 	}
 	// going further down
@@ -6917,7 +6917,7 @@ void ProtocolGame::MoveDownCreature(NetworkMessage& msg, const CreatureConstPtr&
 		if (skip >= 0)
 		{
 			msg.addByte(skip);
-			msg.add(CommonCode::Zero);
+			msg.add(CommonCode::End);
 		}
 	}
 
