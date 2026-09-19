@@ -93,6 +93,19 @@ Connection::~Connection()
 	closeSocket();
 }
 
+// Arming again over a live wait cancels the pending one; handleTimeout discards
+// that as operation_aborted, so a chain may re-arm freely at its own boundaries.
+void Connection::ArmReadDeadline()
+{
+	readTimer.expires_after(std::chrono::seconds(CONNECTION_READ_TIMEOUT));
+	readTimer.async_wait(
+		boost::asio::bind_executor(strand,
+			[thisPtr = std::weak_ptr<Connection>(shared_from_this())](const boost::system::error_code& error)
+			{
+				Connection::handleTimeout(thisPtr, error);
+			}));
+}
+
 void Connection::accept(Protocol_ptr protocol)
 {
 	this->protocol = protocol;
@@ -107,6 +120,8 @@ void Connection::accept(Protocol_ptr protocol)
 	if (this->protocol->requiresWorldLine())
 	{
 		modern_world_name_consumed = true;
+		// One deadline for the entire line, armed before the per-byte loop starts.
+		ArmReadDeadline();
 		readWorldLineByte();
 		return;
 	}
@@ -188,6 +203,9 @@ void Connection::parseHeader(const boost::system::error_code& error)
 			}
 			modern_world_line.push_back(static_cast<char>(b1));
 			modern_line_skipped = 2;
+			// parseHeader cancelled the read timer at its head, so the rest of the
+			// line has no deadline until this arms one.
+			ArmReadDeadline();
 			readWorldLineByte();
 			return;
 		}
@@ -245,20 +263,16 @@ void Connection::readWorldLineByte()
 
 	try
 	{
-		readTimer.expires_after(std::chrono::seconds(CONNECTION_READ_TIMEOUT));
-		readTimer.async_wait(
-			boost::asio::bind_executor(strand,
-				[thisPtr = std::weak_ptr<Connection>(shared_from_this())](const boost::system::error_code& error)
-				{
-					Connection::handleTimeout(thisPtr, error);
-				}));
-
+		// No arm and no cancel per byte: the deadline the caller armed covers the
+		// whole line, and every way out of this loop cancels it already. '\n' goes
+		// to accept(), whose own expires_after replaces the wait; error, closed and
+		// the 32-byte cap go to close(FORCE_CLOSE) -> closeSocket(), which cancels
+		// it. handleTimeout drops the resulting operation_aborted either way.
 		boost::asio::async_read(socket,
 			boost::asio::buffer(&modern_line_byte, 1),
 			boost::asio::bind_executor(strand,
 				[thisPtr = shared_from_this()](const boost::system::error_code& error, auto /*bytes_transferred*/)
 				{
-					thisPtr->readTimer.cancel();
 					if (error or thisPtr->closed)
 					{
 						thisPtr->close(FORCE_CLOSE);

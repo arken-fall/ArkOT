@@ -85,6 +85,11 @@ class Connection : public std::enable_shared_from_this<Connection>
 		void parsePacket(const boost::system::error_code& error);
 		void readWorldLineByte();
 
+		// Arms the read deadline for a whole read chain, not for a single read, so a
+		// multi-read sequence like the world-name preamble cannot renew its own
+		// deadline byte by byte and outlive CONNECTION_READ_TIMEOUT.
+		void ArmReadDeadline();
+
 		void onWriteOperation(const boost::system::error_code& error);
 
 		static void handleTimeout(ConnectionWeak_ptr connectionWeak, const boost::system::error_code& error);
