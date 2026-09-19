@@ -16,7 +16,7 @@ vocation = 0
 sex = "male"
 towns = [3]  # Rookgaard: everyone starts over
 outfit = {id = 128, head = 128, body = 114, legs = 128, feet = 114, addons = 0, mount = 0}
-skills = {fist = 1, sword = 1, axe = 1, club = 1, distance = 1, shield = 1, fishing = 1, magiclevel = 0}
+skills = {fist = 10, sword = 10, axe = 10, club = 10, distance = 10, shield = 10, fishing = 10, magiclevel = 0}
 
 [Resident]
 startingLevel = 1
@@ -29,4 +29,4 @@ vocation = 0
 sex = "female"
 towns = [3]  # Rookgaard: everyone starts over
 outfit = {id = 136, head = 128, body = 114, legs = 128, feet = 114, addons = 0, mount = 0}
-skills = {fist = 1, sword = 1, axe = 1, club = 1, distance = 1, shield = 1, fishing = 1, magiclevel = 0}
+skills = {fist = 10, sword = 10, axe = 10, club = 10, distance = 10, shield = 10, fishing = 10, magiclevel = 0}
