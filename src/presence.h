@@ -16,6 +16,9 @@ namespace BlackTek::Tests
 {
 	// tests/test_presence.cpp only: builds a held claim without a database
 	struct PresenceClaimAccess;
+
+	// tests/test_presence.cpp only: drives the retiring flag Release() gates on
+	struct PresenceAccess;
 }
 
 namespace BlackTek::World
@@ -50,6 +53,10 @@ namespace BlackTek::World
 
 			// hands the release to g_databaseTasks and leaves this claim empty
 			void QueueRelease() noexcept;
+
+			// gives up the claim without any statement: the caller has proven the
+			// row is going away by another route
+			void Discard() noexcept;
 
 			std::string	release_query;	// prebuilt: the destructor must never read g_config
 			uint64_t	token = 0;
@@ -106,6 +113,13 @@ namespace BlackTek::World
 			// containing '`'; deletes this world's rows; writes the first beat; arms Beat().
 			// An empty schema name is a single-world install: presence stays disabled.
 			std::expected<void, std::string> Start(std::string_view authSchema);
+
+			// Game::setGameState(SHUTDOWN), before the kick loop. From here on a
+			// claim released on the dispatcher is dropped instead of deleted row by
+			// row; Retire()'s one world-scoped DELETE removes them all moments later.
+			void						BeginRetire() noexcept		{ retiring = true; }
+
+			[[nodiscard]] bool			IsRetiring() const noexcept	{ return retiring; }
 
 			// Game::setGameState(SHUTDOWN), after the kick loop
 			void Retire() noexcept;
@@ -186,6 +200,8 @@ namespace BlackTek::World
 			}
 
 		private:
+			friend struct BlackTek::Tests::PresenceAccess;
+
 			Presence() = default;
 
 			void	Beat();
@@ -197,6 +213,7 @@ namespace BlackTek::World
 			std::chrono::steady_clock::time_point	next_beat{};	// Beat()'s drift-free re-arm point
 			bool									follow_up_reconcile = false;	// a stall reconciled, or a reconcile could not read; the next landed beat reconciles again
 			bool									stall_pending = false;	// a stall seen on beats that did not land; the next landed beat reconciles it
+			bool									retiring = false;	// shutdown began: Release() drops a claim instead of deleting its row
 			bool									retired = false;
 	};
 }

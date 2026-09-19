@@ -15,6 +15,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -33,6 +34,25 @@ namespace BlackTek::Tests
 		[[nodiscard]] static World::PresenceClaim Held(uint64_t token)
 		{
 			return World::PresenceClaim{ std::string{ "DO 0" }, token };
+		}
+
+		// the statement ~PresenceClaim would queue: empty means nothing is left to run
+		[[nodiscard]] static std::string_view Statement(const World::PresenceClaim& claim) noexcept
+		{
+			return claim.release_query;
+		}
+
+		static void Discard(World::PresenceClaim& claim) noexcept
+		{
+			claim.Discard();
+		}
+	};
+
+	struct PresenceAccess
+	{
+		static void SetRetiring(World::Presence& presence, bool isRetiring) noexcept
+		{
+			presence.retiring = isRetiring;
 		}
 	};
 }
@@ -463,4 +483,65 @@ BT_TEST(presenceReleasingAnEmptyClaimDoesNothing)
 	PresenceClaim claim;
 	claim.Release();
 	BT_CHECK(not claim.IsHeld());
+}
+
+namespace
+{
+	// BT_CHECK throws, so the flag cannot be cleared by a trailing statement: a case
+	// that failed halfway would leave the gate armed for every test registered after
+	// it, silently dropping their releases. The destructor clears it on the normal
+	// path and while unwinding alike.
+	class RetiringScope
+	{
+		public:
+			RetiringScope() noexcept	{ Presence::GetInstance().BeginRetire(); }
+			~RetiringScope()			{ PresenceAccess::SetRetiring(Presence::GetInstance(), false); }
+
+			RetiringScope(const RetiringScope&) = delete;
+			RetiringScope& operator=(const RetiringScope&) = delete;
+	};
+}
+
+BT_TEST(presenceReleaseWhileRetiringDropsTheClaimWithoutAStatement)
+{
+	// must return before reaching Database, which this binary never connects:
+	// Retire()'s one world-scoped DELETE takes this row with all the others
+	const RetiringScope retiring;
+
+	auto claim = PresenceClaimAccess::Held(OurToken);
+	BT_CHECK(claim.IsHeld());
+
+	claim.Release();
+	BT_CHECK(not claim.IsHeld());
+	BT_CHECK(claim.Token() == 0);
+
+	// and nothing is left for ~PresenceClaim to queue on the way out
+	BT_CHECK(PresenceClaimAccess::Statement(claim).empty());
+}
+
+BT_TEST(presenceDiscardedClaimHoldsNeitherTokenNorStatement)
+{
+	// Discard is what the gate answers with: the claim gives up both halves at
+	// once, so no DELETE runs here or from the destructor
+	auto claim = PresenceClaimAccess::Held(TheirToken);
+	BT_CHECK(not PresenceClaimAccess::Statement(claim).empty());
+
+	PresenceClaimAccess::Discard(claim);
+	BT_CHECK(not claim.IsHeld());
+	BT_CHECK(claim.Token() == 0);
+	BT_CHECK(PresenceClaimAccess::Statement(claim).empty());
+}
+
+BT_TEST(presenceRetiringGateEndsWithTheScopeThatArmedIt)
+{
+	// the flag lives on the one Presence every test shares, so no case may hand it
+	// on: it reads false on the way in, and false again once the scope is gone
+	BT_CHECK(not Presence::GetInstance().IsRetiring());
+
+	{
+		const RetiringScope retiring;
+		BT_CHECK(Presence::GetInstance().IsRetiring());
+	}
+
+	BT_CHECK(not Presence::GetInstance().IsRetiring());
 }

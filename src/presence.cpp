@@ -120,10 +120,27 @@ namespace BlackTek::World
 		g_databaseTasks.addTask(std::exchange(release_query, std::string{}));
 	}
 
+	void PresenceClaim::Discard() noexcept
+	{
+		token = 0;
+		release_query.clear();
+	}
+
 	void PresenceClaim::Release() noexcept
 	{
 		if (not IsHeld())
 			return;
+
+		// Shutdown deletes every claim of this world with one statement
+		// (Presence::Retire), so the per-player DELETE here is pure cost. Discard
+		// rather than return: a claim left held would be queued by ~PresenceClaim
+		// and run by saveGameState's g_databaseTasks.flush(), which is the same
+		// round trip on a different thread.
+		if (Presence::GetInstance().IsRetiring())
+		{
+			Discard();
+			return;
+		}
 
 		// executeQuery already waits out a lost connection, so a failure here is a
 		// real error. Handing the same query to the background connection is the
@@ -185,6 +202,9 @@ namespace BlackTek::World
 
 	void Presence::Retire() noexcept
 	{
+		// a Retire() with no prior BeginRetire() still ends the claim-by-claim path
+		retiring = true;
+
 		if (auth_schema.empty() or retired)
 		{
 			retired = true;

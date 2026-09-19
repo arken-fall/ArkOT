@@ -179,6 +179,10 @@ void Game::setGameState(GameState_t newState)
 			g_globalEvents->save();
 			g_globalEvents->shutdown();
 
+			// the kick loop's per-player releases are pure cost: Retire() below
+			// removes every one of this world's claims with one statement
+			BlackTek::World::Presence::GetInstance().BeginRetire();
+
 			//kick all players that are still online
 			auto it = players.begin();
 			while (it != players.end()) {
@@ -186,8 +190,9 @@ void Game::setGameState(GameState_t newState)
 				it = players.begin();
 			}
 
-			// every kicked player has released its own claim; this frees whatever is
-			// left and removes the heartbeat, while the database is still reachable
+			// BeginRetire() above dropped every kicked player's own release, so this
+			// one statement is what frees this world's claims; it also removes the
+			// heartbeat, while the database is still reachable
 			BlackTek::World::Presence::GetInstance().Retire();
 
 			saveMotdNum();
