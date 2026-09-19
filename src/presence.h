@@ -133,17 +133,21 @@ namespace BlackTek::World
 			[[nodiscard]] static Holder	Classify(uint64_t holderToken, Id holderWorld, bool holderExpired, uint64_t ourToken, Id ourWorld) noexcept;
 
 			// Pure; whether this beat must treat this world as possibly expired to
-			// other worlds. Beat() feeds it to PlanReconcile.
+			// other worlds. FinishBeat() feeds it to PlanReconcile.
 			//
 			// databaseAge: UNIX_TIMESTAMP() - beat_at, read before this beat's upsert, on
 			// the same clock other worlds judge expiry by; nullopt when the read failed
 			// or found no row, which counts as a stall. readSpan: process time from
-			// before that read until the upsert returned; the database clock cannot
-			// have advanced further between the read and the upsert's commit, so
-			// databaseAge + readSpan bounds the age this world's heartbeat reached
-			// before it was renewed, however late any reply arrived. sinceLastBeat:
-			// process time since the last landed beat's reply, a second trigger for a
-			// long local pause; zero when no beat has landed yet.
+			// before that read was queued on g_databaseTasks until the upsert returned,
+			// so it covers the queue wait too; taking it at enqueue only widens the span
+			// over the read-to-upsert interval it has to cover, and the database clock
+			// cannot have advanced further than that interval between the read and the
+			// upsert's commit, so databaseAge + readSpan still bounds the age this
+			// world's heartbeat reached before it was renewed, however late any reply
+			// arrived; a wider span only raises the measured age, which makes this check
+			// more conservative, never less. sinceLastBeat: process time since the last
+			// landed beat's reply, a second trigger for a long local pause; zero when no
+			// beat has landed yet.
 			//
 			// Other worlds take over once that age, in whole seconds, exceeds Lease.
 			// Whole seconds keep the bound: floor(read + span) <= floor(read) + ceil(span),
@@ -204,13 +208,17 @@ namespace BlackTek::World
 
 			Presence() = default;
 
+			// re-arms, then hands this beat's age read to g_databaseTasks
 			void	Beat();
+			// the rest of one beat, on the dispatcher, once that age read replies
+			void	FinishBeat(std::optional<std::chrono::seconds> databaseAge, std::chrono::steady_clock::time_point readAt);
 			// false when this world's claims could not be read; nothing was checked or kicked
 			bool	Reconcile();
 
 			std::string								auth_schema;
 			std::chrono::steady_clock::time_point	last_beat{};
 			std::chrono::steady_clock::time_point	next_beat{};	// Beat()'s drift-free re-arm point
+			bool									beat_in_flight = false;	// this beat's age read is queued or its reply is pending; a tick meanwhile does nothing
 			bool									follow_up_reconcile = false;	// a stall reconciled, or a reconcile could not read; the next landed beat reconciles again
 			bool									stall_pending = false;	// a stall seen on beats that did not land; the next landed beat reconciles it
 			bool									retiring = false;	// shutdown began: Release() drops a claim instead of deleting its row

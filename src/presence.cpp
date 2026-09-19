@@ -356,28 +356,70 @@ namespace BlackTek::World
 		// re-arm first, like Game::checkLight, so a failed beat never stops the heartbeat
 		g_scheduler.addEvent(createSchedulerTask(NextResyncDelay(next_beat, BeatIntervalMs), [this]() { Beat(); }));
 
+		// One chain at a time. A tick that finds the previous beat's age read still
+		// queued is not a beat at all: it plans nothing, lands nothing and carries
+		// nothing, so the pinned state machine never sees it.
+		if (beat_in_flight)
+			return;
+
+		// FinishBeat clears this on every exit, so the only way it stays set is
+		// g_databaseTasks not running: addTask then drops the task and the callback
+		// with it (databasetasks.cpp:41-44), and the heartbeat stops silently. Today
+		// only g_databaseTasks.stop() does that, during shutdown, where the heartbeat
+		// is ending anyway; a path that stopped it on a live server would need a
+		// watchdog here.
+		beat_in_flight = true;
+
+		// readAt is taken at enqueue, so the span also covers the wait on the queue.
+		// A wider span only raises the measured age, which makes IsStall more
+		// conservative, never less: the bound argued at presence.h still holds.
+		const auto readAt = std::chrono::steady_clock::now();
+
+		// g_databaseTasks reads on its own connection and posts the callback back to
+		// the dispatcher, so every field FinishBeat touches stays dispatcher-owned and
+		// the lost-connection retry loop never runs on the game thread. A nullptr
+		// result is still both a failed query and no row; either way no live heartbeat
+		// is proven, and IsStall counts nullopt as a stall. The task's success flag is
+		// meaningless for a store task (databasetasks.cpp:56-58), so it is ignored.
+		g_databaseTasks.addTask(BeatAgeQuery(auth_schema, Local().id),
+			[this, readAt](DBResult_ptr result, bool)
+			{
+				std::optional<std::chrono::seconds> databaseAge;
+				if (result)
+					databaseAge = std::chrono::seconds{ result->getNumber<int64_t>("age") };
+
+				FinishBeat(databaseAge, readAt);
+			}, true);
+	}
+
+	void Presence::FinishBeat(std::optional<std::chrono::seconds> databaseAge, std::chrono::steady_clock::time_point readAt)
+	{
+		// Retire() ran while the age read was queued: this world's rows are gone and
+		// the upsert below would put its heartbeat row back.
+		if (retired)
+		{
+			beat_in_flight = false;
+			return;
+		}
+
+		// Cleared up front so no path out of the tail can leave the chain wedged. The
+		// rest of this function runs to completion on the dispatcher, so no tick can
+		// observe the cleared flag before this beat is settled.
+		beat_in_flight = false;
+
 		const Id self = Local().id;
 		Database& db = Database::getInstance();
 
-		// The age is read before the upsert, so it measures the heartbeat other
-		// worlds have been judging, and readAt is taken before the read so the
-		// span to the upsert's reply over-covers the database time in between.
-		// storeQuery answers nullptr both for a failed query and for no row; either
-		// way no live heartbeat is proven, and IsStall counts nullopt as a stall.
-		const auto readAt = std::chrono::steady_clock::now();
-
-		std::optional<std::chrono::seconds> databaseAge;
-		if (const auto ageResult = db.storeQuery(BeatAgeQuery(auth_schema, self)))
-			databaseAge = std::chrono::seconds{ ageResult->getNumber<int64_t>("age") };
-
-		else
-			Console::Database::Warn("World::Presence::Beat: could not read world {:d}'s heartbeat age, or its heartbeat row is missing; treating this beat as a stall.", self);
+		if (not databaseAge)
+			Console::Database::Warn("World::Presence::FinishBeat: could not read world {:d}'s heartbeat age, or its heartbeat row is missing; treating this beat as a stall.", self);
 
 		// The upsert reports 0 rows changed when beat_at already holds this second,
-		// so only the query's success is read, never its affected rows.
+		// so only the query's success is read, never its affected rows. It stays on
+		// the main connection: it is the only presence write that races Retire()'s
+		// DELETE, and both running on the dispatcher keeps them ordered.
 		const bool landed = db.executeQuery(BeatQuery(auth_schema, self));
 		if (not landed)
-			Console::Database::Warn("World::Presence::Beat: world {:d}'s heartbeat failed; its claims expire {:d} s after the last one that landed.", self, Lease.count());
+			Console::Database::Warn("World::Presence::FinishBeat: world {:d}'s heartbeat failed; its claims expire {:d} s after the last one that landed.", self, Lease.count());
 
 		const auto now = std::chrono::steady_clock::now();
 		const auto sinceLastBeat = last_beat == std::chrono::steady_clock::time_point{} ? std::chrono::steady_clock::duration::zero() : now - last_beat;
@@ -393,7 +435,7 @@ namespace BlackTek::World
 		if (plan.reconcile)
 		{
 			if (not stalled and not stall_pending)
-				Console::Database::Warn("World::Presence::Beat: world {:d} is checking its claims again after a stall, for takeovers that were already under way when it recovered.", self);
+				Console::Database::Warn("World::Presence::FinishBeat: world {:d} is checking its claims again after a stall, for takeovers that were already under way when it recovered.", self);
 
 			readFailed = not Reconcile();
 		}
