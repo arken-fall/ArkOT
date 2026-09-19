@@ -112,6 +112,12 @@ bool IOLoginData::loginserverAuthentication(const std::string& name, const std::
 	const auto worlds = BlackTek::World::Registry::GetInstance().All();
 	const bool offerAccountManager = g_config.GetBoolean(ConfigManager::ENABLE_ACCOUNT_MANAGER) and account.id != AccountManager::ID;
 
+	// One growth for the account-manager entries; the character rows then grow
+	// geometrically. An exact-size reserve per world forced a reallocation on the
+	// very next world's account-manager push_back.
+	if (offerAccountManager)
+		account.characters.reserve(worlds.size());
+
 	for (const auto& world : worlds)
 	{
 		// the account manager exists in every world process, so it is offered on every world
@@ -120,29 +126,25 @@ bool IOLoginData::loginserverAuthentication(const std::string& name, const std::
 			account.characters.push_back(CharacterEntry{ .name = AccountManager::NAME, .world = world.id });
 		}
 
-		// storeQuery reports "no rows" and "the query failed" the same way, as a
-		// null result, so the count is asked for first: COUNT(*) always yields a
-		// row when the schema is readable. That keeps "this account has nobody
-		// here", which is ordinary, from logging as a broken world, and sizes the
-		// one growth this loop performs.
-		const auto counted = db.storeQuery(fmt::format("SELECT COUNT(*) AS `total` FROM `{:s}`.`players` WHERE `account_id` = {:d} AND `deletion` = 0", world.schema, account.id));
+		// storeQuery reports "no rows" and "the query failed" alike (database.cpp:146-151),
+		// so a constant marker row that always comes back makes nullptr mean failure only.
+		// Same technique as World::Presence::Reconcile (presence.cpp:392-406). The explicit
+		// marker column and ORDER BY marker keep that row first under any collation, and the
+		// result is positioned on it on entry (database.cpp:189, 219), so the loop below
+		// yields exactly the real rows.
+		const auto names = db.storeQuery(fmt::format(
+			"SELECT 0 AS `marker`, NULL AS `name` UNION ALL SELECT 1, `name` FROM `{:s}`.`players` WHERE `account_id` = {:d} AND `deletion` = 0 ORDER BY `marker` ASC, `name` ASC",
+			world.schema, account.id));
 
-		if (not counted)
+		if (not names)
 		{
 			BlackTek::Console::Database::Warn("IOLoginData::loginserverAuthentication: could not read schema '{:s}' of world '{:s}' (id {:d}); it contributes no characters to account {:d}'s list.", world.schema, world.name, world.id, account.id);
+			continue;
 		}
 
-		else if (const auto total = counted->getNumber<uint32_t>("total"); total > 0)
+		while (names->next())
 		{
-			account.characters.reserve(account.characters.size() + total);
-
-			if (const auto names = db.storeQuery(fmt::format("SELECT `name` FROM `{:s}`.`players` WHERE `account_id` = {:d} AND `deletion` = 0 ORDER BY `name` ASC", world.schema, account.id)))
-			{
-				do
-				{
-					account.characters.push_back(CharacterEntry{ .name = std::string{names->getString("name")}, .world = world.id });
-				} while (names->next());
-			}
+			account.characters.push_back(CharacterEntry{ .name = std::string{ names->getString("name") }, .world = world.id });
 		}
 	}
 
