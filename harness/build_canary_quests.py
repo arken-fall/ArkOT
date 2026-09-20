@@ -52,18 +52,29 @@ MESSAGES = {"MESSAGE_FAILURE": "MESSAGE_STATUS_SMALL", "MESSAGE_GAME_HIGHLIGHT":
             "MESSAGE_LOOK": "MESSAGE_INFO_DESCR"}
 
 
+def our_lua_files():
+    """This server's own Lua, minus the ported quest scripts this tool wrote.
+
+    Grading against its own output is how a held-back script starts to look
+    portable: the run that wrote a helper teaches the next run that the helper
+    exists. What ships is evidence; what this tool emitted is not.
+    """
+    generated = ROOT / "data/scripts/quests"
+    return [path for path in (ROOT / "data").rglob("*.lua") if not path.is_relative_to(generated)]
+
+
 def known_methods():
     """Every method a script may call: what the engine registers, plus what BlackTek's own Lua defines."""
     methods = set(re.findall(r'registerMethod\("[A-Za-z]+",\s*"(\w+)"',
                              (ROOT / "src/luascript.cpp").read_text(errors="replace")))
-    for path in (ROOT / "data").rglob("*.lua"):
+    for path in our_lua_files():
         text = path.read_text(errors="replace")
         methods.update(re.findall(r"function \w+[:.](\w+)\(", text))
         methods.update(re.findall(r"^\s*(\w+)\s*=\s*function", text, re.M))
     return methods | STDLIB
 
 
-def canary_only(canary):
+def canary_only(canary, ours_from_engine):
     """The names Canary's own libs give a script, and BlackTek has nothing behind.
 
     A quest script is written against its server's libs as much as its engine:
@@ -72,7 +83,7 @@ def canary_only(canary):
     only Canary does, the script has nothing to call and waits for a hand port.
     """
     ours = set()
-    for path in (ROOT / "data").rglob("*.lua"):
+    for path in our_lua_files():
         text = path.read_text(errors="replace")
         ours.update(re.findall(r"^(\w+)\s*=", text, re.M))
         ours.update(re.findall(r"^function (\w+)[.:(]", text, re.M))
@@ -88,7 +99,7 @@ def canary_only(canary):
         theirs.update(re.findall(r"^(\w+)\s*=", text, re.M))
         theirs.update(re.findall(r"^function (\w+)[.:(]", text, re.M))
     # a lib may extend one of Lua's own tables; that table is there either way
-    return theirs - ours - {"string", "table", "math", "os", "io"}
+    return theirs - ours - ours_from_engine - {"string", "table", "math", "os", "io"}
 
 
 def converted(text):
@@ -131,7 +142,7 @@ def class_functions():
     classes = {name: set() for name in re.findall(r'registerClass\("(\w+)"', engine)}
     for name, method in re.findall(r'registerMethod\("(\w+)",\s*"(\w+)"', engine):
         classes.setdefault(name, set()).add(method)
-    for path in (ROOT / "data").rglob("*.lua"):
+    for path in our_lua_files():
         for name, method in re.findall(r"^function (\w+)[.:](\w+)\(", path.read_text(errors="replace"), re.M):
             if name in classes:
                 classes[name].add(method)
@@ -146,7 +157,9 @@ def known_globals():
     names |= set(re.findall(r'lua_register\(luaState, "(\w+)"', engine))
     names |= set(re.findall(r'registerGlobal(?:Variable|Boolean|Method|Function)\("(\w+)"', engine))
     names |= {enum.rsplit(":", 1)[-1] for enum in re.findall(r"registerEnum\(([\w:]+)\)", engine)}
-    for path in (ROOT / "data").rglob("*.lua"):
+    # luaL_register is how bit, configManager, db and result reach a script
+    names |= set(re.findall(r'luaL_register\(luaState, "(\w+)"', engine))
+    for path in our_lua_files():
         text = path.read_text(errors="replace")
         names.update(re.findall(r"^(\w+)\s*=", text, re.M))
         names.update(re.findall(r"^function (\w+)[.:(]", text, re.M))
@@ -193,6 +206,10 @@ def code_only(text):
     """The script with its comments and string literals blanked, so only code is read."""
     text = re.sub(r"--\[(=*)\[.*?\]\1\]", " ", text, flags=re.S)
     text = re.sub(r"--[^\n]*", " ", text)
+    # a [[ long string ]] is quest prose; its words are not names a script calls
+    text = re.sub(r"\[(=*)\[.*?\]\1\]", '""', text, flags=re.S)
+    # \z continues a quoted string across lines, so join it back before blanking
+    text = re.sub(r"\\z\s*", "", text)
     return re.sub(r'"[^"\n]*"|\'[^\'\n]*\'', '""', text)
 
 
@@ -267,9 +284,9 @@ def main():
 
     source = Path(args.canary).expanduser() / "data-otservbr-global/scripts/quests"
     out = Path(args.out)
-    methods, elsewhere = known_methods(), canary_only(Path(args.canary).expanduser())
     hooks, storages, tables = accepted_hooks(), storage_names(), table_functions()
     classes, globals_ = class_functions(), known_globals()
+    methods, elsewhere = known_methods(), canary_only(Path(args.canary).expanduser(), globals_)
 
     written, skipped, quests = 0, {}, set()
     taken = {}
