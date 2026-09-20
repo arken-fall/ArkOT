@@ -1,0 +1,68 @@
+# The fifth vocation. Fights with its fists and carries like a knight, while
+# regenerating and casting like a paladin.
+#
+# Sourced, not invented: hit points, mana and capacity per level, the promotion
+# name and the weapon skill all come from Tibia's own manual
+# (tibia.com/gameguides, characters section) -- 10 hp, 10 mana, 25 cap per level,
+# Fist Fighting, promoting to Exalted Monk.
+#
+# Tuned, and fair game to change: the regeneration intervals and the skill rates.
+# The manual publishes neither. Regeneration mirrors the paladin's, since the
+# monk's hp and mana grow at the same balanced rate; the skill rates make fist
+# the one skill it trains as fast as a knight trains a sword, leave the weapon
+# skills it does not use at the rate a mage has for them, and put magic between
+# the knight's and the paladin's, which is where 10 mana a level puts it.
+#
+# What is NOT here yet: the monk's spells and its Harmony and virtue mechanics.
+# A monk levels, trains and promotes today; it does not yet have its own magic.
+
+[Monk]
+id = 9
+cid = 5
+pvp = true
+name = "Monk"
+description = "a monk"
+speed = 220
+maxsoul = 100
+attackspeed = 2000
+promotedfrom = 9
+statsperlevel = [
+    {cap = 25, hp = 10, mana = 10}
+]
+regeneration = [
+    {hp = {amount = 5, interval = 4}},
+    {mana = {amount = 5, interval = 4}},
+    {soul = {amount = 1, interval = 120}}
+]
+damagemodifiers = [
+    {armor = 1.0, defense = 1.0, distance = 1.0, melee = 1.0}
+]
+skillrates = [
+    {magic = 2.0, fist = 1.1, club = 2.0, sword = 2.0, axe = 2.0, distance = 2.0, shield = 1.5, fishing = 1.1}
+]
+
+[ExaltedMonk]
+id = 10
+cid = 5
+pvp = true
+name = "Exalted Monk"
+description = "an exalted monk"
+speed = 220
+maxsoul = 200
+attackspeed = 2000
+promotedfrom = 9
+inactivekicktime = 50
+statsperlevel = [
+    {cap = 25, hp = 10, mana = 10}
+]
+regeneration = [
+    {hp = {amount = 10, interval = 3}},
+    {mana = {amount = 10, interval = 3}},
+    {soul = {amount = 1, interval = 15}}
+]
+damagemodifiers = [
+    {armor = 1.0, defense = 1.0, distance = 1.0, melee = 1.0}
+]
+skillrates = [
+    {magic = 2.0, fist = 1.1, club = 2.0, sword = 2.0, axe = 2.0, distance = 2.0, shield = 1.5, fishing = 1.1}
+]

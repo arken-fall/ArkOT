@@ -48,6 +48,16 @@ local config = {
 			{{2525, 1}, {8601, 1}, {2465, 1}, {2460, 1}, {2478, 1}, {2643, 1}, {2661, 1}},
 			--container jagged sword, daramian mace, rope, shovel, health potion
 			{{8602, 1}, {2439, 1}, {2120, 1}, {2554, 1}, {7618, 1}}
+		},
+
+		["monk"] = {
+			text = "A MONK! ARE YOU SURE? THIS DECISION IS IRREVERSIBLE!",
+			vocationId = 9,
+			--equipment brass armor, brass helmet, brass legs, leather boots, scarf. No weapon:
+			--a monk fights with its fists, and no shield, which its fists want free.
+			{{2465, 1}, {2460, 1}, {2478, 1}, {2643, 1}, {2661, 1}},
+			--container rope, shovel, health potion
+			{{2120, 1}, {2554, 1}, {7618, 1}}
 		}
 	}
 }
