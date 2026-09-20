@@ -15,14 +15,52 @@ Multi-world has two phases, and both are in the tree:
 
 ---
 
-## Status: two public worlds live, played on a real client
+## Status: three worlds live, two public and one private, played on a real client
 
-**Two public worlds run on the production host** since 2026-09-16, converted in place from the
-single-world deployment: `ArkOT` (Canary map, port 7172, schema `blacktek`) and `ArkOT Test`
-(`forgotten` map, port 7272, schema `arkot_test`), one auth schema `arkot_auth`, MySQL 8.0.46. A real
-15.25 client logs in once through the website's HTTP login, sees every character with its world,
-and plays on either world. What has **not** happened is a measurement under player load, or worlds
-on separate hosts.
+**Three worlds run on the production host**, one auth schema `arkot_auth`, MySQL 8.0.46:
+
+| World | Map | Port | Schema | Who may enter |
+| --- | --- | --- | --- | --- |
+| `Avarion` | canary | 7172 | `blacktek` | anyone |
+| `Avarion Test` | forgotten | 7272 | `arkot_test` | anyone |
+| `Testing` | forgotten | 7372 | `arkot_testing` | staff, and accounts holding the `tester` role |
+
+The first two were converted in place from the single-world deployment on 2026-09-16 and were named
+`ArkOT` and `ArkOT Test` until 2026-09-20 — **observations recorded below quote the names as they
+were**. `Testing` was added on 2026-09-20. The schema names keep the old spelling: renaming a schema
+is a migration, and a name is not.
+
+A real 15.25 client logs in once through the website's HTTP login, sees every character with its
+world, and plays on any world it may enter. What has **not** happened is a measurement under player
+load, or worlds on separate hosts.
+
+### Private worlds
+
+A world row may name the role an account must hold:
+
+```toml
+[[world]]
+id      = 2
+name    = "Testing"
+address = "127.0.0.1"
+port    = 7372
+schema  = "arkot_testing"
+access  = "tester"
+```
+
+- **Absent means public**, so an existing world needs no edit, and a public world runs **no query**
+  on the login path — the gate returns before it touches the database.
+- The role is a row in `__AUTH_SCHEMA__`.`account_roles`, granted and revoked from the website. Role
+  names are lowercase `[a-z0-9_]`, at most 32 characters, and carry no order: holding the string is
+  the whole meaning.
+- **Staff pass regardless** — account type `>= 4` (`ACCOUNT_TYPE_GAMEMASTER`), the same spelling the
+  one-session exemption uses, now shared so the two cannot drift.
+- Everything fails closed. A world naming a role refuses to boot unless it can read
+  `account_roles`; a role that cannot be read refuses the login; an `access` value that is not a
+  valid role name refuses the boot rather than quietly reading as public.
+- Revoking takes effect at the next login. A tester already online stays until they log out.
+- Hiding a world on the website is **not** a gate — anyone who knows the port can dial it, which is
+  why the refusal lives in the server.
 
 Before that, the whole design was exercised on one host with isolated throwaway schemas, as recorded
 below.

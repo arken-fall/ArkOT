@@ -1,4 +1,4 @@
-# ArkOT Roadmap
+# Avarion OT Roadmap
 
 Everything below is measured, not guessed. The counts come from the working tree and the boot log
 on 2026-09-16. When a number changes, this file changes with it.
@@ -146,9 +146,13 @@ one player whose claim was taken, the second it woke; a ban issued on one world 
 with the right issuer; the Gamemaster and `allow_clones` exemptions; and wrong-world rejection. The
 full list is in `docs/deployment/multi-world.md`.
 
-**Two public worlds are live on the production host** (2026-09-16). The single-world deployment was
-converted in place, backed up first: `ArkOT` (Canary map, port 7172, schema `blacktek`) and
-`ArkOT Test` (the small `forgotten` map, port 7272, schema `arkot_test`) share one auth schema. The
+**Three worlds are live on the production host.** The single-world deployment was converted in
+place on 2026-09-16, backed up first: `Avarion` (Canary map, port 7172, schema `blacktek`) and
+`Avarion Test` (the small `forgotten` map, port 7272, schema `arkot_test`). On 2026-09-20 they were
+joined by `Testing` (small map, port 7372, schema `arkot_testing`), which is **private**: its world
+row names a role, and only accounts holding it — or staff — may enter. The first two were called
+`ArkOT` and `ArkOT Test` until that same day; the schema names still carry the old spelling, because
+renaming a schema is a migration and a name is not. The
 website ([arkot-web](https://github.com/unbridledpc/arkot-web)) now reads the servers' own
 `config/worlds.toml` and does two new things:
 
@@ -158,14 +162,14 @@ website ([arkot-web](https://github.com/unbridledpc/arkot-web)) now reads the se
   login returns every world and every character, each tagged with its world; the account page shows
   the same list with a World column.
 
-Observed with a real 15.25 client: the owner created a character on `ArkOT Test` from the website,
-saw it next to the `ArkOT` characters after one login, and played it. Before that cutover, a staging
+Observed with a real 15.25 client: the owner created a character on `Avarion Test` from the website,
+saw it next to the `Avarion` characters after one login, and played it. Before that cutover, a staging
 copy of the site passed the same path with a throwaway account: characters on both worlds, one
-session key accepted by both game servers, and a login on `ArkOT Test` refused while the account was
-online on `ArkOT`. The in-binary login on 7171 is built but unused in production, because the shipped
+session key accepted by both game servers, and a login on `Avarion Test` refused while the account was
+online on `Avarion`. The in-binary login on 7171 is built but unused in production, because the shipped
 client logs in over HTTP.
 
-**A new world needs its game port forwarded.** The first live attempt on `ArkOT Test` failed with
+**A new world needs its game port forwarded.** The first live attempt on `Avarion Test` failed with
 the client's "Connection refused (ERROR 111)": the server was listening and the VM firewall was open,
 but the router had no rule for 7272.
 

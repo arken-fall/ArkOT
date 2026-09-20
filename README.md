@@ -1,8 +1,13 @@
-# ArkOT
+# Avarion OT
 
-**ArkOT** is the ArkenFall team's fork of [BlackTek Server](https://github.com/Black-Tek/BlackTek-Server),
-rebuilt to speak the **Tibia 15.25 client protocol** and nothing else. It serves the world
-[Arkenfall](https://arkenfall.org). We are not part of the BlackTek team and this fork is not
+**Avarion OT** is a fork of [BlackTek Server](https://github.com/Black-Tek/BlackTek-Server),
+rebuilt to speak the **Tibia 15.25 client protocol** and nothing else. It serves
+[avarionot.com](https://avarionot.com).
+
+> Named ArkOT until 2026-09-20, and the repository still carries that name. Arkenfall is a separate
+> project — a Godot game at [arkenfall.net](https://arkenfall.net) — and the two were sharing a name.
+> `arkenfall.org` still serves this server's site, because every client already in a player's hands
+> has that address compiled in. We are not part of the BlackTek team and this fork is not
 affiliated with or endorsed by them; all credit for the base server belongs to BlackTek and its
 upstream lineage. Upstream's own README is preserved at the bottom of this file.
 
@@ -19,7 +24,7 @@ code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 | Item and appearance pipeline | Working |
 | World content | The community real map, plus a datapack machine-ported from Canary |
 | Side systems (bestiary, prey, forge, wheel, store, market) | Real implementations, several with gaps |
-| Multi-world (one account, N worlds) | Live: two public worlds on the production host, played on a real 15.25 client through one login that lists both — see Roadmap |
+| Multi-world (one account, N worlds) | Live: three worlds on the production host — two public, one private to staff and testers — played on a real 15.25 client through one login — see Roadmap |
 
 **Requirements to run the world:** ~12.8 GB RAM resident, GCC 14+, MySQL 8.0 (the multi-world schema is only proven there), a login
 webservice, and a 15.25 client. The world ships with the server; see First boot.
@@ -45,8 +50,9 @@ webservice, and a 15.25 client. The world ships with the server; see First boot.
 | Market | Partial | Full 15.25 flow, but every item goes out with tier 0 even though forge tiers exist. |
 | Cyclopedia | Partial | All request types answered; the combat pages still send ~57 hard-coded zeros. |
 | Legacy 10.98 listeners | Retired | `game_port = 0`, and the legacy `ProtocolLogin`/`ProtocolOld` pair is not registered on a modern server; starting both generations is refused. |
-| Multi-world identity | Done | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Live with two public worlds, `ArkOT` and `ArkOT Test`, since 2026-09-16. |
+| Multi-world identity | Done | `config/worlds.toml` is the world list; a world refuses to boot if its own row disagrees with its ip, port or schema, and a client announcing another world's name is refused. Live since 2026-09-16 with `Avarion` and `Avarion Test`, joined 2026-09-20 by the private `Testing`. |
 | In-binary login | Partial | `ProtocolLoginModern` serves the world list on 7171, the only port a 15.25 client will take it on. `harness/login_client.py` gets a world list from it; no real client has reached it. Production doesn't use it: the shipped client logs in over HTTP, which the website answers for every world. |
+| Private worlds | Done | A world row may name the role it requires (`access = "tester"`); saying nothing keeps a world public and costs it no query. Roles are rows in the shared auth schema, granted from the website. Staff pass regardless, and a role that cannot be read refuses the login. |
 | Account-wide bans | Done | A ban bars the account on every world and names its issuer. An expired ban is retired once, however many worlds notice. Verified live across two worlds. |
 | One session per account | Done | An account may be online on one world at a time; Gamemaster-and-above accounts and `allow_clones` are exempt. Fails closed, and survives a crashed world within 45 s. Exercised live across two worlds, including a killed world and a frozen one, and on the production host with a real client. |
 
@@ -274,7 +280,7 @@ This will compile your `/src` sources, start MariaDB, and run the game server on
 ## Where to find a compatible client?
 ____________
 > [!NOTE]
-> Upstream section — does not apply to this fork. ArkOT is 15.25-only; see "About this fork" at the top.
+> Upstream section — does not apply to this fork. Avarion OT is 15.25-only; see "About this fork" at the top.
 
 The BlackTek server is currently using the Tibia 10.98 client protocol. You can use either the original client which you can find [here](https://downloads.ots.me/data/tibia-clients/windows/exe/Tibia1098.exe) as an .exe, or [here](https://downloads.ots.me/data/tibia-clients/windows/zip/Tibia1098.zip) as a .zip. 
 
