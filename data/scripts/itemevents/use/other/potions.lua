@@ -36,24 +36,24 @@ local potions = {
 		},
 	[7443] = { -- bullseye potion
 		condition = bullseye,
-		vocations = {3, 7},
+		vocations = {3, 7, 9, 10},
 		effect = CONST_ME_MAGIC_GREEN,
-		description = "Only paladins may drink this potion.",
+		description = "Only paladins and monks may drink this potion.",
 		text = "You feel more accurate."
 	},
 	[7588] = { -- strong health potion
 		health = {250, 350},
-		vocations = {3, 4, 7, 8},
+		vocations = {3, 4, 7, 8, 9, 10},
 		level = 50,
 		flask = 7634,
-		description = "Only knights and paladins of level 50 or above may drink this fluid."
+		description = "Only knights, paladins and monks of level 50 or above may drink this fluid."
 	},
 	[7589] = { -- strong mana potion
 		mana = {115, 185},
-		vocations = {1, 2, 3, 5, 6, 7},
+		vocations = {1, 2, 3, 5, 6, 7, 9, 10},
 		level = 50,
 		flask = 7634,
-		description = "Only sorcerers, druids and paladins of level 50 or above may drink this fluid."
+		description = "Only sorcerers, druids, paladins and monks of level 50 or above may drink this fluid."
 	},
 	[7590] = { -- great mana potion
 		mana = {150, 250},
@@ -80,10 +80,10 @@ local potions = {
 	[8472] = { -- great spirit potion
 		health = {250, 350},
 		mana = {100, 200},
-		vocations = {3, 7},
+		vocations = {3, 7, 9, 10},
 		level = 80,
 		flask = 7635,
-		description = "Only paladins of level 80 or above may drink this fluid."
+		description = "Only paladins and monks of level 80 or above may drink this fluid."
 	},
 	[8473] = { -- ultimate health potion
 		health = {650, 850},
@@ -110,10 +110,10 @@ local potions = {
 	[26030] = { -- supreme health potion
 		health = {420, 580},
 		mana = {200, 350},
-		vocations = {3, 7},
+		vocations = {3, 7, 9, 10},
 		level = 130,
 		flask = 7635,
-		description = "Only paladins of level 130 or above may drink this fluid."
+		description = "Only paladins and monks of level 130 or above may drink this fluid."
 	},
 	[26031] = { -- ultimate spirit potion
 		health = {875, 1125},
