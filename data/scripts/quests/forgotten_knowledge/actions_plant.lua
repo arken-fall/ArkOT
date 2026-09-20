@@ -499,5 +499,7 @@ function forgottenKnowledgePlant.onUse(player, item, fromPosition, target, toPos
 	return true
 end
 
-forgottenKnowledgePlant:id(23810, 23811)
+-- 23810 is the Lion's Heart on this map, not a plant, and taming.lua claims it
+-- first and correctly; only the socketed tile below belongs to this quest.
+forgottenKnowledgePlant:id(23811)
 forgottenKnowledgePlant:register()

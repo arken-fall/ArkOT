@@ -1,3 +1,10 @@
+-- DISABLED 2026-09-20: this script claims item 12189, which on this map is
+-- a closed door, not a corpse. It is a Canary id that the quest port did not
+-- remap, so the script has never run: doors/normal_doors.lua claims
+-- the same id first and is correct for this map.
+--
+-- Re-enable it by removing the '#' once the id it should be watching is known.
+--
 local rottinWoodCorpse = ItemEvent()
 rottinWoodCorpse:type("use")
 function rottinWoodCorpse.onUse(player, item, fromPosition, target, toPosition, isHotkey)

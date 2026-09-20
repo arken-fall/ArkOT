@@ -1,3 +1,10 @@
+-- DISABLED 2026-09-20: this script claims item 9843, which on this map is
+-- a lit wall lamp, not a beaver. It is a Canary id that the quest port did not
+-- remap, so the script has never run: itemevents/use/others/transforms.lua claims
+-- the same id first and is correct for this map.
+--
+-- Re-enable it by removing the '#' once the id it should be watching is known.
+--
 local config = {
 	treesBeaver = {
 		Position(32515, 31927, 7), -- Tree 01

@@ -1,3 +1,10 @@
+-- DISABLED 2026-09-20: this script claims item 5467, which on this map is
+-- a bunch of sugar cane, not a fire bug. It is a Canary id that the quest port did not
+-- remap, so the script has never run: itemevents/use/others/sugar_oat.lua claims
+-- the same id first and is correct for this map.
+--
+-- Re-enable it by removing the '#' once the id it should be watching is known.
+--
 local function revert(position, itemId, transformId)
 	local item = Tile(position):getItemById(itemId)
 	if item then

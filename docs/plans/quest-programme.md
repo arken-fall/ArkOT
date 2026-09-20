@@ -237,6 +237,37 @@ before reading it.
 
 Soul Pit first (smaller, self-contained), then Soul War.
 
+### Known: ported quest scripts claiming the wrong items
+
+Measured 2026-09-20 from the boot log, after the 10.98 pack's dead registrations were retired.
+Six item ids are claimed by two scripts at once, and in five of them **the ported quest script is
+the one that is wrong**: it carries a Canary id that means something else on this map, and the
+generic script that beats it is correct.
+
+| Quest script | Claims | Which here is | Beaten by | Done |
+| --- | --- | --- | --- | --- |
+| `ferumbras_ascension/actions_grave_flower.lua` | 22873 | a candle | `itemevents/use/others/transforms.lua` | disabled |
+| `forgotten_knowledge/actions_plant.lua` | 23810 | the Lion's Heart | `itemevents/use/others/taming.lua` | id dropped, keeps 23811 |
+| `others/actions_fire_bug.lua` | 5467 | a bunch of sugar cane | `itemevents/use/others/sugar_oat.lua` | disabled |
+| `rottin_wood_and_married_men/actions_corpse.lua` | 12189 | a closed door | `doors/normal_doors.lua` | disabled |
+| `the_new_frontier/action_beaver.lua` | 9843 | a lit wall lamp | `itemevents/use/others/transforms.lua` | disabled |
+| `the_first_dragon/actions_lair_entrance.lua` | 25160 | a closed door | `doors/normal_doors.lua` | **left enabled** |
+
+The first five never ran and would have done the wrong thing if they had, so they are disabled with
+the reason written at the top of each. **They are quest content that does not work**, and the fix is
+the id each should be watching — which is the same job as the NPC id mismatches (Gnomally trades
+"muck" using 16101, this map's premium scroll).
+
+**The sixth is ours to fix properly.** The First Dragon's lair entrance is a real door the quest
+means to gate, registered by item id — so it claims every door of that type and loses to the generic
+door script anyway. It needs the map's door to carry an action id and the script to register that,
+which is a map edit rather than a script edit. It is left enabled on purpose: its one duplicate
+warning at every boot is the reminder.
+
+**A rule worth keeping from this:** when a ported script and a script written for this map claim the
+same id, check what the id *is* before assuming the specific script should win. Five times out of six
+here, the generic one was right.
+
 ### Phase 1b — NPC quest givers (independent of Phase 1; runs in parallel)
 
 69 NPCs greet, sell and answer keywords but never hand out their quest: 79
