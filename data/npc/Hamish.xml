@@ -6,24 +6,24 @@
 		<parameter key="module_shop" value="1" />
 		<parameter key="shop_buyable" value="
 			blank,2260,10;
-			arrow,2266,65;
-			bolt,2261,15;
-			bow,2277,38;
-			crossbow,2301,28;
+			cure poison rune,2266,65;
+			destroy field rune,2261,15;
+			energy field rune,2277,38;
+			fire field rune,2301,28;
 			health,7618,45;			
 			icicle rune,2271,45;
 			Heavy,2311,45;			
 			rune,2265,95;
-			drill bolt,7620,50;
-			earth arrow,2186,1000;
-			energy bomb rune,2185,5000;
+			mana potion,7620,50;
+			moonlight rod,2186,1000;
+			necrotic rod,2185,5000;
 			poison,2285,21;
-			fireball rune,8704,20;
-			flaming arrow,2182,500;
+			small health potion,8704,20;
+			snakebite rod,2182,500;
 			
-			flaming arrow,2188,5000;
-			flaming arrow,2191,1000;
-			flaming arrow,2190,500" />
+			wand of decay,2188,5000;
+			wand of dragonbreath,2191,1000;
+			wand of vortex,2190,500" />
 		
 		<parameter key="shop_sellable" value="
 		

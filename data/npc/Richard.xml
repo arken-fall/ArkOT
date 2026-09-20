@@ -7,23 +7,23 @@
 		<parameter key="module_shop" value="1" />
 		<parameter key="shop_buyable" value="
 			bp,1988,10;
-			arrow,1987,4;
-			bolt,2689,3;
-			bow,2684,1;
-			crossbow,2696,5;
+			bag,1987,4;
+			bread,2689,3;
+			carrot,2684,1;
+			cheese,2696,5;
 			health,2679,1;
 			rune,2328,1;
-			drill bolt,2580,150;
-			earth arrow,2671,8;
-			energy bomb rune,2666,5000;
-			poison,2120,50;
-			fireball rune,2668,2;
-			flaming arrow,1949,5;
+			fishing rod,2580,150;
+			ham,2671,8;
+			meat,2666,5000;
+			rope,2120,50;
+			salmon,2668,2;
+			scroll,1949,5;
 			
-			flaming arrow,2550,12;
-			flaming arrow,2554,10;
-			flaming arrow,3976,1;
-			flaming arrow,2050,2" />
+			scythe,2550,12;
+			shovel,2554,10;
+			worm,3976,1;
+			torch,2050,2" />
 		
 		<parameter key="shop_sellable" value="
 		
