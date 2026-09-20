@@ -8,18 +8,18 @@ function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)
 function onThink()		npcHandler:onThink()		end
 
 local HiddenThreats = Storage.Quest.U11_50.HiddenThreats
--- local function greetCallback(npc, creature, message)
--- 	local player = Player(creature)
--- 
--- 	if player:getStorageValue(HiddenThreats.CorymRescued05) < 0 then
--- 		npcHandler:setMessage(MESSAGE_GREET, {
--- 			"Every man is the architect of his own fortune. The times of {repression} are finally over.",
--- 		})
--- 	else
--- 		npcHandler:setMessage(MESSAGE_GREET, "We have to dig up valuable resources, but don't get enough to eat. The situation is terrible.")
--- 	end
--- 	return true
--- end
+local function greetCallback(npc, cid, msg)
+	local player = Player(cid)
+
+	if player:getStorageValue(HiddenThreats.CorymRescued05) < 0 then
+		npcHandler:setMessage(MESSAGE_GREET, {
+			"Every man is the architect of his own fortune. The times of {repression} are finally over.",
+		})
+	else
+		npcHandler:setMessage(MESSAGE_GREET, "We have to dig up valuable resources, but don't get enough to eat. The situation is terrible.")
+	end
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -43,7 +43,7 @@ end
 -- Greeting message
 npcHandler:setMessage(MESSAGE_FAREWELL, "Good bye, |PLAYERNAME|.")
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

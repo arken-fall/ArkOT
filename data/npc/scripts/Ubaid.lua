@@ -13,44 +13,44 @@ local function endConversationWithDelay(npcHandler, npc, creature)
 	end, 1000)
 end
 
--- local function greetCallback(npc, creature, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not MsgContains(message, "djanni'hah") and player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.Greeting) < 0 then
--- 		npcHandler:say("Shove off, little one! Humans are not welcome here, |PLAYERNAME|!", npc, creature)
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.MaridFaction.Start) == 1 then
--- 		npcHandler:say({
--- 			"Hahahaha! ...",
--- 			"|PLAYERNAME|, that almost sounded like the word of greeting. Humans - cute they are!",
--- 		}, npc, creature)
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.Greeting) == -1 then
--- 		npcHandler:say({
--- 			"Hahahaha! ...",
--- 			"|PLAYERNAME|, that almost sounded like the word of greeting. Humans - cute they are!",
--- 		}, npc, creature)
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.EfreetDoor) ~= 1 then
--- 		npcHandler:say("What? You know the word, |PLAYERNAME|? All right then - I won't kill you. At least, not now.  What brings you {here}?", npc, creature)
--- 	else
--- 		npcHandler:say("Still alive, |PLAYERNAME|? What brings you {here}?", npc, creature)
--- 	end
--- 
--- 	npcHandler:setInteraction(npc, creature)
--- 
--- 	return true
--- end
+local function greetCallback(npc, cid, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not msgcontains(msg, "djanni'hah") and player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.Greeting) < 0 then
+		npcHandler:say("Shove off, little one! Humans are not welcome here, |PLAYERNAME|!", cid)
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.MaridFaction.Start) == 1 then
+		npcHandler:say({
+			"Hahahaha! ...",
+			"|PLAYERNAME|, that almost sounded like the word of greeting. Humans - cute they are!",
+		}, cid)
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.Greeting) == -1 then
+		npcHandler:say({
+			"Hahahaha! ...",
+			"|PLAYERNAME|, that almost sounded like the word of greeting. Humans - cute they are!",
+		}, cid)
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.EfreetDoor) ~= 1 then
+		npcHandler:say("What? You know the word, |PLAYERNAME|? All right then - I won't kill you. At least, not now.  What brings you {here}?", cid)
+	else
+		npcHandler:say("Still alive, |PLAYERNAME|? What brings you {here}?", cid)
+	end
+
+	npcHandler:setInteraction(npc, cid)
+
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -138,7 +138,6 @@ npcHandler:setMessage(MESSAGE_FAREWELL, "Farewell human!")
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Farewell human!")
 
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
---
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 
 npcHandler:addModule(FocusModule:new())

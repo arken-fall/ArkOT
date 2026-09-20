@@ -7,18 +7,18 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
--- local function greetCallback(npc, player)
--- 	if player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) < 8 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "You are not one of us. I don't want to talk to you.")
--- 	elseif player:getStorageValue(Storage.Quest.U8_0.TheIceIslands.HuskyKill) >= 1 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "I was told you have been killing huskies here in Svargrond! Never do that again, okay? They are precious animals for us. Give me 500 gold and I will forget that incident without telling it to Jarl Sven. Okay?")
--- 	elseif player:hasAchievement("Warlord of Svargrond") then
--- 		npcHandler:setMessage(MESSAGE_GREET, "HAIL to the Warlord of the arena! |PLAYERNAME|, Hero of Svargrond! What can I {do for you}?")
--- 	elseif player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) == 8 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Greetings. What can I {do for you}?")
--- 	end
--- 	return true
--- end
+local function greetCallback(npc, player)
+	if player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) < 8 then
+		npcHandler:setMessage(MESSAGE_GREET, "You are not one of us. I don't want to talk to you.")
+	elseif player:getStorageValue(Storage.Quest.U8_0.TheIceIslands.HuskyKill) >= 1 then
+		npcHandler:setMessage(MESSAGE_GREET, "I was told you have been killing huskies here in Svargrond! Never do that again, okay? They are precious animals for us. Give me 500 gold and I will forget that incident without telling it to Jarl Sven. Okay?")
+	elseif player:hasAchievement("Warlord of Svargrond") then
+		npcHandler:setMessage(MESSAGE_GREET, "HAIL to the Warlord of the arena! |PLAYERNAME|, Hero of Svargrond! What can I {do for you}?")
+	elseif player:getStorageValue(Storage.Quest.U8_0.BarbarianTest.Questline) == 8 then
+		npcHandler:setMessage(MESSAGE_GREET, "Greetings. What can I {do for you}?")
+	end
+	return true
+end
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
 	local playerId = cid
@@ -135,7 +135,7 @@ keywordHandler:addAliasKeyword({ "zathroth" })
 keywordHandler:addAliasKeyword({ "banor" })
 keywordHandler:addKeyword({ "chyll" }, StdModule.say, { npcHandler = npcHandler, text = "The icy father. We know him all too well, am I right boys? He has claimed so many old friends in all those years. So many." })
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

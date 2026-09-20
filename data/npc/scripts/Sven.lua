@@ -7,14 +7,14 @@ function onCreatureDisappear(cid)		npcHandler:onCreatureDisappear(cid)			end
 function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)		end
 function onThink()		npcHandler:onThink()		end
 
--- local function greetCallback(npc, player)
--- 	if player:getStorageValue(Storage.Quest.U8_0.TheIceIslands.HuskyKillStatus) == 1 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Iskan told me that you killed huskies here in Svargrond. I will be lenient towards you and won't ban you from Svargrond. But you have to pay me a compensation of 1500 gold for each husky you have killed. Are you willing to pay " .. player:getStorageValue(Storage.Quest.U8_0.TheIceIslands.HuskyKill) * 1500 .. "?")
--- 	else
--- 		npcHandler:setMessage(MESSAGE_GREET, "Be greeted, |PLAYERNAME|! What brings you {here}?")
--- 	end
--- 	return true
--- end
+local function greetCallback(npc, player)
+	if player:getStorageValue(Storage.Quest.U8_0.TheIceIslands.HuskyKillStatus) == 1 then
+		npcHandler:setMessage(MESSAGE_GREET, "Iskan told me that you killed huskies here in Svargrond. I will be lenient towards you and won't ban you from Svargrond. But you have to pay me a compensation of 1500 gold for each husky you have killed. Are you willing to pay " .. player:getStorageValue(Storage.Quest.U8_0.TheIceIslands.HuskyKill) * 1500 .. "?")
+	else
+		npcHandler:setMessage(MESSAGE_GREET, "Be greeted, |PLAYERNAME|! What brings you {here}?")
+	end
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -135,7 +135,7 @@ local function creatureSayCallback(cid, type, msg)
 	return true
 end
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

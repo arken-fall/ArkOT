@@ -12,22 +12,23 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
--- local function greetCallback(npc, creature)
--- 	local playerId = creature:getId()
--- 	local player = Player(creature)
--- 
--- 	if player:getStorageValue(Storage.Quest.U8_1.SecretService.AVINMission01) == 1 and player:getItemCount(402) > 0 then
--- 		player:setStorageValue(Storage.Quest.U8_1.SecretService.AVINMission01, 2)
--- 		npcHandler:say("I don't like the way you look. Help me boys!", npc, creature)
--- 		for i = 1, 2 do
--- 			Game.createMonster("Bandit", npc:getPosition())
--- 		end
--- 		npcHandler:setTopic(playerId, 0)
--- 	else
--- 		npcHandler:setMessage(MESSAGE_GREET, "Pssst! Be silent. Do you wish to {buy} something?")
--- 	end
--- 	return true
--- end
+local function greetCallback(cid)
+	local npc = Npc()
+	local playerId = cid:getId()
+	local player = Player(cid)
+
+	if player:getStorageValue(Storage.Quest.U8_1.SecretService.AVINMission01) == 1 and player:getItemCount(402) > 0 then
+		player:setStorageValue(Storage.Quest.U8_1.SecretService.AVINMission01, 2)
+		npcHandler:say("I don't like the way you look. Help me boys!", cid)
+		for i = 1, 2 do
+			Game.createMonster("Bandit", npc:getPosition())
+		end
+		npcHandler.topic[playerId] = 0
+	else
+		npcHandler:setMessage(MESSAGE_GREET, "Pssst! Be silent. Do you wish to {buy} something?")
+	end
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -58,7 +59,7 @@ end
 
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Bye. Tell others about... my little shop here.")
 npcHandler:setMessage(MESSAGE_FAREWELL, "Bye. Tell others about... my little shop here.")
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 -- Dialogue keywords the NPC answers on the official server
 keywordHandler:addKeyword({ "first dragon" }, StdModule.say, { npcHandler = npcHandler, text = "My grandfather had seen it with his own eyes!" })

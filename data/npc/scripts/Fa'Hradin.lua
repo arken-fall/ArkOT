@@ -13,30 +13,30 @@ local function endConversationWithDelay(npcHandler, npc, creature)
 	end, 1000)
 end
 
--- local function greetCallback(npc, creature, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not MsgContains(message, "djanni'hah") and player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.Greeting) < 0 then
--- 		npcHandler:say("Whoa! A human! This is no place for you, |PLAYERNAME|. Go and play somewhere else.", npc, creature)
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.EfreetFaction.Start) == 1 then
--- 		npcHandler:say({
--- 			"Hahahaha! ...",
--- 			"|PLAYERNAME|, that almost sounded like the word of greeting. Humans - cute they are!",
--- 		}, npc, creature)
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	npcHandler:say("Aaaah... what have we here. A human - interesting. And such an ugly specimen, too... All right, human |PLAYERNAME|. How can I help you?", npc, creature)
--- 	npcHandler:setInteraction(npc, creature)
--- 
--- 	return true
--- end
+local function greetCallback(npc, cid, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not msgcontains(msg, "djanni'hah") and player:getStorageValue(Storage.Quest.U7_4.DjinnWar.Faction.Greeting) < 0 then
+		npcHandler:say("Whoa! A human! This is no place for you, |PLAYERNAME|. Go and play somewhere else.", cid)
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.EfreetFaction.Start) == 1 then
+		npcHandler:say({
+			"Hahahaha! ...",
+			"|PLAYERNAME|, that almost sounded like the word of greeting. Humans - cute they are!",
+		}, cid)
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	npcHandler:say("Aaaah... what have we here. A human - interesting. And such an ugly specimen, too... All right, human |PLAYERNAME|. How can I help you?", cid)
+	npcHandler:setInteraction(npc, cid)
+
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -101,7 +101,6 @@ npcHandler:setMessage(MESSAGE_FAREWELL, "Farewell, human. I will always remember
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Farewell, human. I will always remember you. Unless I forget you, of course.")
 
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
---
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 
 npcHandler:addModule(FocusModule:new())

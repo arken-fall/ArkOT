@@ -13,20 +13,20 @@ local function endConversationWithDelay(npcHandler, npc, creature)
 	end, 1000)
 end
 
--- local function greetCallback(npc, creature, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not MsgContains(message, "hail emperor") then
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	npcHandler:say("May Fire and Earth bless you, stranger. What leads you to Beregar, the dwarven city?", npc, creature)
--- 	npcHandler:setInteraction(npc, creature)
--- 
--- 	return true
--- end
+local function greetCallback(npc, cid, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not msgcontains(msg, "hail emperor") then
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	npcHandler:say("May Fire and Earth bless you, stranger. What leads you to Beregar, the dwarven city?", cid)
+	npcHandler:setInteraction(npc, cid)
+
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -86,7 +86,6 @@ node1:addChildKeyword({ "no" }, StdModule.say, { npcHandler = npcHandler, onlyFo
 
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
---
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 
 npcHandler:addModule(FocusModule:new())

@@ -162,78 +162,78 @@ local function creatureSayCallbackMale(npc, creature, type, message)
 end
 
 local ThreatenedDreams = Storage.Quest.U11_40.ThreatenedDreams
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 	local playerSex = player:getSex()
--- 
--- 	if MsgContains(message, "fur") then
--- 		if player:getStorageValue(ThreatenedDreams.Mission01[1]) == 7 and player:getStorageValue(ThreatenedDreams.Mission01.PoacherNotes) == 1 then
--- 			npcHandler:say({
--- 				"A wolf whelp fur? Well, some months ago a hunter came here - a rather scruffy, smelly guy. I would have thrown him out instantly, but he had to offer some fine pelts. One of them was the fur of a very young wolf. ...",
--- 				"I was not delighted that he obviously killed such a young animal. When I confronted him, he said he wanted to raise it as a companion but it unfortunately died. A sad story. In the end, I bought some of his pelts, among them the whelp fur. ...",
--- 				"You can have it if this is important for you. I would sell it for 1000 gold. Are you interested?",
--- 			}, npc, creature)
--- 			npcHandler:setTopic(playerId, 8)
--- 		else
--- 			npcHandler:say("You are not on that mission.", npc, creature)
--- 			npcHandler:setTopic(playerId, 0)
--- 		end
--- 	elseif npcHandler:getTopic(playerId) == 5 then
--- 		if player:getItemCount(3566) >= 1 then
--- 			player:removeItem(3566, 1)
--- 			npcHandler:say("A {Red Robe}! Great. Here, take this red piece of cloth, I don't need it anyway.", npc, creature)
--- 			player:addItem(5911, 1)
--- 			npcHandler:setTopic(playerId, 0)
--- 		else
--- 			npcHandler:say("Are you trying to mess with me?!", npc, creature)
--- 		end
--- 	elseif npcHandler:getTopic(playerId) == 6 then
--- 		if player:getItemCount(3574) >= 1 then
--- 			player:removeItem(3574, 1)
--- 			npcHandler:say("A {Mystic Turban}! Great. Here, take this blue piece of cloth, I don't need it anyway.", npc, creature)
--- 			player:addItem(5912, 1)
--- 			npcHandler:setTopic(playerId, 0)
--- 		else
--- 			npcHandler:say("Are you trying to mess with me?!", npc, creature)
--- 		end
--- 	elseif npcHandler:getTopic(playerId) == 7 then
--- 		if player:getItemCount(3563) >= 150 then
--- 			player:removeItem(3563, 150)
--- 			npcHandler:say("A 150 {Green Tunic}! Great. Here, take this green piece of cloth, I don't need it anyway.", npc, creature)
--- 			player:addItem(5910, 1)
--- 			npcHandler:setTopic(playerId, 0)
--- 		else
--- 			npcHandler:say("Are you trying to mess with me?!", npc, creature)
--- 		end
--- 	elseif npcHandler:getTopic(playerId) == 8 then
--- 		if player:getMoney() >= 1000 then
--- 			player:removeMoney(1000)
--- 			player:addItem(25238, 1) -- Fur of a Wolf Whelp
--- 			npcHandler:say("Alright. Here is the fur.", npc, creature)
--- 			player:setStorageValue(ThreatenedDreams.Mission01[1], 8)
--- 			npcHandler:setTopic(playerId, 0)
--- 		else
--- 			npcHandler:say("Are you trying to mess with me?!", npc, creature)
--- 		end
--- 	elseif MsgContains(message, "red robe") then
--- 		npcHandler:say("Have you found a {Red Robe} for me?", npc, creature)
--- 		npcHandler:setTopic(playerId, 5)
--- 	elseif MsgContains(message, "mystic turban") then
--- 		npcHandler:say("Have you found a {Mystic Turban} for me?", npc, creature)
--- 		npcHandler:setTopic(playerId, 6)
--- 	elseif MsgContains(message, "green tunic") then
--- 		npcHandler:say("Have you found {150 Green Tunic} for me?", npc, creature)
--- 		npcHandler:setTopic(playerId, 7)
--- 	elseif playerSex == PLAYERSEX_MALE then
--- 		return creatureSayCallbackMale(npc, creature, type, message)
--- 	else
--- 		return creatureSayCallbackFemale(npc, creature, type, message)
--- 	end
--- 	return true
--- end
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+	local playerSex = player:getSex()
+
+	if msgcontains(msg, "fur") then
+		if player:getStorageValue(ThreatenedDreams.Mission01[1]) == 7 and player:getStorageValue(ThreatenedDreams.Mission01.PoacherNotes) == 1 then
+			npcHandler:say({
+				"A wolf whelp fur? Well, some months ago a hunter came here - a rather scruffy, smelly guy. I would have thrown him out instantly, but he had to offer some fine pelts. One of them was the fur of a very young wolf. ...",
+				"I was not delighted that he obviously killed such a young animal. When I confronted him, he said he wanted to raise it as a companion but it unfortunately died. A sad story. In the end, I bought some of his pelts, among them the whelp fur. ...",
+				"You can have it if this is important for you. I would sell it for 1000 gold. Are you interested?",
+			}, cid)
+			npcHandler.topic[playerId] = 8
+		else
+			npcHandler:say("You are not on that mission.", cid)
+			npcHandler.topic[playerId] = 0
+		end
+	elseif npcHandler.topic[playerId] == 5 then
+		if player:getItemCount(3566) >= 1 then
+			player:removeItem(3566, 1)
+			npcHandler:say("A {Red Robe}! Great. Here, take this red piece of cloth, I don't need it anyway.", cid)
+			player:addItem(5911, 1)
+			npcHandler.topic[playerId] = 0
+		else
+			npcHandler:say("Are you trying to mess with me?!", cid)
+		end
+	elseif npcHandler.topic[playerId] == 6 then
+		if player:getItemCount(3574) >= 1 then
+			player:removeItem(3574, 1)
+			npcHandler:say("A {Mystic Turban}! Great. Here, take this blue piece of cloth, I don't need it anyway.", cid)
+			player:addItem(5912, 1)
+			npcHandler.topic[playerId] = 0
+		else
+			npcHandler:say("Are you trying to mess with me?!", cid)
+		end
+	elseif npcHandler.topic[playerId] == 7 then
+		if player:getItemCount(3563) >= 150 then
+			player:removeItem(3563, 150)
+			npcHandler:say("A 150 {Green Tunic}! Great. Here, take this green piece of cloth, I don't need it anyway.", cid)
+			player:addItem(5910, 1)
+			npcHandler.topic[playerId] = 0
+		else
+			npcHandler:say("Are you trying to mess with me?!", cid)
+		end
+	elseif npcHandler.topic[playerId] == 8 then
+		if player:getMoney() >= 1000 then
+			player:removeMoney(1000)
+			player:addItem(25238, 1) -- Fur of a Wolf Whelp
+			npcHandler:say("Alright. Here is the fur.", cid)
+			player:setStorageValue(ThreatenedDreams.Mission01[1], 8)
+			npcHandler.topic[playerId] = 0
+		else
+			npcHandler:say("Are you trying to mess with me?!", cid)
+		end
+	elseif msgcontains(msg, "red robe") then
+		npcHandler:say("Have you found a {Red Robe} for me?", cid)
+		npcHandler.topic[playerId] = 5
+	elseif msgcontains(msg, "mystic turban") then
+		npcHandler:say("Have you found a {Mystic Turban} for me?", cid)
+		npcHandler.topic[playerId] = 6
+	elseif msgcontains(msg, "green tunic") then
+		npcHandler:say("Have you found {150 Green Tunic} for me?", cid)
+		npcHandler.topic[playerId] = 7
+	elseif playerSex == PLAYERSEX_MALE then
+		return creatureSayCallbackMale(npc, cid, type, msg)
+	else
+		return creatureSayCallbackFemale(npc, cid, type, msg)
+	end
+	return true
+end
 
 npcHandler:setMessage(MESSAGE_GREET, "Welcome to the house of fashion, |PLAYERNAME|!")
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

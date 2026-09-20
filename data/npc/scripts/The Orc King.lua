@@ -8,91 +8,93 @@ function onCreatureSay(cid, type, msg)		npcHandler:onCreatureSay(cid, type, msg)
 function onThink()		npcHandler:onThink()		end
 
 local creatures = { "Slime", "Slime", "Slime", "Orc Warlord", "Orc Warlord", "Orc Leader", "Orc Leader", "Orc Leader" }
--- local function greetCallback(npc, creature)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if player:getStorageValue(Storage.OrcKingGreeting) ~= 1 then
--- 		player:setStorageValue(Storage.OrcKingGreeting, 1)
--- 		for i = 1, #creatures do
--- 			Game.createMonster(creatures[i], npc:getPosition())
--- 		end
--- 		npcHandler:say("Arrrrgh! A dirty paleskin! To me my children! Kill them my guards!", npc, creature, 1000, TALKTYPE_SAY)
--- 		return false
--- 	else
--- 		npcHandler:setMessage(MESSAGE_GREET, "Harrrrk! You think you are strong now? You shall never escape my wrath! I am immortal!")
--- 	end
--- 	return true
--- end
+local function greetCallback(cid)
+	local npc = Npc()
+	local player = Player(cid)
+	local playerId = cid
 
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not npcHandler:checkInteraction(npc, creature) then
--- 		return false
--- 	end
--- 
--- 	local efreet, marid = player:getStorageValue(Storage.Quest.U7_4.DjinnWar.EfreetFaction.Mission03), player:getStorageValue(Storage.Quest.U7_4.DjinnWar.MaridFaction.Mission03)
--- 	-- Mission 3 - Orc Fortress
--- 	if MsgContains(message, "lamp") then
--- 		if efreet == 1 or marid == 1 then
--- 			if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.RecievedLamp) ~= 1 then
--- 				npcHandler:say({
--- 					"I can sense your evil intentions to imprison a djinn! You are longing for the lamp, which I still possess. ...",
--- 					"Who do you want to trap in this cursed lamp?",
--- 				}, npc, creature)
--- 				npcHandler:setTopic(playerId, 1)
--- 			else
--- 				npcHandler:say("For eons he was trapped in an enchanted lamp by some ancient race. Now he's free to roam the world again. Although he cheated me I appreciate what he and his brethren will do to this world, now it's the time of the Djinn again!", npc, creature)
--- 			end
--- 		end
--- 	elseif MsgContains(message, "cookie") then
--- 		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 31 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.OrcKing) ~= 1 then
--- 			npcHandler:say("You bring me a stinking cookie???", npc, creature)
--- 			npcHandler:setTopic(playerId, 2)
--- 		end
--- 
--- 		-- Mission 3 - Orc Fortress
--- 	elseif npcHandler:getTopic(playerId) == 1 then
--- 		if MsgContains(message, "malor") then
--- 			if efreet == 1 then
--- 				player:setStorageValue(Storage.Quest.U7_4.DjinnWar.EfreetFaction.DoorToLamp, 1)
--- 			elseif marid == 1 then
--- 				player:setStorageValue(Storage.Quest.U7_4.DjinnWar.MaridFaction.DoorToLamp, 1)
--- 			end
--- 
--- 			player:setStorageValue(Storage.Quest.U7_4.DjinnWar.RecievedLamp, 1)
--- 			player:addItem(3231, 1)
--- 			npcHandler:say("I was waiting for this day! Take the lamp and let Malor feel my wrath!", npc, creature)
--- 		else
--- 			npcHandler:say("I don't know your enemy, paleskin! Begone!", npc, creature)
--- 		end
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif npcHandler:getTopic(playerId) == 2 then
--- 		if MsgContains(message, "yes") then
--- 			if not player:removeItem(130, 1) then
--- 				npcHandler:say("You have no cookie that I'd like.", npc, creature)
--- 				npcHandler:setTopic(playerId, 0)
--- 				return true
--- 			end
--- 
--- 			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.OrcKing, 1)
--- 			if player:getCookiesDelivered() == 10 then
--- 				player:addAchievement("Allow Cookies?")
--- 			end
--- 
--- 			npc:getPosition():sendMagicEffect(CONST_ME_GIFT_WRAPS)
--- 			npcHandler:say("Well, I hope it stinks a lot. I like stinking cookies best ... BY MY THOUSAND SONS! YOU ARE SO DEAD HUMAN! DEAD!", npc, creature)
--- 			npcHandler:removeInteraction(npc, creature)
--- 			npcHandler:resetNpc(npc, creature)
--- 		elseif MsgContains(message, "no") then
--- 			npcHandler:say("I see.", npc, creature)
--- 			npcHandler:setTopic(playerId, 0)
--- 		end
--- 	end
--- 	return true
--- end
+	if player:getStorageValue(Storage.OrcKingGreeting) ~= 1 then
+		player:setStorageValue(Storage.OrcKingGreeting, 1)
+		for i = 1, #creatures do
+			Game.createMonster(creatures[i], npc:getPosition())
+		end
+		npcHandler:say("Arrrrgh! A dirty paleskin! To me my children! Kill them my guards!", cid, 1000, TALKTYPE_SAY)
+		return false
+	else
+		npcHandler:setMessage(MESSAGE_GREET, "Harrrrk! You think you are strong now? You shall never escape my wrath! I am immortal!")
+	end
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local npc = Npc()
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	local efreet, marid = player:getStorageValue(Storage.Quest.U7_4.DjinnWar.EfreetFaction.Mission03), player:getStorageValue(Storage.Quest.U7_4.DjinnWar.MaridFaction.Mission03)
+	-- Mission 3 - Orc Fortress
+	if msgcontains(msg, "lamp") then
+		if efreet == 1 or marid == 1 then
+			if player:getStorageValue(Storage.Quest.U7_4.DjinnWar.RecievedLamp) ~= 1 then
+				npcHandler:say({
+					"I can sense your evil intentions to imprison a djinn! You are longing for the lamp, which I still possess. ...",
+					"Who do you want to trap in this cursed lamp?",
+				}, cid)
+				npcHandler.topic[playerId] = 1
+			else
+				npcHandler:say("For eons he was trapped in an enchanted lamp by some ancient race. Now he's free to roam the world again. Although he cheated me I appreciate what he and his brethren will do to this world, now it's the time of the Djinn again!", cid)
+			end
+		end
+	elseif msgcontains(msg, "cookie") then
+		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 31 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.OrcKing) ~= 1 then
+			npcHandler:say("You bring me a stinking cookie???", cid)
+			npcHandler.topic[playerId] = 2
+		end
+
+		-- Mission 3 - Orc Fortress
+	elseif npcHandler.topic[playerId] == 1 then
+		if msgcontains(msg, "malor") then
+			if efreet == 1 then
+				player:setStorageValue(Storage.Quest.U7_4.DjinnWar.EfreetFaction.DoorToLamp, 1)
+			elseif marid == 1 then
+				player:setStorageValue(Storage.Quest.U7_4.DjinnWar.MaridFaction.DoorToLamp, 1)
+			end
+
+			player:setStorageValue(Storage.Quest.U7_4.DjinnWar.RecievedLamp, 1)
+			player:addItem(3231, 1)
+			npcHandler:say("I was waiting for this day! Take the lamp and let Malor feel my wrath!", cid)
+		else
+			npcHandler:say("I don't know your enemy, paleskin! Begone!", cid)
+		end
+		npcHandler.topic[playerId] = 0
+	elseif npcHandler.topic[playerId] == 2 then
+		if msgcontains(msg, "yes") then
+			if not player:removeItem(130, 1) then
+				npcHandler:say("You have no cookie that I'd like.", cid)
+				npcHandler.topic[playerId] = 0
+				return true
+			end
+
+			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.OrcKing, 1)
+			if player:getCookiesDelivered() == 10 then
+				player:addAchievement("Allow Cookies?")
+			end
+
+			npc:getPosition():sendMagicEffect(CONST_ME_GIFT_WRAPS)
+			npcHandler:say("Well, I hope it stinks a lot. I like stinking cookies best ... BY MY THOUSAND SONS! YOU ARE SO DEAD HUMAN! DEAD!", cid)
+			npcHandler:releaseFocus(cid)
+			npcHandler:resetNpc(npc, cid)
+		elseif msgcontains(msg, "no") then
+			npcHandler:say("I see.", cid)
+			npcHandler.topic[playerId] = 0
+		end
+	end
+	return true
+end
 
 keywordHandler:addKeyword({ "immortal" }, StdModule.say, { npcHandler = npcHandler, text = "I am Charkahn the Slayer! The immortal father of the {orcs} and master of this {hive}." })
 keywordHandler:addKeyword({ "orcs" }, StdModule.say, { npcHandler = npcHandler, text = "The orcs are the bearers of Blogs rage. This makes us the ultimate fighters and the most powerful of all races." })
@@ -115,7 +117,7 @@ keywordHandler:addKeyword({ "malor" }, StdModule.say, { npcHandler = npcHandler,
 	return player:getStorageValue(Storage.Quest.U7_4.DjinnWar.RecievedLamp) == 1
 end)
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

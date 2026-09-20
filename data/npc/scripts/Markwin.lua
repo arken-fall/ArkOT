@@ -39,60 +39,61 @@ local function greetCallback(cid)
 	return true
 end
 
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not npcHandler:checkInteraction(npc, creature) then
--- 		return false
--- 	end
--- 
--- 	if MsgContains(message, "letter") then
--- 		if player:getStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission10) == 1 then
--- 			if player:getItemCount(3220) > 0 then
--- 				npcHandler:say("A letter from my Moohmy?? Do you have a letter from my Moohmy to me?", npc, creature)
--- 				npcHandler:setTopic(playerId, 1)
--- 			end
--- 		end
--- 	elseif MsgContains(message, "cookie") then
--- 		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 31 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.Markwin) ~= 1 then
--- 			npcHandler:say("You bring me ... a cookie???", npc, creature)
--- 			npcHandler:setTopic(playerId, 2)
--- 		end
--- 	elseif MsgContains(message, "yes") then
--- 		if npcHandler:getTopic(playerId) == 1 then
--- 			npcHandler:say("Uhm, well thank you, hornless being.", npc, creature)
--- 			player:setStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission10, 2)
--- 			player:removeItem(3220, 1)
--- 			npcHandler:setTopic(playerId, 0)
--- 		elseif npcHandler:getTopic(playerId) == 2 then
--- 			if not player:removeItem(130, 1) then
--- 				npcHandler:say("You have no cookie that I'd like.", npc, creature)
--- 				npcHandler:setTopic(playerId, 0)
--- 				return true
--- 			end
--- 
--- 			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.Markwin, 1)
--- 			if player:getCookiesDelivered() == 10 then
--- 				player:addAchievement("Allow Cookies?")
--- 			end
--- 
--- 			npc:getPosition():sendMagicEffect(CONST_ME_GIFT_WRAPS)
--- 			npcHandler:say("I understand this as a peace-offering, human ... UNGH ... THIS IS AN OUTRAGE! THIS MEANS WAR!!!", npc, creature)
--- 			npcHandler:removeInteraction(npc, creature)
--- 			npcHandler:resetNpc(npc, creature)
--- 		end
--- 	elseif MsgContains(message, "bye") then
--- 		npcHandler:say("Hm ... good bye.", npc, creature)
--- 		player:addCondition(condition)
--- 		npcHandler:removeInteraction(npc, creature)
--- 		npcHandler:resetNpc(npc, creature)
--- 	end
--- 	return true
--- end
+local function creatureSayCallback(cid, type, msg)
+	local npc = Npc()
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if msgcontains(msg, "letter") then
+		if player:getStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission10) == 1 then
+			if player:getItemCount(3220) > 0 then
+				npcHandler:say("A letter from my Moohmy?? Do you have a letter from my Moohmy to me?", cid)
+				npcHandler.topic[playerId] = 1
+			end
+		end
+	elseif msgcontains(msg, "cookie") then
+		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 31 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.Markwin) ~= 1 then
+			npcHandler:say("You bring me ... a cookie???", cid)
+			npcHandler.topic[playerId] = 2
+		end
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 then
+			npcHandler:say("Uhm, well thank you, hornless being.", cid)
+			player:setStorageValue(Storage.Quest.U7_24.ThePostmanMissions.Mission10, 2)
+			player:removeItem(3220, 1)
+			npcHandler.topic[playerId] = 0
+		elseif npcHandler.topic[playerId] == 2 then
+			if not player:removeItem(130, 1) then
+				npcHandler:say("You have no cookie that I'd like.", cid)
+				npcHandler.topic[playerId] = 0
+				return true
+			end
+
+			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.CookieDelivery.Markwin, 1)
+			if player:getCookiesDelivered() == 10 then
+				player:addAchievement("Allow Cookies?")
+			end
+
+			npc:getPosition():sendMagicEffect(CONST_ME_GIFT_WRAPS)
+			npcHandler:say("I understand this as a peace-offering, human ... UNGH ... THIS IS AN OUTRAGE! THIS MEANS WAR!!!", cid)
+			npcHandler:releaseFocus(cid)
+			npcHandler:resetNpc(npc, cid)
+		end
+	elseif msgcontains(msg, "bye") then
+		npcHandler:say("Hm ... good bye.", cid)
+		player:addCondition(condition)
+		npcHandler:releaseFocus(cid)
+		npcHandler:resetNpc(npc, cid)
+	end
+	return true
+end
 
 npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 -- Dialogue keywords the NPC answers on the official server
 keywordHandler:addKeyword({ "second fellow" }, StdModule.say, { npcHandler = npcHandler, text = "Yeah - he has to step on a special tile and an entrance will appear at a very poisonous place!" })
 keywordHandler:addKeyword({ "secret lab" }, StdModule.say, { npcHandler = npcHandler, text = "Hehe - you will never find a way to enter it. The outcast stole the key. You are too weak to conquer it. HARHARHAR." })

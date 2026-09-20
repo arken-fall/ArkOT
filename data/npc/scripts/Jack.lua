@@ -15,26 +15,26 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
--- local function greetCallback(npc, creature, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 7 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "You!! What have you told my family? They are mad at me and I don't even know why! They think I lied to them about working in Edron in secrecy! Why should I even do that!")
--- 	elseif player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 8 then
--- 		npcHandler:setMessage(MESSAGE_GREET, {
--- 			"What did you do to my SCULPTURE? You simply DESTROYED it? Why? You... you ruined everything... my house, my hobby, my life. My family even refuses to talk to me anymore. ...",
--- 			"Alright, alright you win. I am done for. You... you must be right, yes. Yes, I was working as an intern... in the academy in Edron... yes... Just... tell this Spectulus guy I want to see him. I have nothing left. I am ready.",
--- 		})
--- 		player:setStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine, 9)
--- 	elseif player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 10 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "So, you've returned to Spectulus? What did he say, is anything wrong? You have this strange expression on your face - is there anything wrong? You DID tell me the truth here, didn't you?")
--- 	else
--- 		npcHandler:setMessage(MESSAGE_GREET, "Yes? What can I do for you? I hope this won't take long, though.")
--- 	end
--- 
--- 	return true
--- end
+local function greetCallback(npc, cid, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 7 then
+		npcHandler:setMessage(MESSAGE_GREET, "You!! What have you told my family? They are mad at me and I don't even know why! They think I lied to them about working in Edron in secrecy! Why should I even do that!")
+	elseif player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 8 then
+		npcHandler:setMessage(MESSAGE_GREET, {
+			"What did you do to my SCULPTURE? You simply DESTROYED it? Why? You... you ruined everything... my house, my hobby, my life. My family even refuses to talk to me anymore. ...",
+			"Alright, alright you win. I am done for. You... you must be right, yes. Yes, I was working as an intern... in the academy in Edron... yes... Just... tell this Spectulus guy I want to see him. I have nothing left. I am ready.",
+		})
+		player:setStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine, 9)
+	elseif player:getStorageValue(Storage.Quest.U8_7.JackFutureQuest.QuestLine) == 10 then
+		npcHandler:setMessage(MESSAGE_GREET, "So, you've returned to Spectulus? What did he say, is anything wrong? You have this strange expression on your face - is there anything wrong? You DID tell me the truth here, didn't you?")
+	else
+		npcHandler:setMessage(MESSAGE_GREET, "Yes? What can I do for you? I hope this won't take long, though.")
+	end
+
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -125,7 +125,7 @@ local function creatureSayCallback(cid, type, msg)
 	return true
 end
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

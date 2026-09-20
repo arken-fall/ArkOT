@@ -276,556 +276,554 @@ local function checkZ(npc, player, message)
 		end
 	end
 end
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not npcHandler:checkInteraction(npc, creature) then
--- 		return false
--- 	end
--- 
--- 	message = message:gsub("(%l)(%w*)", function(a, b)
--- 		return string.upper(a) .. b
--- 	end)
--- 
--- 	if (MsgContains("join", message) or MsgContains("yes", message)) and npcHandler:getTopic(playerId) == 0 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry) ~= 0 then
--- 		player:setStorageValue(JOIN_STOR, 1)
--- 		player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints, 0)
--- 		player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, 0)
--- 		player:setStorageValue(POINTSSTORAGE, 0)
--- 		npcHandler:say("Great! A warm welcome to our newest member: |PLAYERNAME|! Ask me for a {task} if you want to go on a hunt.", npc, creature)
--- 	elseif table.contains({ "report", "reports" }, message:lower()) then
--- 		if checkZ(npc, player, message) == true then
--- 			return true
--- 		else
--- 			npcHandler:say("You have nothing to report.", npc, creature)
--- 		end
--- 	elseif table.contains({ "tasks", "task", "mission" }, message:lower()) then
--- 		if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry) ~= 0 then
--- 			return npcHandler:say("You'll have to {join}, to get any {tasks}.", npc, creature)
--- 		end
--- 		if checkZ(npc, player, message) == true then
--- 			return true
--- 		end
--- 		if
--- 			player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) < 0 and player:getStorageValue(POINTSSTORAGE) >= 10 and player:getLevel() >= 6 -- to Huntsman Rank
--- 			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 0 and player:getStorageValue(POINTSSTORAGE) >= 20 and player:getLevel() >= 6 -- to Ranger Rank
--- 			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 2 and player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() >= 50 -- to Big Game Hunter Rank
--- 			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 4 and player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() >= 80 -- to Trophy Hunter Rank
--- 			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 6 and player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() >= 130
--- 		then -- to Elite Hunter Rank
--- 			npcHandler:say("You are ready to advance one rank in our society |PLAYERNAME|. Ask me for a {promotion} first.", npc, creature)
--- 			return true
--- 		end
--- 		local messageAlt, messageAltPoints, messageAltExtra, messageAltExtraPoints = false, false, false, false
--- 		local extraValue = 0
--- 		local messageAltId = 1
--- 		local started = player:getStartedTasks()
--- 		local finished = 0
--- 		if started and #started > 0 then
--- 			local id, reward
--- 			for i = 1, #started do
--- 				id = started[i]
--- 				if player:getStorageValue(KillCounter + id) >= tasks.GrizzlyAdams[id].killsRequired then
--- 					finished = finished + 1
--- 					for j = 1, #tasks.GrizzlyAdams[id].rewards do
--- 						reward = tasks.GrizzlyAdams[id].rewards[j]
--- 						local deny = false
--- 						if reward.storage then
--- 							if player:getStorageValue(reward.storage[1]) >= reward.storage[2] then
--- 								deny = true
--- 							end
--- 						end
--- 						if table.contains({ REWARD_MONEY, "money" }, reward.type:lower()) and not deny then
--- 							player:addMoney(reward.value[1])
--- 						elseif table.contains({ REWARD_EXP, "exp", "experience" }, reward.type:lower()) and not deny then
--- 							player:addExperience(reward.value[1], true)
--- 						elseif table.contains({ REWARD_STORAGE, "storage", "stor" }, reward.type:lower()) and not deny then
--- 							if #reward.value == 2 then
--- 								player:setStorageValue(reward.value[1], reward.value[2])
--- 								if tasks.GrizzlyAdams[id].raceName:lower() == "demons" then
--- 									messageAltExtra = true
--- 								end
--- 							elseif table.contains({ 1, 2 }, player:getStorageValue(reward.value[1])) then
--- 								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) + 1)
--- 							else
--- 								player:setStorageValue(reward.value[1], reward.value[3])
--- 								player:setStorageValue(reward.value[2], reward.value[4])
--- 								messageAlt = true
--- 								messageAltId = tasks.GrizzlyAdams[id].bossId
--- 							end
--- 						elseif table.contains({ REWARD_POINT, "points", "point" }, reward.type:lower()) and not deny then
--- 							local ratePoints = 1
--- 							if configKeys.RATE_KILLING_IN_THE_NAME_OF_POINTS then
--- 								ratePoints = configManager.getNumber(configKeys.RATE_KILLING_IN_THE_NAME_OF_POINTS)
--- 							end
--- 
--- 							local pointsToReceive = reward.value[1] * ratePoints
--- 							if player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() < 50 or player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() < 80 or player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() < 130 then
--- 								messageAltPoints = true
--- 							elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) <= 20 then
--- 								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(creature) + pointsToReceive + 3)
--- 								messageAltExtraPoints = true
--- 								extraValue = 3
--- 								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
--- 							elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) <= 40 then
--- 								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(creature) + pointsToReceive + 2)
--- 								messageAltExtraPoints = true
--- 								extraValue = 2
--- 								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
--- 							elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) <= 70 then
--- 								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(creature) + pointsToReceive + 1)
--- 								messageAltExtraPoints = true
--- 								extraValue = 1
--- 								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
--- 							else
--- 								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(creature) + pointsToReceive)
--- 								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
--- 							end
--- 						elseif table.contains({ REWARD_ITEM, "item", "items", "object" }, reward.type:lower()) and not deny then
--- 							player:addItem(reward.value[1], reward.value[2])
--- 						end
--- 
--- 						if reward.storage then
--- 							player:setStorageValue(reward.storage[1], reward.storage[2])
--- 						end
--- 					end
--- 
--- 					player:setStorageValue(QUESTSTORAGE_BASE + id, (tasks.GrizzlyAdams[id].norepeatable and 2 or 0))
--- 					if tasks.GrizzlyAdams[id].repeatable then
--- 						player:setStorageValue(REPEATSTORAGE_BASE + id, math.max(player:getStorageValue(REPEATSTORAGE_BASE + id), 0))
--- 					else
--- 						player:setStorageValue(REPEATSTORAGE_BASE + id, math.max(player:getStorageValue(REPEATSTORAGE_BASE + id), 0))
--- 						player:setStorageValue(REPEATSTORAGE_BASE + id, player:getStorageValue(REPEATSTORAGE_BASE + id) + 1)
--- 					end
--- 					if player:getStorageValue(REPEATSTORAGE_BASE + id) == 3 then
--- 						player:setStorageValue(KILLSSTORAGE_BASE + id, 2)
--- 					else
--- 						player:setStorageValue(KILLSSTORAGE_BASE + id, player:getStorageValue(KILLSSTORAGE_BASE + id) + 1)
--- 					end
--- 					player:setStorageValue(KillCounter, 0)
--- 				end
--- 			end
--- 		end
--- 		if messageAltExtra == true then
--- 			npcHandler:say({
--- 				"Such brave deed deserves a special reward! Take this holy icon. It neutralises great evil and gives you access to areas which are protected by those forces. But remember ...",
--- 				"This is a one-time opportunity! You won't get the holy icon twice.",
--- 			}, npc, creature)
--- 			return true
--- 		end
--- 		if finished > 0 then
--- 			local chanceY = math.random(4)
--- 			if finished == 1 then
--- 				if messageAlt == false then
--- 					if messageAltPoints == true then
--- 						npcHandler:say({
--- 							"Ah, okay. This time you'll just get an experience reward, no points for our society as you already gained enough points for your level range. Ask me for a {boss} and the choice is yours. ...",
--- 							"Level up and new tasks and thus points will be available.",
--- 						}, npc, creature)
--- 					elseif messageAltExtraPoints == true then
--- 						npcHandler:say("You're lucky today. This time you'll get an experience reward and " .. extraValue .. " extra points for our societ.", npc, creature)
--- 					else
--- 						npcHandler:say(messageTask[chanceY], npc, creature)
--- 					end
--- 				else
--- 					npcHandler:say(messageBoss[messageAltId], npc, creature)
--- 				end
--- 			else
--- 				npcHandler:say(messageTask[chanceY], npc, creature)
--- 			end
--- 			return true
--- 		end
--- 		if #player:getStartedTasks() >= tasksByPlayer then
--- 			npcHandler:say("You've three unfinished tasks running old chap. If you want to accept a new one, you have to delete one of your old ones. Do you want to delete a task?", npc, creature)
--- 			npcHandler:setTopic(playerId, 10)
--- 			return true
--- 		end
--- 		if player:getLevel() < 50 then
--- 			if player:getStorageValue(POINTSSTORAGE) >= 40 then
--- 				npcHandler:say({
--- 					"You may not advance in your rank anymore until you've levelled up. But you can accept tasks without getting Paw & Fur points, just for an experience reward and the possibility to fight a boss from the range lower than level 50. ...",
--- 					"You can try {crocodiles}, {badgers}, {tarantulas}, {carniphilas}, {stone golems}, {mammoths}, {gnarlhounds}, ...",
--- 					"as well as {terramites}, {apes}, {thornback tortoises} and {gargoyles}.",
--- 				}, npc, creature)
--- 			else
--- 				npcHandler:say("Alright, what would you like to hunt? {Crocodiles}, {badgers}, {tarantulas}, {carniphilas}, {stone golems}, {mammoths}, {gnarlhounds}, {terramites}, {apes}, {thornback tortoises} or {gargoyles}.", npc, creature)
--- 			end
--- 		elseif player:getLevel() >= 50 and player:getLevel() < 80 then
--- 			if player:getStorageValue(POINTSSTORAGE) >= 70 then
--- 				npcHandler:say({
--- 					"You may not advance in your rank anymore until you've levelled up. But you can accept tasks without getting Paw & Fur points, just for an experience reward and the possibility to fight a boss from the range lower than level 80. ...",
--- 					"You can try {ice golems}, {quara scouts}, {mutated rats}, {ancient scarabs}, {wyverns}, {lancer beetles}, {wailing widows}, ...",
--- 					"as well as {killer caimans}, {bonebeasts}, {crystal spiders} and {mutated tigers}.",
--- 				}, npc, creature)
--- 			else
--- 				npcHandler:say({
--- 					"Alright, what would you like to hunt? {Ice golems}, {quara scouts}, {mutated rats}, {ancient scarabs}, {wyverns}, {lancer beetles}, ...",
--- 					"or {wailing widows}, {killer caimans}, {bonebeasts}, {crystal spiders} or {mutated tigers}.",
--- 				}, npc, creature)
--- 			end
--- 		elseif player:getLevel() >= 80 and player:getLevel() < 130 then
--- 			if player:getStorageValue(POINTSSTORAGE) >= 100 then
--- 				npcHandler:say({
--- 					"You may not advance in your rank anymore until you've levelled up. But you can accept tasks without getting Paw & Fur points, just for an experience reward and the possibility to fight a boss from the range lower than level 130. ...",
--- 					"You can try {underwater quara}, {giant spiders}, {werewolves}, {nightmares}, {hellspawns}, {high class lizards}, {stampors}, ...",
--- 					"as well as {brimstone bugs} and {mutated bats}.",
--- 				}, npc, creature)
--- 			else
--- 				npcHandler:say({
--- 					"Alright, what would you like to hunt? {Underwater quara}, {giant spiders}, {werewolves}, {nightmares}, {hellspawns}, ...",
--- 					"as well as {high class lizards}, {stampors}, {brimstone bugs}, {mutated bats}.",
--- 				}, npc, creature)
--- 			end
--- 		elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) < 100 then
--- 			npcHandler:say({
--- 				"Alright, what would you like to hunt? You can try {hydras}, {serpent spawns}, {medusae}, {behemoths}, {sea serpents}, ...",
--- 				"as well as {hellhounds}, {ghastly dragons}, {undead dragons}, {draken} and {destroyers}.",
--- 			}, npc, creature)
--- 		else
--- 			npcHandler:say({
--- 				"Alright, what would you like to hunt? Be aware you won't gain any paw and fur points as you already achieved the highest rank, but you'll get an experience reward and can face bosses. ...",
--- 				"You can try {hydras}, {serpent spawns}, {medusae}, {behemoths}, {sea serpents}, ...",
--- 				"as well as {hellhounds}, {ghastly dragons}, {undead dragons}, {draken} and {destroyers} or maybe {demons}.",
--- 			}, npc, creature)
--- 		end
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif message ~= "" and player:canStartTask(message) then
--- 		if #player:getStartedTasks() >= tasksByPlayer then
--- 			npcHandler:say("You've three unfinished tasks running old chap. If you want to accept a new one, you have to delete one of your old ones. Do you want to delete a task?", npc, creature)
--- 			npcHandler:setTopic(playerId, 10)
--- 			return true
--- 		end
--- 		local task = getTaskByName(message)
--- 		if task and player:getStorageValue(QUESTSTORAGE_BASE + task) > 0 then
--- 			return false
--- 		end
--- 		local messageElse = "You already achieved the maximum rank for your level range. If you accept this task, you won't gain points for our society. Hunt " .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. " and you'll be rewarded with experience and the possibility to choose a {boss}. Are you in, old chap?"
--- 		if table.contains(tier[1].allName, message:lower()) then
--- 			if player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() < 50 then
--- 				npcHandler:say(messageElse, npc, creature)
--- 			elseif table.contains({ "carniphilas", "carniphila" }, message:lower()) then
--- 				local chanceX = math.random(2)
--- 				local messageCarniphilas = {
--- 					[1] = "Interesting kind and not so easy to find. The fun begins when you want to hunt {Tiquanda's Revenge}. It's strong and smart like no other carniphila.",
--- 					[2] = "Damn walking weed-thingies! You'll find them deeper in the jungle. Weed out 150 carniphilas for our society. Alright?",
--- 				}
--- 				npcHandler:say(messageCarniphilas[chanceX], npc, creature)
--- 			elseif table.contains(tier[1].withsName, message:lower()) then
--- 				npcHandler:say(messageStartTask[message:lower()], npc, creature)
--- 			else
--- 				npcHandler:say(messageStartTaskAlt[message:lower()], npc, creature)
--- 			end
--- 		elseif table.contains(tier[2].allName, message:lower()) then
--- 			if player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() < 80 then
--- 				npcHandler:say(messageElse, npc, creature)
--- 			elseif table.contains(tier[2].withsName, message:lower()) then
--- 				npcHandler:say(messageStartTask[message:lower()], npc, creature)
--- 			else
--- 				npcHandler:say(messageStartTaskAlt[message:lower()], npc, creature)
--- 			end
--- 		elseif table.contains(tier[3].allName, message:lower()) then
--- 			if player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() < 130 then
--- 				npcHandler:say(messageElse, npc, creature)
--- 			elseif table.contains(tier[3].withsName, message:lower()) then
--- 				npcHandler:say(messageStartTask[message:lower()], npc, creature)
--- 			else
--- 				npcHandler:say(messageStartTaskAlt[message:lower()], npc, creature)
--- 			end
--- 		elseif table.contains(tier[4].allName, message:lower()) then
--- 			if table.contains(tier[4].withsName, message:lower()) then
--- 				npcHandler:say(messageStartTask[message:lower()], npc, creature)
--- 			else
--- 				npcHandler:say(messageStartTaskAlt[message:lower()], npc, creature)
--- 			end
--- 		elseif table.contains({ "demons", "demon" }, message:lower()) and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 7 then
--- 			npcHandler:say("The spawn of pure evil must be erased from Tibia. You'll find demons lurking in the northern ruins of Edron as well as in some other deeper dungeons of Tibia. Slay 6666 demons for the greater good! Do you think you can handle this task?", npc, creature)
--- 		else
--- 			npcHandler:say("In this task you must defeat " .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. ". Are you sure that you want to start this task?", npc, creature)
--- 		end
--- 		choose[playerId] = task
--- 		npcHandler:setTopic(playerId, 1)
--- 	elseif table.contains(tier[1].allName, message:lower()) and player:getLevel() < 50 and npcHandler:getTopic(playerId) < 2 then
--- 		checkY(npc, player, message)
--- 	elseif table.contains(tier[2].allName, message:lower()) and player:getLevel() < 80 and npcHandler:getTopic(playerId) < 2 then
--- 		checkY(npc, player, message)
--- 	elseif table.contains(tier[3].allName, message:lower()) and player:getLevel() < 130 and npcHandler:getTopic(playerId) < 2 then
--- 		checkY(npc, player, message)
--- 	elseif message:lower() == "yes" and npcHandler:getTopic(playerId) == 1 then
--- 		player:setStorageValue(QUESTSTORAGE_BASE + choose[playerId], 1)
--- 		player:setStorageValue(KillCounter + choose[playerId], 0)
--- 		if #tasks.GrizzlyAdams[choose[playerId]].creatures > 1 then
--- 			if tasks.GrizzlyAdams[choose[playerId]].raceName == "Apes" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.KongraCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.MerlkinCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.SibangCount, 0)
--- 			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Quara Scouts" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraConstrictorScoutCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraHydromancerScoutCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaramMntassinScoutCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPincherScoutCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPredatorScoutCount, 0)
--- 			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Underwater Quara" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraConstrictorCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraHydromancerCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraMantassinCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPincherCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPredatorCount, 0)
--- 			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Nightmares" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.NightmareCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.NightmareScionCount, 0)
--- 			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "High Class Lizards" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardChosenCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardDragonPriestCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardHighGuardCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardLegionnaireCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardZaogunCount, 0)
--- 			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Sea Serpents" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.SeaSerpentCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.YoungSeaSerpentCount, 0)
--- 			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Drakens" then
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenAbominationCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenEliteCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenSpellweaverCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenWarmasterCount, 0)
--- 			end
--- 		end
--- 		if player:getStorageValue(KILLSSTORAGE_BASE + choose[playerId]) == 1 then
--- 			player:setStorageValue(KILLSSTORAGE_BASE + choose[playerId], player:getStorageValue(KILLSSTORAGE_BASE + choose[playerId]) - 1)
--- 		else
--- 			player:setStorageValue(KILLSSTORAGE_BASE + choose[playerId], player:getStorageValue(KILLSSTORAGE_BASE + choose[playerId]) + 1)
--- 		end
--- 		local chance = math.random(10)
--- 		npcHandler:say(messageYes[chance], npc, creature)
--- 		choose[playerId] = nil
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif MsgContains("status", message) then
--- 		local started = player:getStartedTasks()
--- 		if started and #started > 0 then
--- 			local text = ""
--- 			table.sort(started, function(a, b)
--- 				return (a < b)
--- 			end)
--- 			local t = 0
--- 			local id
--- 			for i = 1, #started do
--- 				id = started[i]
--- 				t = t + 1
--- 				text = text .. "Task name: " .. tasks.GrizzlyAdams[id].raceName .. ". " .. "Current kills: " .. player:getStorageValue(KillCounter + id) .. ".\n"
--- 			end
--- 			npcHandler:say({ "The status of your current tasks is:\n" .. text }, npc, creature)
--- 		else
--- 			npcHandler:say("You haven't started any task yet.", npc, creature)
--- 		end
--- 	elseif table.contains({ "promotion", "promotions" }, message:lower()) then
--- 		if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) < 0 and player:getStorageValue(POINTSSTORAGE) >= 10 and player:getLevel() >= 6 then -- to Huntsman Rank
--- 			npcHandler:say({
--- 				"You gained 10 points! Let me promote you to the first rank: 'Huntsman'. Congratulations! ...",
--- 				"If you find any trophies - either monster heads or other parts of monsters that you don't need - feel free to ask me for a trade.",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 0)
--- 		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 0 and player:getStorageValue(POINTSSTORAGE) >= 20 and player:getLevel() >= 6 then -- to Ranger Rank
--- 			npcHandler:say({
--- 				"You gained 20 points. It's time for a promotion. You advance to the rank of a 'Ranger'. Congratulations! ...",
--- 				"Oh, I made a deal with Lorek. He ships Rangers from our society - and higher ranks of course - to Banuta, Chor or near the mountain pass to Darama. Just ask him for a passage.",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 2)
--- 		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 2 and player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() >= 50 then -- to Big Game Hunter Rank
--- 			npcHandler:say({
--- 				"Good show! You gained 40 points for the 'Paw and Fur - Hunting Elite'. You have earned the right to join the ranks of those known as 'Big game hunter'. Congratulations! ...",
--- 				"From now on I'll buy more trophies from you!",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 4)
--- 		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 4 and player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() >= 80 then -- to Trophy Hunter Rank
--- 			npcHandler:say({
--- 				"Spiffing! You gained 70 hunting points! From now on you can call yourself a 'Trophy hunter'. As a reward I have this special backpack for you and in addition, you can sell some more rare trophies to me. ...",
--- 				"Ask me for {special} tasks from time to time.",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 6)
--- 		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 6 and player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() >= 130 then -- to Elite Hunter Rank
--- 			npcHandler:say("Congratulations, |PLAYERNAME|! You have gained the highest rank: 'Elite hunter'. If you haven't done yet, ask me for the {special} task.", npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 7)
--- 		else
--- 			npcHandler:say("You have not enough points for promotion.", npc, creature)
--- 		end
--- 	elseif table.contains({ "boss", "bosses" }, message:lower()) then
--- 		if checkZ(npc, player, message) == true then
--- 			return true
--- 		end
--- 		if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) > 0 then
--- 			if player:getLevel() < 50 then
--- 				npcHandler:say("You can choose between the {Snapper}, {Hide}, {Deathbine} and the {Bloodtusk}.", npc, creature)
--- 				npcHandler:setTopic(playerId, 4)
--- 			elseif player:getLevel() >= 50 and player:getLevel() < 80 then
--- 				npcHandler:say({
--- 					"You can choose between the {Snapper}, {Hide}, {Deathbine}, the {Bloodtusk}, {Shardhead}, {Fleshcrawler}, {Ribstride}, {Bloodweb} and {Esmeralda}",
--- 				}, npc, creature)
--- 				npcHandler:setTopic(playerId, 5)
--- 			elseif player:getLevel() >= 80 and player:getLevel() < 130 then
--- 				npcHandler:say({
--- 					"You can choose between the {Snapper}, {Hide}, {Deathbine}, the {Bloodtusk}, {Shardhead}, {Fleshcrawler}, {Ribstride}, {Bloodweb}, {Esmeralda}, ...",
--- 					"{Thul}, {Flameborn}, {Sulphur Scuttler}, the {Old Widow}, {Hemming}, {Tormentor}, {Fazzrah}, {Tromphonyte} and {Bruise Payne}.",
--- 				}, npc, creature)
--- 				npcHandler:setTopic(playerId, 6)
--- 			else
--- 				npcHandler:say({
--- 					"You can choose between the {Snapper}, {Hide}, {Deathbine}, the {Bloodtusk}, {Shardhead}, {Fleshcrawler}, {Ribstride}, {Bloodweb}, {Esmeralda}, ...",
--- 					"{Thul}, {Flameborn}, {Sulphur Scuttler}, the {Old Widow}, {Hemming}, {Tormentor}, {Fazzrah}, {Tromphonyte}, {Bruise Payne}, ...",
--- 					"the {Many}, the {Noxious Spawn}, {Stonecracker}, {Gorgo}, {Kerberos}, {Ethershreck}, {Zanakeph}, {Paiz the Pauperizer}, {Bretzecutioner} and {Leviathan}.",
--- 				}, npc, creature)
--- 				npcHandler:setTopic(playerId, 7)
--- 			end
--- 		else
--- 			npcHandler:say("You have " .. player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) .. " boss points.", npc, creature)
--- 		end
--- 	elseif table.contains({ "snapper", "hide", "deathbine", "bloodtusk" }, message:lower()) and npcHandler:getTopic(playerId) >= 4 and npcHandler:getTopic(playerId) <= 7 then
--- 		checkX(npc, player, 50, message)
--- 	elseif table.contains({ "shardhead", "fleshcrawler", "ribstride", "bloodweb", "esmeralda" }, message:lower()) and npcHandler:getTopic(playerId) >= 5 and npcHandler:getTopic(playerId) <= 7 then
--- 		checkX(npc, player, 80, message)
--- 	elseif table.contains({ "thul", "flameborn", "sulphur scuttler", "old widow", "hemming", "tormentor", "fazzrah", "tromphonyte", "bruise payne" }, message:lower()) and npcHandler:getTopic(playerId) >= 6 and npcHandler:getTopic(playerId) <= 7 then
--- 		checkX(npc, player, 130, message)
--- 	elseif table.contains({ "many", "noxious spawn", "stonecracker", "gorgo", "kerberos", "ethershreck", "zanakeph", "paiz the pauperizer", "bretzecutioner", "leviathan" }, message:lower()) and npcHandler:getTopic(playerId) == 7 then
--- 		for w = 1, #tasks.GrizzlyAdams do
--- 			if tasks.GrizzlyAdams[w].bossName then
--- 				if tasks.GrizzlyAdams[w].bossName:lower() == message:lower() then
--- 					for y = 1, #tasks.GrizzlyAdams[w].rewards do
--- 						if table.contains({ REWARD_STORAGE, "storage", "stor" }, tasks.GrizzlyAdams[w].rewards[y].type:lower()) then
--- 							if player:getStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[1]) == 3 or player:getStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[1]) < 0 then
--- 								npcHandler:say(messageBossStart[tasks.GrizzlyAdams[w].bossId], npc, creature)
--- 								player:setStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[1], 1)
--- 								player:setStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[2], 0)
--- 								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) - 1)
--- 								return true
--- 							else
--- 								npcHandler:say("You have '" .. tasks.GrizzlyAdams[w].bossName .. "' task active.", npc, creature)
--- 							end
--- 						end
--- 					end
--- 				end
--- 			end
--- 		end
--- 	elseif message:lower() == "started" then
--- 		local started = player:getStartedTasks()
--- 		if started and #started > 0 then
--- 			local text = ""
--- 			local sep = ", "
--- 			table.sort(started, function(a, b)
--- 				return (a < b)
--- 			end)
--- 			local t = 0
--- 			local id
--- 			for i = 1, #started do
--- 				id = started[i]
--- 				t = t + 1
--- 				if t == #started - 1 then
--- 					sep = " and "
--- 				elseif t == #started then
--- 					sep = "."
--- 				end
--- 				text = text .. "{" .. (tasks.GrizzlyAdams[id].name or tasks.GrizzlyAdams[id].raceName) .. "}" .. sep
--- 			end
--- 
--- 			npcHandler:say("The current task" .. (#started > 1 and "s" or "") .. " that you started" .. " " .. (#started > 1 and "are" or "is") .. " " .. text, npc, creature)
--- 		else
--- 			npcHandler:say("You haven't started any task yet.", npc, creature)
--- 		end
--- 	elseif message:lower() == "cancel" or message:lower() == "yes" and npcHandler:getTopic(playerId) == 10 then
--- 		local started = player:getStartedTasks()
--- 		local text = ""
--- 		local sep = ", "
--- 		table.sort(started, function(a, b)
--- 			return (a < b)
--- 		end)
--- 		local t = 0
--- 		local id
--- 		for i = 1, #started do
--- 			id = started[i]
--- 			t = t + 1
--- 			if t == #started - 1 then
--- 				sep = " or "
--- 			elseif t == #started then
--- 				sep = "?"
--- 			end
--- 			text = text .. "{" .. (tasks.GrizzlyAdams[id].name or tasks.GrizzlyAdams[id].raceName) .. "}" .. sep
--- 		end
--- 		if started and #started > 0 then
--- 			npcHandler:say("Canceling a task will make the counter restart. " .. "Which of these tasks you want cancel?" .. (#started > 1 and "" or "") .. " " .. text, npc, creature)
--- 			npcHandler:setTopic(playerId, 2)
--- 		else
--- 			npcHandler:say("You haven't started any task yet.", npc, creature)
--- 		end
--- 	elseif (getTaskByName(message)) and (npcHandler:getTopic(playerId) == 2) and (table.contains(getPlayerStartedTasks(creature), getTaskByName(message))) then
--- 		local task = getTaskByName(message)
--- 		if player:getStorageValue(KillCounter + task) > 0 then
--- 			npcHandler:say("You currently killed " .. player:getStorageValue(KillCounter + task) .. "/" .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. "." .. " " .. "Canceling this task will restart the count." .. " " .. "Are you sure you want to cancel this task?", npc, creature)
--- 		else
--- 			npcHandler:say("Are you sure you want to cancel this task?", npc, creature)
--- 		end
--- 		npcHandler:setTopic(playerId, 3)
--- 		cancel[playerId] = task
--- 	elseif (getTaskByName(message)) and (npcHandler:getTopic(playerId) == 1) and (table.contains(getPlayerStartedTasks(creature), getTaskByName(message))) then
--- 		local task = getTaskByName(message)
--- 		if player:getStorageValue(KillCounter + task) > 0 then
--- 			npcHandler:say("You currently killed " .. player:getStorageValue(KillCounter + task) .. "/" .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. ".", npc, creature)
--- 		else
--- 			npcHandler:say("You currently killed 0/" .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. ".", npc, creature)
--- 		end
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif message:lower() == "yes" and npcHandler:getTopic(playerId) == 3 then
--- 		player:setStorageValue(QUESTSTORAGE_BASE + cancel[playerId], -1)
--- 		player:setStorageValue(KILLSSTORAGE_BASE + cancel[playerId], player:getStorageValue(KILLSSTORAGE_BASE + cancel[playerId]) - 1)
--- 		player:setStorageValue(KillCounter + cancel[playerId], 0)
--- 		npcHandler:say("You have canceled the task " .. (tasks.GrizzlyAdams[cancel[playerId]].name or tasks.GrizzlyAdams[cancel[playerId]].raceName) .. ".", npc, creature)
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif table.contains({ "points", "rank" }, message:lower()) then
--- 		npcHandler:say(
--- 			"At this time, you have "
--- 				.. player:getPawAndFurPoints()
--- 				.. " Paw & Fur points. You "
--- 				.. (player:getPawAndFurRank() == 6 and "are an Elite Hunter" or player:getPawAndFurRank() == 5 and "are a Trophy Hunter" or player:getPawAndFurRank() == 4 and "are a Big Game Hunter" or player:getPawAndFurRank() == 3 and "are a Ranger" or player:getPawAndFurRank() == 2 and "are a Huntsman" or player:getPawAndFurRank() == 1 and "are a Member" or "haven't been ranked yet")
--- 				.. ".",
--- 			npc,
--- 			creature
--- 		)
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif message:lower() == "no" and npcHandler:getTopic(playerId) == 10 then
--- 		npcHandler:say("Speak to me again when you are done hunting", npc, creature)
--- 		npcHandler:setTopic(playerId, 0)
--- 	elseif table.contains({ "special", "special task" }, message:lower()) then
--- 		if player:getPawAndFurPoints() >= 70 and player:getLevel() >= 80 then
--- 			if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) < 1 then
--- 				npcHandler:say({
--- 					"Have you heard about {Tiquanda's Revenge}? It is said that the jungle itself is alive and takes revenge for all the bad things people have done to it. ...",
--- 					"I myself believe that there is some truth in this clap-trap. Something 'real' which must have a hideout somewhere. Go find it and take revenge yourself! Ask me about the {special} task when you're done.",
--- 				}, npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.TiquandasCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge, 1)
--- 			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) <= 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.TiquandasCount) == 0 then
--- 				npcHandler:say("You have already started the task. Go find Tiquandas Revenge and take revenge yourself!", npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge, 1) -- for death scenario
--- 			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) == 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.TiquandasCount) == 1 then
--- 				npcHandler:say("Great achievement, old chap! You are an outstanding hunter, no doubt about it!", npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge, 3)
--- 			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) < 1 then
--- 				npcHandler:say("This task is a very dangerous one. I want you to look for {Demodras'} hideout. It might be somewhere under the {Plains of Havoc}. Good luck, old chap, come back in one piece and ask me about the special task when you're done.", npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.DemodrasCount, 0)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras, 1)
--- 			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) <= 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.DemodrasCount) == 0 then
--- 				npcHandler:say("You have already started the special task. Find Demodras and kill it.", npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras, 1) -- for death scenario
--- 			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) == 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.DemodrasCount) == 1 then
--- 				npcHandler:say("Jolly good show! You can cross swords with any creature in this world! I bow to you.", npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras, 3)
--- 			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) == 3 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) == 3 then
--- 				npcHandler:say("You have already finished all special tasks.", npc, creature)
--- 			end
--- 			npcHandler:setTopic(playerId, 0)
--- 		end
--- 	end
--- end
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	msg = msg:gsub("(%l)(%w*)", function(a, b)
+		return string.upper(a) .. b
+	end)
+
+	if (msgcontains("join", msg) or msgcontains("yes", msg)) and npcHandler.topic[playerId] == 0 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry) ~= 0 then
+		player:setStorageValue(JOIN_STOR, 1)
+		player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints, 0)
+		player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, 0)
+		player:setStorageValue(POINTSSTORAGE, 0)
+		npcHandler:say("Great! A warm welcome to our newest member: |PLAYERNAME|! Ask me for a {task} if you want to go on a hunt.", cid)
+	elseif table.contains({ "report", "reports" }, msg:lower()) then
+		if checkZ(npc, player, msg) == true then
+			return true
+		else
+			npcHandler:say("You have nothing to report.", cid)
+		end
+	elseif table.contains({ "tasks", "task", "mission" }, msg:lower()) then
+		if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry) ~= 0 then
+			return npcHandler:say("You'll have to {join}, to get any {tasks}.", cid)
+		end
+		if checkZ(npc, player, msg) == true then
+			return true
+		end
+		if
+			player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) < 0 and player:getStorageValue(POINTSSTORAGE) >= 10 and player:getLevel() >= 6 -- to Huntsman Rank
+			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 0 and player:getStorageValue(POINTSSTORAGE) >= 20 and player:getLevel() >= 6 -- to Ranger Rank
+			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 2 and player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() >= 50 -- to Big Game Hunter Rank
+			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 4 and player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() >= 80 -- to Trophy Hunter Rank
+			or player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 6 and player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() >= 130
+		then -- to Elite Hunter Rank
+			npcHandler:say("You are ready to advance one rank in our society |PLAYERNAME|. Ask me for a {promotion} first.", cid)
+			return true
+		end
+		local messageAlt, messageAltPoints, messageAltExtra, messageAltExtraPoints = false, false, false, false
+		local extraValue = 0
+		local messageAltId = 1
+		local started = player:getStartedTasks()
+		local finished = 0
+		if started and #started > 0 then
+			local id, reward
+			for i = 1, #started do
+				id = started[i]
+				if player:getStorageValue(KillCounter + id) >= tasks.GrizzlyAdams[id].killsRequired then
+					finished = finished + 1
+					for j = 1, #tasks.GrizzlyAdams[id].rewards do
+						reward = tasks.GrizzlyAdams[id].rewards[j]
+						local deny = false
+						if reward.storage then
+							if player:getStorageValue(reward.storage[1]) >= reward.storage[2] then
+								deny = true
+							end
+						end
+						if table.contains({ REWARD_MONEY, "money" }, reward.type:lower()) and not deny then
+							player:addMoney(reward.value[1])
+						elseif table.contains({ REWARD_EXP, "exp", "experience" }, reward.type:lower()) and not deny then
+							player:addExperience(reward.value[1], true)
+						elseif table.contains({ REWARD_STORAGE, "storage", "stor" }, reward.type:lower()) and not deny then
+							if #reward.value == 2 then
+								player:setStorageValue(reward.value[1], reward.value[2])
+								if tasks.GrizzlyAdams[id].raceName:lower() == "demons" then
+									messageAltExtra = true
+								end
+							elseif table.contains({ 1, 2 }, player:getStorageValue(reward.value[1])) then
+								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) + 1)
+							else
+								player:setStorageValue(reward.value[1], reward.value[3])
+								player:setStorageValue(reward.value[2], reward.value[4])
+								messageAlt = true
+								messageAltId = tasks.GrizzlyAdams[id].bossId
+							end
+						elseif table.contains({ REWARD_POINT, "points", "point" }, reward.type:lower()) and not deny then
+							local ratePoints = 1
+							if configKeys.RATE_KILLING_IN_THE_NAME_OF_POINTS then
+								ratePoints = configManager.getNumber(configKeys.RATE_KILLING_IN_THE_NAME_OF_POINTS)
+							end
+
+							local pointsToReceive = reward.value[1] * ratePoints
+							if player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() < 50 or player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() < 80 or player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() < 130 then
+								messageAltPoints = true
+							elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) <= 20 then
+								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(cid) + pointsToReceive + 3)
+								messageAltExtraPoints = true
+								extraValue = 3
+								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
+							elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) <= 40 then
+								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(cid) + pointsToReceive + 2)
+								messageAltExtraPoints = true
+								extraValue = 2
+								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
+							elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) <= 70 then
+								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(cid) + pointsToReceive + 1)
+								messageAltExtraPoints = true
+								extraValue = 1
+								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
+							else
+								player:setStorageValue(POINTSSTORAGE, getPlayerTasksPoints(cid) + pointsToReceive)
+								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.QuestLogEntry)) -- fake update
+							end
+						elseif table.contains({ REWARD_ITEM, "item", "items", "object" }, reward.type:lower()) and not deny then
+							player:addItem(reward.value[1], reward.value[2])
+						end
+
+						if reward.storage then
+							player:setStorageValue(reward.storage[1], reward.storage[2])
+						end
+					end
+
+					player:setStorageValue(QUESTSTORAGE_BASE + id, (tasks.GrizzlyAdams[id].norepeatable and 2 or 0))
+					if tasks.GrizzlyAdams[id].repeatable then
+						player:setStorageValue(REPEATSTORAGE_BASE + id, math.max(player:getStorageValue(REPEATSTORAGE_BASE + id), 0))
+					else
+						player:setStorageValue(REPEATSTORAGE_BASE + id, math.max(player:getStorageValue(REPEATSTORAGE_BASE + id), 0))
+						player:setStorageValue(REPEATSTORAGE_BASE + id, player:getStorageValue(REPEATSTORAGE_BASE + id) + 1)
+					end
+					if player:getStorageValue(REPEATSTORAGE_BASE + id) == 3 then
+						player:setStorageValue(KILLSSTORAGE_BASE + id, 2)
+					else
+						player:setStorageValue(KILLSSTORAGE_BASE + id, player:getStorageValue(KILLSSTORAGE_BASE + id) + 1)
+					end
+					player:setStorageValue(KillCounter, 0)
+				end
+			end
+		end
+		if messageAltExtra == true then
+			npcHandler:say({
+				"Such brave deed deserves a special reward! Take this holy icon. It neutralises great evil and gives you access to areas which are protected by those forces. But remember ...",
+				"This is a one-time opportunity! You won't get the holy icon twice.",
+			}, cid)
+			return true
+		end
+		if finished > 0 then
+			local chanceY = math.random(4)
+			if finished == 1 then
+				if messageAlt == false then
+					if messageAltPoints == true then
+						npcHandler:say({
+							"Ah, okay. This time you'll just get an experience reward, no points for our society as you already gained enough points for your level range. Ask me for a {boss} and the choice is yours. ...",
+							"Level up and new tasks and thus points will be available.",
+						}, cid)
+					elseif messageAltExtraPoints == true then
+						npcHandler:say("You're lucky today. This time you'll get an experience reward and " .. extraValue .. " extra points for our societ.", cid)
+					else
+						npcHandler:say(messageTask[chanceY], cid)
+					end
+				else
+					npcHandler:say(messageBoss[messageAltId], cid)
+				end
+			else
+				npcHandler:say(messageTask[chanceY], cid)
+			end
+			return true
+		end
+		if #player:getStartedTasks() >= tasksByPlayer then
+			npcHandler:say("You've three unfinished tasks running old chap. If you want to accept a new one, you have to delete one of your old ones. Do you want to delete a task?", cid)
+			npcHandler.topic[playerId] = 10
+			return true
+		end
+		if player:getLevel() < 50 then
+			if player:getStorageValue(POINTSSTORAGE) >= 40 then
+				npcHandler:say({
+					"You may not advance in your rank anymore until you've levelled up. But you can accept tasks without getting Paw & Fur points, just for an experience reward and the possibility to fight a boss from the range lower than level 50. ...",
+					"You can try {crocodiles}, {badgers}, {tarantulas}, {carniphilas}, {stone golems}, {mammoths}, {gnarlhounds}, ...",
+					"as well as {terramites}, {apes}, {thornback tortoises} and {gargoyles}.",
+				}, cid)
+			else
+				npcHandler:say("Alright, what would you like to hunt? {Crocodiles}, {badgers}, {tarantulas}, {carniphilas}, {stone golems}, {mammoths}, {gnarlhounds}, {terramites}, {apes}, {thornback tortoises} or {gargoyles}.", cid)
+			end
+		elseif player:getLevel() >= 50 and player:getLevel() < 80 then
+			if player:getStorageValue(POINTSSTORAGE) >= 70 then
+				npcHandler:say({
+					"You may not advance in your rank anymore until you've levelled up. But you can accept tasks without getting Paw & Fur points, just for an experience reward and the possibility to fight a boss from the range lower than level 80. ...",
+					"You can try {ice golems}, {quara scouts}, {mutated rats}, {ancient scarabs}, {wyverns}, {lancer beetles}, {wailing widows}, ...",
+					"as well as {killer caimans}, {bonebeasts}, {crystal spiders} and {mutated tigers}.",
+				}, cid)
+			else
+				npcHandler:say({
+					"Alright, what would you like to hunt? {Ice golems}, {quara scouts}, {mutated rats}, {ancient scarabs}, {wyverns}, {lancer beetles}, ...",
+					"or {wailing widows}, {killer caimans}, {bonebeasts}, {crystal spiders} or {mutated tigers}.",
+				}, cid)
+			end
+		elseif player:getLevel() >= 80 and player:getLevel() < 130 then
+			if player:getStorageValue(POINTSSTORAGE) >= 100 then
+				npcHandler:say({
+					"You may not advance in your rank anymore until you've levelled up. But you can accept tasks without getting Paw & Fur points, just for an experience reward and the possibility to fight a boss from the range lower than level 130. ...",
+					"You can try {underwater quara}, {giant spiders}, {werewolves}, {nightmares}, {hellspawns}, {high class lizards}, {stampors}, ...",
+					"as well as {brimstone bugs} and {mutated bats}.",
+				}, cid)
+			else
+				npcHandler:say({
+					"Alright, what would you like to hunt? {Underwater quara}, {giant spiders}, {werewolves}, {nightmares}, {hellspawns}, ...",
+					"as well as {high class lizards}, {stampors}, {brimstone bugs}, {mutated bats}.",
+				}, cid)
+			end
+		elseif player:getLevel() >= 130 and player:getStorageValue(POINTSSTORAGE) < 100 then
+			npcHandler:say({
+				"Alright, what would you like to hunt? You can try {hydras}, {serpent spawns}, {medusae}, {behemoths}, {sea serpents}, ...",
+				"as well as {hellhounds}, {ghastly dragons}, {undead dragons}, {draken} and {destroyers}.",
+			}, cid)
+		else
+			npcHandler:say({
+				"Alright, what would you like to hunt? Be aware you won't gain any paw and fur points as you already achieved the highest rank, but you'll get an experience reward and can face bosses. ...",
+				"You can try {hydras}, {serpent spawns}, {medusae}, {behemoths}, {sea serpents}, ...",
+				"as well as {hellhounds}, {ghastly dragons}, {undead dragons}, {draken} and {destroyers} or maybe {demons}.",
+			}, cid)
+		end
+		npcHandler.topic[playerId] = 0
+	elseif msg ~= "" and player:canStartTask(msg) then
+		if #player:getStartedTasks() >= tasksByPlayer then
+			npcHandler:say("You've three unfinished tasks running old chap. If you want to accept a new one, you have to delete one of your old ones. Do you want to delete a task?", cid)
+			npcHandler.topic[playerId] = 10
+			return true
+		end
+		local task = getTaskByName(msg)
+		if task and player:getStorageValue(QUESTSTORAGE_BASE + task) > 0 then
+			return false
+		end
+		local messageElse = "You already achieved the maximum rank for your level range. If you accept this task, you won't gain points for our society. Hunt " .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. " and you'll be rewarded with experience and the possibility to choose a {boss}. Are you in, old chap?"
+		if table.contains(tier[1].allName, msg:lower()) then
+			if player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() < 50 then
+				npcHandler:say(messageElse, cid)
+			elseif table.contains({ "carniphilas", "carniphila" }, msg:lower()) then
+				local chanceX = math.random(2)
+				local messageCarniphilas = {
+					[1] = "Interesting kind and not so easy to find. The fun begins when you want to hunt {Tiquanda's Revenge}. It's strong and smart like no other carniphila.",
+					[2] = "Damn walking weed-thingies! You'll find them deeper in the jungle. Weed out 150 carniphilas for our society. Alright?",
+				}
+				npcHandler:say(messageCarniphilas[chanceX], cid)
+			elseif table.contains(tier[1].withsName, msg:lower()) then
+				npcHandler:say(messageStartTask[msg:lower()], cid)
+			else
+				npcHandler:say(messageStartTaskAlt[msg:lower()], cid)
+			end
+		elseif table.contains(tier[2].allName, msg:lower()) then
+			if player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() < 80 then
+				npcHandler:say(messageElse, cid)
+			elseif table.contains(tier[2].withsName, msg:lower()) then
+				npcHandler:say(messageStartTask[msg:lower()], cid)
+			else
+				npcHandler:say(messageStartTaskAlt[msg:lower()], cid)
+			end
+		elseif table.contains(tier[3].allName, msg:lower()) then
+			if player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() < 130 then
+				npcHandler:say(messageElse, cid)
+			elseif table.contains(tier[3].withsName, msg:lower()) then
+				npcHandler:say(messageStartTask[msg:lower()], cid)
+			else
+				npcHandler:say(messageStartTaskAlt[msg:lower()], cid)
+			end
+		elseif table.contains(tier[4].allName, msg:lower()) then
+			if table.contains(tier[4].withsName, msg:lower()) then
+				npcHandler:say(messageStartTask[msg:lower()], cid)
+			else
+				npcHandler:say(messageStartTaskAlt[msg:lower()], cid)
+			end
+		elseif table.contains({ "demons", "demon" }, msg:lower()) and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 7 then
+			npcHandler:say("The spawn of pure evil must be erased from Tibia. You'll find demons lurking in the northern ruins of Edron as well as in some other deeper dungeons of Tibia. Slay 6666 demons for the greater good! Do you think you can handle this task?", cid)
+		else
+			npcHandler:say("In this task you must defeat " .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. ". Are you sure that you want to start this task?", cid)
+		end
+		choose[playerId] = task
+		npcHandler.topic[playerId] = 1
+	elseif table.contains(tier[1].allName, msg:lower()) and player:getLevel() < 50 and npcHandler.topic[playerId] < 2 then
+		checkY(npc, player, msg)
+	elseif table.contains(tier[2].allName, msg:lower()) and player:getLevel() < 80 and npcHandler.topic[playerId] < 2 then
+		checkY(npc, player, msg)
+	elseif table.contains(tier[3].allName, msg:lower()) and player:getLevel() < 130 and npcHandler.topic[playerId] < 2 then
+		checkY(npc, player, msg)
+	elseif msg:lower() == "yes" and npcHandler.topic[playerId] == 1 then
+		player:setStorageValue(QUESTSTORAGE_BASE + choose[playerId], 1)
+		player:setStorageValue(KillCounter + choose[playerId], 0)
+		if #tasks.GrizzlyAdams[choose[playerId]].creatures > 1 then
+			if tasks.GrizzlyAdams[choose[playerId]].raceName == "Apes" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.KongraCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.MerlkinCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.SibangCount, 0)
+			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Quara Scouts" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraConstrictorScoutCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraHydromancerScoutCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaramMntassinScoutCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPincherScoutCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPredatorScoutCount, 0)
+			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Underwater Quara" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraConstrictorCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraHydromancerCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraMantassinCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPincherCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.QuaraPredatorCount, 0)
+			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Nightmares" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.NightmareCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.NightmareScionCount, 0)
+			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "High Class Lizards" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardChosenCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardDragonPriestCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardHighGuardCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardLegionnaireCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.LizardZaogunCount, 0)
+			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Sea Serpents" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.SeaSerpentCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.YoungSeaSerpentCount, 0)
+			elseif tasks.GrizzlyAdams[choose[playerId]].raceName == "Drakens" then
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenAbominationCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenEliteCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenSpellweaverCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.AltKillCount.DrakenWarmasterCount, 0)
+			end
+		end
+		if player:getStorageValue(KILLSSTORAGE_BASE + choose[playerId]) == 1 then
+			player:setStorageValue(KILLSSTORAGE_BASE + choose[playerId], player:getStorageValue(KILLSSTORAGE_BASE + choose[playerId]) - 1)
+		else
+			player:setStorageValue(KILLSSTORAGE_BASE + choose[playerId], player:getStorageValue(KILLSSTORAGE_BASE + choose[playerId]) + 1)
+		end
+		local chance = math.random(10)
+		npcHandler:say(messageYes[chance], cid)
+		choose[playerId] = nil
+		npcHandler.topic[playerId] = 0
+	elseif msgcontains("status", msg) then
+		local started = player:getStartedTasks()
+		if started and #started > 0 then
+			local text = ""
+			table.sort(started, function(a, b)
+				return (a < b)
+			end)
+			local t = 0
+			local id
+			for i = 1, #started do
+				id = started[i]
+				t = t + 1
+				text = text .. "Task name: " .. tasks.GrizzlyAdams[id].raceName .. ". " .. "Current kills: " .. player:getStorageValue(KillCounter + id) .. ".\n"
+			end
+			npcHandler:say({ "The status of your current tasks is:\n" .. text }, cid)
+		else
+			npcHandler:say("You haven't started any task yet.", cid)
+		end
+	elseif table.contains({ "promotion", "promotions" }, msg:lower()) then
+		if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) < 0 and player:getStorageValue(POINTSSTORAGE) >= 10 and player:getLevel() >= 6 then -- to Huntsman Rank
+			npcHandler:say({
+				"You gained 10 points! Let me promote you to the first rank: 'Huntsman'. Congratulations! ...",
+				"If you find any trophies - either monster heads or other parts of monsters that you don't need - feel free to ask me for a trade.",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 0)
+		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 0 and player:getStorageValue(POINTSSTORAGE) >= 20 and player:getLevel() >= 6 then -- to Ranger Rank
+			npcHandler:say({
+				"You gained 20 points. It's time for a promotion. You advance to the rank of a 'Ranger'. Congratulations! ...",
+				"Oh, I made a deal with Lorek. He ships Rangers from our society - and higher ranks of course - to Banuta, Chor or near the mountain pass to Darama. Just ask him for a passage.",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 2)
+		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 2 and player:getStorageValue(POINTSSTORAGE) >= 40 and player:getLevel() >= 50 then -- to Big Game Hunter Rank
+			npcHandler:say({
+				"Good show! You gained 40 points for the 'Paw and Fur - Hunting Elite'. You have earned the right to join the ranks of those known as 'Big game hunter'. Congratulations! ...",
+				"From now on I'll buy more trophies from you!",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 4)
+		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 4 and player:getStorageValue(POINTSSTORAGE) >= 70 and player:getLevel() >= 80 then -- to Trophy Hunter Rank
+			npcHandler:say({
+				"Spiffing! You gained 70 hunting points! From now on you can call yourself a 'Trophy hunter'. As a reward I have this special backpack for you and in addition, you can sell some more rare trophies to me. ...",
+				"Ask me for {special} tasks from time to time.",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 6)
+		elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank) == 6 and player:getStorageValue(POINTSSTORAGE) >= 100 and player:getLevel() >= 130 then -- to Elite Hunter Rank
+			npcHandler:say("Congratulations, |PLAYERNAME|! You have gained the highest rank: 'Elite hunter'. If you haven't done yet, ask me for the {special} task.", cid)
+			player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.PawAndFurRank, 7)
+		else
+			npcHandler:say("You have not enough points for promotion.", cid)
+		end
+	elseif table.contains({ "boss", "bosses" }, msg:lower()) then
+		if checkZ(npc, player, msg) == true then
+			return true
+		end
+		if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) > 0 then
+			if player:getLevel() < 50 then
+				npcHandler:say("You can choose between the {Snapper}, {Hide}, {Deathbine} and the {Bloodtusk}.", cid)
+				npcHandler.topic[playerId] = 4
+			elseif player:getLevel() >= 50 and player:getLevel() < 80 then
+				npcHandler:say({
+					"You can choose between the {Snapper}, {Hide}, {Deathbine}, the {Bloodtusk}, {Shardhead}, {Fleshcrawler}, {Ribstride}, {Bloodweb} and {Esmeralda}",
+				}, cid)
+				npcHandler.topic[playerId] = 5
+			elseif player:getLevel() >= 80 and player:getLevel() < 130 then
+				npcHandler:say({
+					"You can choose between the {Snapper}, {Hide}, {Deathbine}, the {Bloodtusk}, {Shardhead}, {Fleshcrawler}, {Ribstride}, {Bloodweb}, {Esmeralda}, ...",
+					"{Thul}, {Flameborn}, {Sulphur Scuttler}, the {Old Widow}, {Hemming}, {Tormentor}, {Fazzrah}, {Tromphonyte} and {Bruise Payne}.",
+				}, cid)
+				npcHandler.topic[playerId] = 6
+			else
+				npcHandler:say({
+					"You can choose between the {Snapper}, {Hide}, {Deathbine}, the {Bloodtusk}, {Shardhead}, {Fleshcrawler}, {Ribstride}, {Bloodweb}, {Esmeralda}, ...",
+					"{Thul}, {Flameborn}, {Sulphur Scuttler}, the {Old Widow}, {Hemming}, {Tormentor}, {Fazzrah}, {Tromphonyte}, {Bruise Payne}, ...",
+					"the {Many}, the {Noxious Spawn}, {Stonecracker}, {Gorgo}, {Kerberos}, {Ethershreck}, {Zanakeph}, {Paiz the Pauperizer}, {Bretzecutioner} and {Leviathan}.",
+				}, cid)
+				npcHandler.topic[playerId] = 7
+			end
+		else
+			npcHandler:say("You have " .. player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) .. " boss points.", cid)
+		end
+	elseif table.contains({ "snapper", "hide", "deathbine", "bloodtusk" }, msg:lower()) and npcHandler.topic[playerId] >= 4 and npcHandler.topic[playerId] <= 7 then
+		checkX(npc, player, 50, msg)
+	elseif table.contains({ "shardhead", "fleshcrawler", "ribstride", "bloodweb", "esmeralda" }, msg:lower()) and npcHandler.topic[playerId] >= 5 and npcHandler.topic[playerId] <= 7 then
+		checkX(npc, player, 80, msg)
+	elseif table.contains({ "thul", "flameborn", "sulphur scuttler", "old widow", "hemming", "tormentor", "fazzrah", "tromphonyte", "bruise payne" }, msg:lower()) and npcHandler.topic[playerId] >= 6 and npcHandler.topic[playerId] <= 7 then
+		checkX(npc, player, 130, msg)
+	elseif table.contains({ "many", "noxious spawn", "stonecracker", "gorgo", "kerberos", "ethershreck", "zanakeph", "paiz the pauperizer", "bretzecutioner", "leviathan" }, msg:lower()) and npcHandler.topic[playerId] == 7 then
+		for w = 1, #tasks.GrizzlyAdams do
+			if tasks.GrizzlyAdams[w].bossName then
+				if tasks.GrizzlyAdams[w].bossName:lower() == msg:lower() then
+					for y = 1, #tasks.GrizzlyAdams[w].rewards do
+						if table.contains({ REWARD_STORAGE, "storage", "stor" }, tasks.GrizzlyAdams[w].rewards[y].type:lower()) then
+							if player:getStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[1]) == 3 or player:getStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[1]) < 0 then
+								npcHandler:say(messageBossStart[tasks.GrizzlyAdams[w].bossId], cid)
+								player:setStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[1], 1)
+								player:setStorageValue(tasks.GrizzlyAdams[w].rewards[y].value[2], 0)
+								player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints, player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossPoints) - 1)
+								return true
+							else
+								npcHandler:say("You have '" .. tasks.GrizzlyAdams[w].bossName .. "' task active.", cid)
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif msg:lower() == "started" then
+		local started = player:getStartedTasks()
+		if started and #started > 0 then
+			local text = ""
+			local sep = ", "
+			table.sort(started, function(a, b)
+				return (a < b)
+			end)
+			local t = 0
+			local id
+			for i = 1, #started do
+				id = started[i]
+				t = t + 1
+				if t == #started - 1 then
+					sep = " and "
+				elseif t == #started then
+					sep = "."
+				end
+				text = text .. "{" .. (tasks.GrizzlyAdams[id].name or tasks.GrizzlyAdams[id].raceName) .. "}" .. sep
+			end
+
+			npcHandler:say("The current task" .. (#started > 1 and "s" or "") .. " that you started" .. " " .. (#started > 1 and "are" or "is") .. " " .. text, cid)
+		else
+			npcHandler:say("You haven't started any task yet.", cid)
+		end
+	elseif msg:lower() == "cancel" or msg:lower() == "yes" and npcHandler.topic[playerId] == 10 then
+		local started = player:getStartedTasks()
+		local text = ""
+		local sep = ", "
+		table.sort(started, function(a, b)
+			return (a < b)
+		end)
+		local t = 0
+		local id
+		for i = 1, #started do
+			id = started[i]
+			t = t + 1
+			if t == #started - 1 then
+				sep = " or "
+			elseif t == #started then
+				sep = "?"
+			end
+			text = text .. "{" .. (tasks.GrizzlyAdams[id].name or tasks.GrizzlyAdams[id].raceName) .. "}" .. sep
+		end
+		if started and #started > 0 then
+			npcHandler:say("Canceling a task will make the counter restart. " .. "Which of these tasks you want cancel?" .. (#started > 1 and "" or "") .. " " .. text, cid)
+			npcHandler.topic[playerId] = 2
+		else
+			npcHandler:say("You haven't started any task yet.", cid)
+		end
+	elseif (getTaskByName(msg)) and (npcHandler.topic[playerId] == 2) and (table.contains(getPlayerStartedTasks(cid), getTaskByName(msg))) then
+		local task = getTaskByName(msg)
+		if player:getStorageValue(KillCounter + task) > 0 then
+			npcHandler:say("You currently killed " .. player:getStorageValue(KillCounter + task) .. "/" .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. "." .. " " .. "Canceling this task will restart the count." .. " " .. "Are you sure you want to cancel this task?", cid)
+		else
+			npcHandler:say("Are you sure you want to cancel this task?", cid)
+		end
+		npcHandler.topic[playerId] = 3
+		cancel[playerId] = task
+	elseif (getTaskByName(msg)) and (npcHandler.topic[playerId] == 1) and (table.contains(getPlayerStartedTasks(cid), getTaskByName(msg))) then
+		local task = getTaskByName(msg)
+		if player:getStorageValue(KillCounter + task) > 0 then
+			npcHandler:say("You currently killed " .. player:getStorageValue(KillCounter + task) .. "/" .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. ".", cid)
+		else
+			npcHandler:say("You currently killed 0/" .. tasks.GrizzlyAdams[task].killsRequired .. " " .. tasks.GrizzlyAdams[task].raceName .. ".", cid)
+		end
+		npcHandler.topic[playerId] = 0
+	elseif msg:lower() == "yes" and npcHandler.topic[playerId] == 3 then
+		player:setStorageValue(QUESTSTORAGE_BASE + cancel[playerId], -1)
+		player:setStorageValue(KILLSSTORAGE_BASE + cancel[playerId], player:getStorageValue(KILLSSTORAGE_BASE + cancel[playerId]) - 1)
+		player:setStorageValue(KillCounter + cancel[playerId], 0)
+		npcHandler:say("You have canceled the task " .. (tasks.GrizzlyAdams[cancel[playerId]].name or tasks.GrizzlyAdams[cancel[playerId]].raceName) .. ".", cid)
+		npcHandler.topic[playerId] = 0
+	elseif table.contains({ "points", "rank" }, msg:lower()) then
+		npcHandler:say(
+			"At this time, you have "
+				.. player:getPawAndFurPoints()
+				.. " Paw & Fur points. You "
+				.. (player:getPawAndFurRank() == 6 and "are an Elite Hunter" or player:getPawAndFurRank() == 5 and "are a Trophy Hunter" or player:getPawAndFurRank() == 4 and "are a Big Game Hunter" or player:getPawAndFurRank() == 3 and "are a Ranger" or player:getPawAndFurRank() == 2 and "are a Huntsman" or player:getPawAndFurRank() == 1 and "are a Member" or "haven't been ranked yet")
+				.. ".", cid
+		)
+		npcHandler.topic[playerId] = 0
+	elseif msg:lower() == "no" and npcHandler.topic[playerId] == 10 then
+		npcHandler:say("Speak to me again when you are done hunting", cid)
+		npcHandler.topic[playerId] = 0
+	elseif table.contains({ "special", "special task" }, msg:lower()) then
+		if player:getPawAndFurPoints() >= 70 and player:getLevel() >= 80 then
+			if player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) < 1 then
+				npcHandler:say({
+					"Have you heard about {Tiquanda's Revenge}? It is said that the jungle itself is alive and takes revenge for all the bad things people have done to it. ...",
+					"I myself believe that there is some truth in this clap-trap. Something 'real' which must have a hideout somewhere. Go find it and take revenge yourself! Ask me about the {special} task when you're done.",
+				}, cid)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.TiquandasCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge, 1)
+			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) <= 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.TiquandasCount) == 0 then
+				npcHandler:say("You have already started the task. Go find Tiquandas Revenge and take revenge yourself!", cid)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge, 1) -- for death scenario
+			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) == 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.TiquandasCount) == 1 then
+				npcHandler:say("Great achievement, old chap! You are an outstanding hunter, no doubt about it!", cid)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge, 3)
+			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) < 1 then
+				npcHandler:say("This task is a very dangerous one. I want you to look for {Demodras'} hideout. It might be somewhere under the {Plains of Havoc}. Good luck, old chap, come back in one piece and ask me about the special task when you're done.", cid)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.DemodrasCount, 0)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras, 1)
+			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) <= 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.DemodrasCount) == 0 then
+				npcHandler:say("You have already started the special task. Find Demodras and kill it.", cid)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras, 1) -- for death scenario
+			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) == 2 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.BossKillCount.DemodrasCount) == 1 then
+				npcHandler:say("Jolly good show! You can cross swords with any cid in this world! I bow to you.", cid)
+				player:setStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras, 3)
+			elseif player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionDemodras) == 3 and player:getStorageValue(Storage.Quest.U8_5.KillingInTheNameOf.MissionTiquandasRevenge) == 3 then
+				npcHandler:say("You have already finished all special tasks.", cid)
+			end
+			npcHandler.topic[playerId] = 0
+		end
+	end
+end
 
 npcHandler:setMessage(MESSAGE_FAREWELL, "Happy hunting, old chap!")
 npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

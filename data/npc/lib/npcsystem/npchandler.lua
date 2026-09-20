@@ -472,6 +472,31 @@ if NpcHandler == nil then
 		end
 	end
 
+	-- Opens the wares this npc declares in its own module_shop parameters, for a
+	-- npc whose dialogue decides when they come out rather than waiting to be
+	-- asked for a trade. ShopModule.requestTrade reaches the same window from the
+	-- "trade" keyword and is left alone: sharing one body between them would change
+	-- how every trading npc on the map answers that keyword, to save a few lines here.
+	function NpcHandler:openShop(cid)
+		if not self:onTradeRequest(cid) then
+			return false
+		end
+
+		local itemWindow = {}
+		for i = 1, #self.shopItems do
+			itemWindow[#itemWindow + 1] = self.shopItems[i]
+		end
+
+		if itemWindow[1] == nil then
+			return false
+		end
+
+		openShopWindow(cid, itemWindow,
+			function(cid, itemid, subType, amount, ignoreCap, inBackpacks) self:onBuy(cid, itemid, subType, amount, ignoreCap, inBackpacks) end,
+			function(cid, itemid, subType, amount, ignoreCap, inBackpacks) self:onSell(cid, itemid, subType, amount, ignoreCap, inBackpacks) end)
+		return true
+	end
+
 	-- Handles onTradeRequest events. If you wish to handle this yourself, use the CALLBACK_ONTRADEREQUEST callback.
 	function NpcHandler:onTradeRequest(cid)
 		local callback = self:getCallback(CALLBACK_ONTRADEREQUEST)

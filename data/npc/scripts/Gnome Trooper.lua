@@ -27,45 +27,47 @@ local function initializeParcelDelivery(player)
 	return DELIVERED_PARCELS[playerGuid]
 end
 
--- local function greetCallback(npc, creature)
--- 	local player = Player(creature)
--- 	local playerGuid = player:getGuid()
--- 	local deliveredParcels = initializeParcelDelivery(player)
--- 	local parcelStatus = player:getStorageValue(Storage.Quest.U10_20.SpikeTaskQuest.Spike_Lower_Parcel_Main)
--- 
--- 	if table.contains({ -1, 4 }, parcelStatus) or table.contains(deliveredParcels, npc:getId()) then
--- 		return false
--- 	end
--- 
--- 	npcHandler:setMessage(MESSAGE_GREET, "Do you have something to deliver?")
--- 	return true
--- end
+local function greetCallback(cid)
+	local npc = Npc()
+	local player = Player(cid)
+	local playerGuid = player:getGuid()
+	local deliveredParcels = initializeParcelDelivery(player)
+	local parcelStatus = player:getStorageValue(Storage.Quest.U10_20.SpikeTaskQuest.Spike_Lower_Parcel_Main)
 
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerGuid = player:getGuid()
--- 	local deliveredParcels = initializeParcelDelivery(player)
--- 	local parcelStatus = player:getStorageValue(Storage.Quest.U10_20.SpikeTaskQuest.Spike_Lower_Parcel_Main)
--- 
--- 	if MsgContains(message, "something") and not table.contains({ -1, 4 }, parcelStatus) then
--- 		if table.contains(deliveredParcels, npc:getId()) then
--- 			return true
--- 		end
--- 
--- 		if not player:removeItem(19219, 1) then
--- 			npcHandler:say("But you don't have it...", npc, creature)
--- 			return npcHandler:removeInteraction(npc, creature)
--- 		end
--- 
--- 		npcHandler:say(response[parcelStatus], npc, creature)
--- 		player:setStorageValue(Storage.Quest.U10_20.SpikeTaskQuest.Spike_Lower_Parcel_Main, parcelStatus + 1)
--- 		table.insert(deliveredParcels, npc:getId())
--- 		npcHandler:removeInteraction(npc, creature)
--- 	end
--- 	return true
--- end
+	if table.contains({ -1, 4 }, parcelStatus) or table.contains(deliveredParcels, npc:getId()) then
+		return false
+	end
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+	npcHandler:setMessage(MESSAGE_GREET, "Do you have something to deliver?")
+	return true
+end
+
+local function creatureSayCallback(cid, type, msg)
+	local npc = Npc()
+	local player = Player(cid)
+	local playerGuid = player:getGuid()
+	local deliveredParcels = initializeParcelDelivery(player)
+	local parcelStatus = player:getStorageValue(Storage.Quest.U10_20.SpikeTaskQuest.Spike_Lower_Parcel_Main)
+
+	if msgcontains(msg, "something") and not table.contains({ -1, 4 }, parcelStatus) then
+		if table.contains(deliveredParcels, npc:getId()) then
+			return true
+		end
+
+		if not player:removeItem(19219, 1) then
+			npcHandler:say("But you don't have it...", cid)
+			return npcHandler:releaseFocus(cid)
+		end
+
+		npcHandler:say(response[parcelStatus], cid)
+		player:setStorageValue(Storage.Quest.U10_20.SpikeTaskQuest.Spike_Lower_Parcel_Main, parcelStatus + 1)
+		table.insert(deliveredParcels, npc:getId())
+		npcHandler:releaseFocus(cid)
+	end
+	return true
+end
+
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

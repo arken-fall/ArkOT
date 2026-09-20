@@ -106,7 +106,10 @@ CALLBACK_REWRITES = [
     (r"npcHandler:resetNpc\(creature\)", "npcHandler:resetNpc(cid)"),
     # a call that takes the npc and the creature takes just the id here, however
     # many lines its first argument runs to
-    (r",\s*npc,\s*creature\b", ", cid"),
+    (r",\s*npc,\s*(?:creature|player)\b", ", cid"),
+    # "open the shop I already declare": the wares are in this npc's own XML
+    # module_shop parameters, so the handler opens them, not the npc object
+    (r"\bnpc:openShopWindow\(\s*(?:creature|player)\s*\)", "npcHandler:openShop(cid)"),
     (r"npcHandler:setTopic\(([^,]+),\s*([^)]+)\)", r"npcHandler.topic[\1] = \2"),
     (r"npcHandler:getTopic\(([^)]+)\)", r"npcHandler.topic[\1]"),
     (r"\bMsgContains\(", "msgcontains("),
@@ -125,15 +128,27 @@ CALLBACK_NAMES = {
 # of its own. They are single statements, so the line goes and the npc still talks.
 CANARY_ONLY_LINE = re.compile(r"^[^\n]*\b(?:addCustomGreetKeyword|VOCATION|TOWNS_LIST|GetFormattedShopCategoryNames)\b[^\n]*$",
                               re.M)
-# what has no counterpart here: the npc object itself, which Canary passes around
-# for shop windows and speech
-UNMAPPED = re.compile(r"\bnpc[:.]\w+|\bnpc\b(?!Handler)")
+# What has no counterpart here, and it is a short list. The npc object itself is
+# not on it: Npc() returns the npc whose script is running (luascript.cpp, through
+# getScriptEnv()->getNpc(), which npc.cpp sets before every event call), and the
+# shared lib already calls it that way. So npc:getId() and npc:getPosition() -
+# 41 of the 46 uses across these scripts - carry over untouched once `npc` is
+# bound at the head of the callback. What is left is one npc's category shop and
+# Canary's own banker module, which this server answers with bank.lua instead.
+UNMAPPED = re.compile(r"\bnpc:(?:openShopWindowTable|getRemainingShopCategories|parseBank|parseGuildBank|parseBankMessages)\b")
 
 
 def as_blacktek(body):
     """A Canary callback in the shape the TFS npc system calls."""
     for pattern, replacement in CALLBACK_REWRITES:
         body = re.sub(pattern, replacement, body)
+
+    # The npc a Canary callback is handed is the one running the script, so it is
+    # bound once at the head rather than rewritten at every use: the body stays
+    # readable against the source anyone would diff it with.
+    if re.search(r"\bnpc[:.]\w+", re.sub(r"--[^\n]*", "", body)):
+        body = re.sub(r"^(\s*local function \w+\([^)]*\)\n)", r"\1\tlocal npc = Npc()\n", body, count=1, flags=re.M)
+
     return body
 
 

@@ -569,194 +569,195 @@ local function greetCallback(cid)
 	return true
 end
 
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not npcHandler:checkInteraction(npc, creature) then
--- 		return false
--- 	end
--- 
--- 	if MsgContains(message, "join") then
--- 		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) ~= -1 then
--- 			npcHandler:say("Wow, your stupidity would be pride and joy for every fool. You've already applied as a member. Let's rather talk about your current mission.", npc, creature)
--- 			return true
--- 		end
--- 
--- 		npcHandler:say("Do you wish to become a jester and join the fools guild?", npc, creature)
--- 		npcHandler:setTopic(playerId, 1)
--- 	elseif MsgContains(message, "mission") then
--- 		local targetValue = config[player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline)]
--- 		if not targetValue then
--- 			return true
--- 		end
--- 
--- 		if not targetValue.yes then
--- 			if targetValue.updateStorages then
--- 				for i = 1, #targetValue.updateStorages do
--- 					local storage = targetValue.updateStorages[i]
--- 					player:setStorageValue(storage.key, storage.value)
--- 				end
--- 			end
--- 
--- 			if targetValue.addItem then
--- 				player:addItem(targetValue.addItem.itemId, targetValue.addItem.count or 1)
--- 			end
--- 		end
--- 
--- 		npcHandler:say(targetValue.text[1], npc, creature)
--- 		if targetValue.yes then
--- 			npcHandler:setTopic(playerId, 3)
--- 			value[playerId] = targetValue
--- 		end
--- 	elseif MsgContains(message, "jester outfit") then
--- 		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 12 then
--- 			local targetValue = jesterOutfit[player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.JesterOutfit)]
--- 			if not targetValue then
--- 				return true
--- 			end
--- 
--- 			npcHandler:say(targetValue.text[1], npc, creature)
--- 			npcHandler:setTopic(playerId, 4)
--- 			value[playerId] = targetValue
--- 		else
--- 			npcHandler:say("I'm sure it suits you well.", npc, creature)
--- 		end
--- 	elseif MsgContains(message, "yes") then
--- 		if npcHandler:getTopic(playerId) == 1 then
--- 			npcHandler:say({
--- 				"So you want to make a total fool of yourself? Fine with me, but note that becoming a real fool means more than being just an ordinary fool ...",
--- 				"You will have to master a whole series of challenging, lengthy and, above all, totally foolish quests ...",
--- 				"Are you sure you want to waste a part of your limited lifetime on a quest that makes a fool of yourself and which might award you with the prestigious title of a grand fool in a far away future?",
--- 			}, npc, creature)
--- 			npcHandler:setTopic(playerId, 2)
--- 		elseif npcHandler:getTopic(playerId) == 2 then
--- 			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline, 1)
--- 			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Mission1, 1)
--- 			npcHandler:say({
--- 				"What a foolish decision! You are indeed a worthy candidate! But let's talk about business ...",
--- 				"Being a jester is not just about telling jokes. A good jester heavily relies on requisites ...",
--- 				"Getting some requisites will be your first job. First of all we need a good supply of water squirt flowers ...",
--- 				"I'm making them on my own in my spare time but I need the right material. South of Thais, next to the Whiteflower Temple, you will find the ideal flowers ...",
--- 				"Take a kitchen knife, cut the thickest and healthiest flower and bring it here. Then talk to me about your mission.",
--- 			}, npc, creature)
--- 			npcHandler:setTopic(playerId, 0)
--- 		elseif npcHandler:getTopic(playerId) == 3 then
--- 			local targetValue = value[playerId]
--- 			if targetValue.checkStorage then
--- 				if player:getStorageValue(targetValue.checkStorage) ~= 1 then
--- 					npcHandler:say(targetValue.text[2], npc, creature)
--- 					npcHandler:setTopic(playerId, 0)
--- 					return true
--- 				end
--- 			end
--- 
--- 			if targetValue.removeItem then
--- 				if not player:removeItem(targetValue.removeItem.itemId, targetValue.removeItem.count or 1, targetValue.removeItem.subType or -1) then
--- 					npcHandler:say(targetValue.text[2], npc, creature)
--- 					npcHandler:setTopic(playerId, 0)
--- 					return true
--- 				end
--- 			end
--- 
--- 			if targetValue.checkItemCount then
--- 				if player:getItemCount(targetValue.checkItemCount) == 0 then
--- 					npcHandler:say(targetValue.text[2], npc, creature)
--- 					npcHandler:setTopic(playerId, 0)
--- 					return true
--- 				end
--- 			end
--- 
--- 			if targetValue.cookiesDelivery then
--- 				if player:getCookiesDelivered() ~= 10 then
--- 					npcHandler:say("No, you aren't! Why do only fools apply for the fools guild?", npc, creature)
--- 					npcHandler:setTopic(playerId, 0)
--- 					return true
--- 				end
--- 			end
--- 
--- 			if targetValue.pie then
--- 				if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.PieBoxTimer) > 0 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.PieBoxTimer) < os.time() then
--- 					npcHandler:say("Eeeek! What have you done?? These pies are crawling with bugs! Those must be the infamous parcel bugs! Get some new pies at once you wannabe fool, and this time without any bugs!", npc, creature)
--- 					npcHandler:setTopic(playerId, 0)
--- 					return true
--- 				end
--- 			end
--- 
--- 			if targetValue.updateStorages then
--- 				for i = 1, #targetValue.updateStorages do
--- 					local storage = targetValue.updateStorages[i]
--- 					player:setStorageValue(storage.key, storage.value)
--- 				end
--- 			end
--- 
--- 			if targetValue.addItem then
--- 				player:addItem(targetValue.addItem.itemId, targetValue.addItem.count or 1)
--- 			end
--- 
--- 			if targetValue.addon then
--- 				player:addOutfitAddon(270, targetValue.addon)
--- 				player:addOutfitAddon(273, targetValue.addon)
--- 				player:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE)
--- 			end
--- 
--- 			if targetValue.effect then
--- 				npc:getPosition():sendMagicEffect(targetValue.effect)
--- 			end
--- 
--- 			if targetValue.last then
--- 				player:addAchievement("Perfect Fool")
--- 				player:addAchievement("Fool at Heart")
--- 			end
--- 
--- 			npcHandler:say(targetValue.text[3], npc, creature)
--- 			npcHandler:setTopic(playerId, 0)
--- 		elseif npcHandler:getTopic(playerId) == 4 then
--- 			local targetValue = value[playerId]
--- 			if not player:removeItem(targetValue.removeItemId, 1) then
--- 				npcHandler:say("No, you don't! Why do only fools apply for the fools guild?", npc, creature)
--- 				npcHandler:setTopic(playerId, 0)
--- 				return true
--- 			end
--- 
--- 			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.JesterOutfit, targetValue.newValue)
--- 			if targetValue.addOutfit then
--- 				player:addOutfit(270)
--- 				player:addOutfit(273)
--- 				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline, 13)
--- 			end
--- 			npcHandler:say(targetValue.text[2], npc, creature)
--- 			if not targetValue.last then
--- 				value[playerId] = jesterOutfit[targetValue.choice]
--- 			else
--- 				npcHandler:setTopic(playerId, 0)
--- 			end
--- 		end
--- 	elseif MsgContains(message, "no") and npcHandler:getTopic(playerId) ~= 0 then
--- 		if table.contains({ 1, 2 }, npcHandler:getTopic(playerId)) then
--- 			npcHandler:say("Too bad, I'm convinced you have it in you.", npc, creature)
--- 		elseif table.contains({ 3, 4 }, npcHandler:getTopic(playerId)) then
--- 			if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 11 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.EmperorBeardShave) == 1 then
--- 				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline, 12)
--- 				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Mission5, 3)
--- 				npcHandler:say({
--- 					"You shaved the emperor, but lost the beard? What kind of fool are you? Well, at least he will have a nice surprise when he wakes up ...",
--- 					"Still, as a small recognition of your accomplishments I'm willing to tell you how to get your own jester outfit. If you are interested in more fun and adventures, ask me for more missions.",
--- 				}, npc, creature)
--- 			elseif player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 30 then
--- 				npcHandler:say("You won't be successful in the fool's world with such an attitude.", npc, creature)
--- 			elseif player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 35 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.LostDisguise) ~= 1 then
--- 				player:addItem(144, 1)
--- 				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.LostDisguise, 1)
--- 				npcHandler:say("You wasted the disguise?? Why do only fools apply for the fools guild? Here... try again, but be wittier this time.", npc, creature)
--- 			else
--- 				npcHandler:say("Oh boy, why do only fools apply for the fools guild?", npc, creature)
--- 			end
--- 		end
--- 		npcHandler:setTopic(playerId, 0)
--- 	end
--- 	return true
--- end
+local function creatureSayCallback(cid, type, msg)
+	local npc = Npc()
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if msgcontains(msg, "join") then
+		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) ~= -1 then
+			npcHandler:say("Wow, your stupidity would be pride and joy for every fool. You've already applied as a member. Let's rather talk about your current mission.", cid)
+			return true
+		end
+
+		npcHandler:say("Do you wish to become a jester and join the fools guild?", cid)
+		npcHandler.topic[playerId] = 1
+	elseif msgcontains(msg, "mission") then
+		local targetValue = config[player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline)]
+		if not targetValue then
+			return true
+		end
+
+		if not targetValue.yes then
+			if targetValue.updateStorages then
+				for i = 1, #targetValue.updateStorages do
+					local storage = targetValue.updateStorages[i]
+					player:setStorageValue(storage.key, storage.value)
+				end
+			end
+
+			if targetValue.addItem then
+				player:addItem(targetValue.addItem.itemId, targetValue.addItem.count or 1)
+			end
+		end
+
+		npcHandler:say(targetValue.text[1], cid)
+		if targetValue.yes then
+			npcHandler.topic[playerId] = 3
+			value[playerId] = targetValue
+		end
+	elseif msgcontains(msg, "jester outfit") then
+		if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 12 then
+			local targetValue = jesterOutfit[player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.JesterOutfit)]
+			if not targetValue then
+				return true
+			end
+
+			npcHandler:say(targetValue.text[1], cid)
+			npcHandler.topic[playerId] = 4
+			value[playerId] = targetValue
+		else
+			npcHandler:say("I'm sure it suits you well.", cid)
+		end
+	elseif msgcontains(msg, "yes") then
+		if npcHandler.topic[playerId] == 1 then
+			npcHandler:say({
+				"So you want to make a total fool of yourself? Fine with me, but note that becoming a real fool means more than being just an ordinary fool ...",
+				"You will have to master a whole series of challenging, lengthy and, above all, totally foolish quests ...",
+				"Are you sure you want to waste a part of your limited lifetime on a quest that makes a fool of yourself and which might award you with the prestigious title of a grand fool in a far away future?",
+			}, cid)
+			npcHandler.topic[playerId] = 2
+		elseif npcHandler.topic[playerId] == 2 then
+			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline, 1)
+			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Mission1, 1)
+			npcHandler:say({
+				"What a foolish decision! You are indeed a worthy candidate! But let's talk about business ...",
+				"Being a jester is not just about telling jokes. A good jester heavily relies on requisites ...",
+				"Getting some requisites will be your first job. First of all we need a good supply of water squirt flowers ...",
+				"I'm making them on my own in my spare time but I need the right material. South of Thais, next to the Whiteflower Temple, you will find the ideal flowers ...",
+				"Take a kitchen knife, cut the thickest and healthiest flower and bring it here. Then talk to me about your mission.",
+			}, cid)
+			npcHandler.topic[playerId] = 0
+		elseif npcHandler.topic[playerId] == 3 then
+			local targetValue = value[playerId]
+			if targetValue.checkStorage then
+				if player:getStorageValue(targetValue.checkStorage) ~= 1 then
+					npcHandler:say(targetValue.text[2], cid)
+					npcHandler.topic[playerId] = 0
+					return true
+				end
+			end
+
+			if targetValue.removeItem then
+				if not player:removeItem(targetValue.removeItem.itemId, targetValue.removeItem.count or 1, targetValue.removeItem.subType or -1) then
+					npcHandler:say(targetValue.text[2], cid)
+					npcHandler.topic[playerId] = 0
+					return true
+				end
+			end
+
+			if targetValue.checkItemCount then
+				if player:getItemCount(targetValue.checkItemCount) == 0 then
+					npcHandler:say(targetValue.text[2], cid)
+					npcHandler.topic[playerId] = 0
+					return true
+				end
+			end
+
+			if targetValue.cookiesDelivery then
+				if player:getCookiesDelivered() ~= 10 then
+					npcHandler:say("No, you aren't! Why do only fools apply for the fools guild?", cid)
+					npcHandler.topic[playerId] = 0
+					return true
+				end
+			end
+
+			if targetValue.pie then
+				if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.PieBoxTimer) > 0 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.PieBoxTimer) < os.time() then
+					npcHandler:say("Eeeek! What have you done?? These pies are crawling with bugs! Those must be the infamous parcel bugs! Get some new pies at once you wannabe fool, and this time without any bugs!", cid)
+					npcHandler.topic[playerId] = 0
+					return true
+				end
+			end
+
+			if targetValue.updateStorages then
+				for i = 1, #targetValue.updateStorages do
+					local storage = targetValue.updateStorages[i]
+					player:setStorageValue(storage.key, storage.value)
+				end
+			end
+
+			if targetValue.addItem then
+				player:addItem(targetValue.addItem.itemId, targetValue.addItem.count or 1)
+			end
+
+			if targetValue.addon then
+				player:addOutfitAddon(270, targetValue.addon)
+				player:addOutfitAddon(273, targetValue.addon)
+				player:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE)
+			end
+
+			if targetValue.effect then
+				npc:getPosition():sendMagicEffect(targetValue.effect)
+			end
+
+			if targetValue.last then
+				player:addAchievement("Perfect Fool")
+				player:addAchievement("Fool at Heart")
+			end
+
+			npcHandler:say(targetValue.text[3], cid)
+			npcHandler.topic[playerId] = 0
+		elseif npcHandler.topic[playerId] == 4 then
+			local targetValue = value[playerId]
+			if not player:removeItem(targetValue.removeItemId, 1) then
+				npcHandler:say("No, you don't! Why do only fools apply for the fools guild?", cid)
+				npcHandler.topic[playerId] = 0
+				return true
+			end
+
+			player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.JesterOutfit, targetValue.newValue)
+			if targetValue.addOutfit then
+				player:addOutfit(270)
+				player:addOutfit(273)
+				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline, 13)
+			end
+			npcHandler:say(targetValue.text[2], cid)
+			if not targetValue.last then
+				value[playerId] = jesterOutfit[targetValue.choice]
+			else
+				npcHandler.topic[playerId] = 0
+			end
+		end
+	elseif msgcontains(msg, "no") and npcHandler.topic[playerId] ~= 0 then
+		if table.contains({ 1, 2 }, npcHandler.topic[playerId]) then
+			npcHandler:say("Too bad, I'm convinced you have it in you.", cid)
+		elseif table.contains({ 3, 4 }, npcHandler.topic[playerId]) then
+			if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 11 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.EmperorBeardShave) == 1 then
+				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline, 12)
+				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Mission5, 3)
+				npcHandler:say({
+					"You shaved the emperor, but lost the beard? What kind of fool are you? Well, at least he will have a nice surprise when he wakes up ...",
+					"Still, as a small recognition of your accomplishments I'm willing to tell you how to get your own jester outfit. If you are interested in more fun and adventures, ask me for more missions.",
+				}, cid)
+			elseif player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 30 then
+				npcHandler:say("You won't be successful in the fool's world with such an attitude.", cid)
+			elseif player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 35 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.LostDisguise) ~= 1 then
+				player:addItem(144, 1)
+				player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.LostDisguise, 1)
+				npcHandler:say("You wasted the disguise?? Why do only fools apply for the fools guild? Here... try again, but be wittier this time.", cid)
+			else
+				npcHandler:say("Oh boy, why do only fools apply for the fools guild?", cid)
+			end
+		end
+		npcHandler.topic[playerId] = 0
+	end
+	return true
+end
 
 keywordHandler:addKeyword({ "sorcerer" }, StdModule.say, { npcHandler = npcHandler, text = "I wanted to become a sorcerer, too, but I was overqualified!" }, function(player)
 	return player:isSorcerer()
@@ -878,7 +879,7 @@ npcHandler:setMessage(MESSAGE_FAREWELL, "Remember: A joke a day keeps the ghouls
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Hey! Fools have feelings too.")
 
 npcHandler:setCallback(CALLBACK_GREET, greetCallback)
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 -- Dialogue keywords the NPC answers on the official server
 keywordHandler:addKeyword({ "necromancer" }, StdModule.say, { npcHandler = npcHandler, text = "Don't feed the necromancers." })
 keywordHandler:addKeyword({ "eclesius" }, StdModule.say, { npcHandler = npcHandler, text = "Mwehehehe I like that guys humour. Although his gags and puns are most likely not intended. I wonder how he's doing, haven't seen him for a while." })

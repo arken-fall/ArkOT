@@ -22,24 +22,24 @@ local config = {
 	},
 }
 
--- local function greetCallback(npc, creature)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if player:getStorageValue(Storage.Quest.U9_80.AdventurersGuild.CharosTrav) > 6 then
--- 		npcHandler:say("Sorry, you have traveled a lot.", npc, creature)
--- 		npcHandler:resetNpc(npc, creature)
--- 		return false
--- 	else
--- 		npcHandler:setMessage(
--- 			MESSAGE_GREET,
--- 			"Hello young friend! I can attune you to a city of your choice. \z
--- 		If you step to the teleporter here you will not appear in the city you came from as usual, \z
--- 		but the city of your choice. Is it what you wish?"
--- 		)
--- 	end
--- 	return true
--- end
+local function greetCallback(cid)
+	local player = Player(cid)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U9_80.AdventurersGuild.CharosTrav) > 6 then
+		npcHandler:say("Sorry, you have traveled a lot.", cid)
+		npcHandler:resetNpc(npc, cid)
+		return false
+	else
+		npcHandler:setMessage(
+			MESSAGE_GREET,
+			"Hello young friend! I can attune you to a city of your choice. \z
+		If you step to the teleporter here you will not appear in the city you came from as usual, \z
+		but the city of your choice. Is it what you wish?"
+		)
+	end
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -71,7 +71,7 @@ end
 
 npcHandler:setCallback(CALLBACK_ONADDFOCUS, onAddFocus)
 npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 -- Dialogue keywords the NPC answers on the official server
 keywordHandler:addKeyword({ "anything else" }, StdModule.say, { npcHandler = npcHandler, text = "Sorry, I don't know about this place." })

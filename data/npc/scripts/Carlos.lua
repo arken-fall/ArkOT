@@ -18,52 +18,52 @@ npcHandler:addModule(VoiceModule:new(voices))
 
 local storeTalkCid = {}
 
--- local function greetCallback(npc, creature)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) < 1 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Be greeted, |PLAYERNAME|! As a tailor and merchant I have to say - we need to do something about your {outfit}, shall we?")
--- 		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 1)
--- 		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 1)
--- 		storeTalkCid[playerId] = 1
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 1 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Hey, I thought you were going to run away, but luckily you came back. I'll show you how to change your {outfit}, okay?")
--- 		storeTalkCid[playerId] = 1
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 2 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Welcome back! You know, after providing my little outfit service, I like to ask a little favour of you. Can you {help} me?")
--- 		storeTalkCid[playerId] = 2
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 3 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Oh hey |PLAYERNAME|, you didn't answer my question yet - could you help me get some {food}? I'll even give you some gold for it.")
--- 		storeTalkCid[playerId] = 3
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 4 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Welcome back |PLAYERNAME|, I hope you changed your mind and will bring me some {meat}? I'll even give you some gold for it.")
--- 		storeTalkCid[playerId] = 4
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 5 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Welcome back, |PLAYERNAME|! Did you have a successful hunt and carry a piece of {meat} or ham with you?")
--- 		storeTalkCid[playerId] = 5
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 6 then
--- 		if player:getItemCount(3577) > 0 or player:getItemCount(3582) > 0 then
--- 			npcHandler:setMessage(MESSAGE_GREET, "Welcome back, Isleth Eagonst! Do you still have that piece of meat or ham? If so, please ask me for a {trade} and I'll give you some gold for it.")
--- 			storeTalkCid[playerId] = 6
--- 		else
--- 			npcHandler:setMessage(MESSAGE_GREET, "Welcome back, |PLAYERNAME|! Where did you put that delicious piece of food? Did you eat it yourself? Well, if you find another one, please come back.")
--- 			npcHandler:removeInteraction(npc, creature)
--- 			npcHandler:resetNpc(npc, creature)
--- 		end
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 7 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Hey there, |PLAYERNAME|! Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard! Take care!")
--- 		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
--- 		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
--- 		npcHandler:removeInteraction(npc, creature)
--- 		npcHandler:resetNpc(npc, creature)
--- 	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 8 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Hello again, |PLAYERNAME|! What are you still doing here? You should head over the bridge to Rookgaard village now!")
--- 		npcHandler:removeInteraction(npc, creature)
--- 		npcHandler:resetNpc(npc, creature)
--- 	end
--- 	return true
--- end
+local function greetCallback(cid)
+	local player = Player(cid)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) < 1 then
+		npcHandler:setMessage(MESSAGE_GREET, "Be greeted, |PLAYERNAME|! As a tailor and merchant I have to say - we need to do something about your {outfit}, shall we?")
+		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 1)
+		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 1)
+		storeTalkCid[playerId] = 1
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 1 then
+		npcHandler:setMessage(MESSAGE_GREET, "Hey, I thought you were going to run away, but luckily you came back. I'll show you how to change your {outfit}, okay?")
+		storeTalkCid[playerId] = 1
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 2 then
+		npcHandler:setMessage(MESSAGE_GREET, "Welcome back! You know, after providing my little outfit service, I like to ask a little favour of you. Can you {help} me?")
+		storeTalkCid[playerId] = 2
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 3 then
+		npcHandler:setMessage(MESSAGE_GREET, "Oh hey |PLAYERNAME|, you didn't answer my question yet - could you help me get some {food}? I'll even give you some gold for it.")
+		storeTalkCid[playerId] = 3
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 4 then
+		npcHandler:setMessage(MESSAGE_GREET, "Welcome back |PLAYERNAME|, I hope you changed your mind and will bring me some {meat}? I'll even give you some gold for it.")
+		storeTalkCid[playerId] = 4
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 5 then
+		npcHandler:setMessage(MESSAGE_GREET, "Welcome back, |PLAYERNAME|! Did you have a successful hunt and carry a piece of {meat} or ham with you?")
+		storeTalkCid[playerId] = 5
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 6 then
+		if player:getItemCount(3577) > 0 or player:getItemCount(3582) > 0 then
+			npcHandler:setMessage(MESSAGE_GREET, "Welcome back, Isleth Eagonst! Do you still have that piece of meat or ham? If so, please ask me for a {trade} and I'll give you some gold for it.")
+			storeTalkCid[playerId] = 6
+		else
+			npcHandler:setMessage(MESSAGE_GREET, "Welcome back, |PLAYERNAME|! Where did you put that delicious piece of food? Did you eat it yourself? Well, if you find another one, please come back.")
+			npcHandler:releaseFocus(cid)
+			npcHandler:resetNpc(npc, cid)
+		end
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 7 then
+		npcHandler:setMessage(MESSAGE_GREET, "Hey there, |PLAYERNAME|! Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard! Take care!")
+		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
+		player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
+		npcHandler:releaseFocus(cid)
+		npcHandler:resetNpc(npc, cid)
+	elseif player:getStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage) == 8 then
+		npcHandler:setMessage(MESSAGE_GREET, "Hello again, |PLAYERNAME|! What are you still doing here? You should head over the bridge to Rookgaard village now!")
+		npcHandler:releaseFocus(cid)
+		npcHandler:resetNpc(npc, cid)
+	end
+	return true
+end
 
 local function releasePlayer(npc, creature)
 	if not Player(creature) then
@@ -74,90 +74,90 @@ local function releasePlayer(npc, creature)
 	npcHandler:resetNpc(npc, creature)
 end
 
--- local function creatureSayCallback(npc, creature, type, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if not npcHandler:checkInteraction(npc, creature) then
--- 		return false
--- 	end
--- 
--- 	if table.contains({ "yes", "help", "ok" }, message) then
--- 		if storeTalkCid[playerId] == 1 then
--- 			npcHandler:say("Very well. Just choose an outfit and a colour combination that suits you. You can open this dialogue anytime by right-clicking on yourself and selecting 'Set Outfit'. Just try it and then talk to me again!", npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 2)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 2)
--- 			player:sendTutorial(12)
--- 			npcHandler:removeInteraction(npc, creature)
--- 			npcHandler:resetNpc(npc, creature)
--- 		elseif storeTalkCid[playerId] == 2 then
--- 			npcHandler:say("You see, I'm quite hungry from standing here all day. Could you get me some {food}?", npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 3)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 3)
--- 			storeTalkCid[playerId] = 3
--- 		elseif storeTalkCid[playerId] == 3 then
--- 			npcHandler:say("Thank you! I would do it myself, but I don't have a weapon. Just kill a few rabbits or deer, loot food from them and bring me one piece of {meat} or ham, will you?", npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 4)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 4)
--- 			storeTalkCid[playerId] = 4
--- 		elseif storeTalkCid[playerId] == 4 then
--- 			npcHandler:say("Splendid. I'll be awaiting your return eagerly. Don't forget that you can click on the 'Chase Opponent' button to run after those fast creatures. Good {bye} for now!", npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 5)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 5)
--- 			npcHandler:removeInteraction(npc, creature)
--- 			npcHandler:resetNpc(npc, creature)
--- 		elseif storeTalkCid[playerId] == 5 then
--- 			if player:getItemCount(3577) > 0 or player:getItemCount(3582) > 0 then
--- 				npcHandler:say("What's that delicious smell? That must be a piece of meat! Please hurry, simply ask me for a {trade} and I'll give you two gold pieces for it!", npc, creature)
--- 				player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 6)
--- 				player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 6)
--- 				player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcTradeStorage, 1)
--- 				storeTalkCid[playerId] = 6
--- 			else
--- 				npcHandler:say("Hmm. No, I don't think you have something with you that I'd like to eat. Please come back once you looted a piece of meat or a piece of ham from a rabbit or deer.", npc, creature)
--- 				npcHandler:removeInteraction(npc, creature)
--- 				npcHandler:resetNpc(npc, creature)
--- 			end
--- 		elseif storeTalkCid[playerId] == 7 then
--- 			npcHandler:say({
--- 				"Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard, just follow the path to the northwest. Good luck, |PLAYERNAME|! ...",
--- 				"And by the way: if you thought all of this was boring and you'd rather skip the tutorial with your next character, just say 'skip tutorial' to Santiago. ...",
--- 				"Then you'll miss out on those nice items and experience though. Hehehe! It's your choice. Well, take care for now!",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
--- 			npcHandler:removeInteraction(npc, creature)
--- 			npcHandler:resetNpc(npc, creature)
--- 		end
--- 	elseif MsgContains(message, "outfit") then
--- 		if storeTalkCid[playerId] == 1 then
--- 			npcHandler:say({
--- 				"Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard, just follow the path to the northwest. Good luck, |PLAYERNAME|! ...",
--- 				"And by the way: if you thought all of this was boring and you'd rather skip the tutorial with your next character, just say 'skip tutorial' to Santiago. ...",
--- 				"Then you'll miss out on those nice items and experience though. Hehehe! It's your choice. Well, take care for now!",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
--- 			addEvent(function()
--- 				releasePlayer(npc, creature)
--- 			end, 1000)
--- 		end
--- 	elseif MsgContains(message, "ready") then
--- 		if storeTalkCid[playerId] == 7 then
--- 			npcHandler:say({
--- 				"Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard, just follow the path to the northwest. Good luck, |PLAYERNAME|! ...",
--- 				"And by the way: if you thought all of this was boring and you'd rather skip the tutorial with your next character, just say 'skip tutorial' to Santiago. ...",
--- 				"Then you'll miss out on those nice items and experience though. Hehehe! It's your choice. Well, take care for now!",
--- 			}, npc, creature)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
--- 			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
--- 			addEvent(function()
--- 				releasePlayer(npc, creature)
--- 			end, 5000)
--- 		end
--- 	end
--- 	return true
--- end
+local function creatureSayCallback(cid, type, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if not npcHandler:isFocused(cid) then
+		return false
+	end
+
+	if table.contains({ "yes", "help", "ok" }, msg) then
+		if storeTalkCid[playerId] == 1 then
+			npcHandler:say("Very well. Just choose an outfit and a colour combination that suits you. You can open this dialogue anytime by right-clicking on yourself and selecting 'Set Outfit'. Just try it and then talk to me again!", cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 2)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 2)
+			player:sendTutorial(12)
+			npcHandler:releaseFocus(cid)
+			npcHandler:resetNpc(npc, cid)
+		elseif storeTalkCid[playerId] == 2 then
+			npcHandler:say("You see, I'm quite hungry from standing here all day. Could you get me some {food}?", cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 3)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 3)
+			storeTalkCid[playerId] = 3
+		elseif storeTalkCid[playerId] == 3 then
+			npcHandler:say("Thank you! I would do it myself, but I don't have a weapon. Just kill a few rabbits or deer, loot food from them and bring me one piece of {meat} or ham, will you?", cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 4)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 4)
+			storeTalkCid[playerId] = 4
+		elseif storeTalkCid[playerId] == 4 then
+			npcHandler:say("Splendid. I'll be awaiting your return eagerly. Don't forget that you can click on the 'Chase Opponent' button to run after those fast creatures. Good {bye} for now!", cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 5)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 5)
+			npcHandler:releaseFocus(cid)
+			npcHandler:resetNpc(npc, cid)
+		elseif storeTalkCid[playerId] == 5 then
+			if player:getItemCount(3577) > 0 or player:getItemCount(3582) > 0 then
+				npcHandler:say("What's that delicious smell? That must be a piece of meat! Please hurry, simply ask me for a {trade} and I'll give you two gold pieces for it!", cid)
+				player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 6)
+				player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 6)
+				player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcTradeStorage, 1)
+				storeTalkCid[playerId] = 6
+			else
+				npcHandler:say("Hmm. No, I don't think you have something with you that I'd like to eat. Please come back once you looted a piece of meat or a piece of ham from a rabbit or deer.", cid)
+				npcHandler:releaseFocus(cid)
+				npcHandler:resetNpc(npc, cid)
+			end
+		elseif storeTalkCid[playerId] == 7 then
+			npcHandler:say({
+				"Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard, just follow the path to the northwest. Good luck, |PLAYERNAME|! ...",
+				"And by the way: if you thought all of this was boring and you'd rather skip the tutorial with your next character, just say 'skip tutorial' to Santiago. ...",
+				"Then you'll miss out on those nice items and experience though. Hehehe! It's your choice. Well, take care for now!",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
+			npcHandler:releaseFocus(cid)
+			npcHandler:resetNpc(npc, cid)
+		end
+	elseif msgcontains(msg, "outfit") then
+		if storeTalkCid[playerId] == 1 then
+			npcHandler:say({
+				"Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard, just follow the path to the northwest. Good luck, |PLAYERNAME|! ...",
+				"And by the way: if you thought all of this was boring and you'd rather skip the tutorial with your next character, just say 'skip tutorial' to Santiago. ...",
+				"Then you'll miss out on those nice items and experience though. Hehehe! It's your choice. Well, take care for now!",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
+			addEvent(function()
+				releasePlayer(npc, cid)
+			end, 1000)
+		end
+	elseif msgcontains(msg, "ready") then
+		if storeTalkCid[playerId] == 7 then
+			npcHandler:say({
+				"Well, that's how trading with NPCs like me works. I think you are ready now to cross the bridge to Rookgaard, just follow the path to the northwest. Good luck, |PLAYERNAME|! ...",
+				"And by the way: if you thought all of this was boring and you'd rather skip the tutorial with your next character, just say 'skip tutorial' to Santiago. ...",
+				"Then you'll miss out on those nice items and experience though. Hehehe! It's your choice. Well, take care for now!",
+			}, cid)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosQuestLog, 7)
+			player:setStorageValue(Storage.Quest.U8_2.TheBeginningQuest.CarlosNpcGreetStorage, 8)
+			addEvent(function()
+				releasePlayer(npc, cid)
+			end, 5000)
+		end
+	end
+	return true
+end
 
 local function onTradeRequest(npc, creature)
 	local player = Player(creature)
@@ -176,11 +176,12 @@ local function onReleaseFocus(cid)
 end
 
 npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+
 npcHandler:setMessage(MESSAGE_SENDTRADE, "Very nice! Food for me! Sell it to me, fast! Once you sold your food to me, just say {ready} to let me know you are done.")
 npcHandler:setMessage(MESSAGE_FAREWELL, "Good bye |PLAYERNAME|!.")
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Good bye traveller and enjoy your stay on Rookgaard.")
 
--- npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
+npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

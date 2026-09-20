@@ -12,15 +12,15 @@ local voices = {
 }
 npcHandler:addModule(VoiceModule:new(voices))
 
--- local function greetCallback(npc, player)
--- 	if player:getStorageValue(Storage.Quest.U8_1.TibiaTales.AritosTask) == 2 then
--- 		npcHandler:setMessage(MESSAGE_GREET, "Thank god you are back!! Did you find....err...what we were talking about??")
--- 	else
--- 		npcHandler:setMessage(MESSAGE_GREET, "Be mourned, pilgrim in flesh. Be mourned in my tavern.")
--- 	end
--- 
--- 	return true
--- end
+local function greetCallback(npc, player)
+	if player:getStorageValue(Storage.Quest.U8_1.TibiaTales.AritosTask) == 2 then
+		npcHandler:setMessage(MESSAGE_GREET, "Thank god you are back!! Did you find....err...what we were talking about??")
+	else
+		npcHandler:setMessage(MESSAGE_GREET, "Be mourned, pilgrim in flesh. Be mourned in my tavern.")
+	end
+
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -75,7 +75,6 @@ npcHandler:setMessage(MESSAGE_WALKAWAY, "Do visit us again.")
 npcHandler:setMessage(MESSAGE_SENDTRADE, "Sure, browse through my offers.")
 
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
---
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 
 npcHandler:addModule(FocusModule:new())

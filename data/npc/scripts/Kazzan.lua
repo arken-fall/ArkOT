@@ -13,22 +13,22 @@ local function endConversationWithDelay(npcHandler, npc, creature)
 	end, 1000)
 end
 
--- local function greetCallback(npc, creature, message)
--- 	local player = Player(creature)
--- 	local playerId = player:getId()
--- 
--- 	if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 35 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.ScaredKazzan) ~= 1 and player:getOutfit().lookType == 65 then
--- 		player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.ScaredKazzan, 1)
--- 		npcHandler:say("WAAAAAHHH!!!", npc, creature)
--- 		endConversationWithDelay(npcHandler, npc, creature)
--- 		return false
--- 	end
--- 
--- 	npcHandler:say("Feel welcome in the lands of the children of the enlightened Daraman, |PLAYERNAME|.", npc, creature)
--- 	npcHandler:setInteraction(npc, creature)
--- 
--- 	return true
--- end
+local function greetCallback(npc, cid, msg)
+	local player = Player(cid)
+	local playerId = cid
+
+	if player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.Questline) == 35 and player:getStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.ScaredKazzan) ~= 1 and player:getOutfit().lookType == 65 then
+		player:setStorageValue(Storage.Quest.U8_1.WhatAFoolishQuest.ScaredKazzan, 1)
+		npcHandler:say("WAAAAAHHH!!!", cid)
+		endConversationWithDelay(npcHandler, cid)
+		return false
+	end
+
+	npcHandler:say("Feel welcome in the lands of the children of the enlightened Daraman, |PLAYERNAME|.", cid)
+	npcHandler:setInteraction(npc, cid)
+
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -71,7 +71,7 @@ end
 npcHandler:setCallback(CALLBACK_ONADDFOCUS, onAddFocus)
 npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 
 npcHandler:addModule(FocusModule:new())

@@ -54,27 +54,27 @@ local function endConversationWithDelay(npcHandler, npc, creature)
 	end, 1000)
 end
 
--- local function greetCallback(npc, creature)
--- 	local player = Player(creature)
--- 	local drunk = player:getCondition(CONDITION_DRUNK)
--- 	local questState = player:getStorageValue(Storage.Quest.U7_8.AssassinOutfits.AssassinBaseOutfit)
--- 
--- 	if questState < 1 then
--- 		if drunk then
--- 			npcHandler:setMessage(MESSAGE_GREET, "Hey t-there, you look like someone who enjoys a good {booze}.")
--- 			npcHandler:setInteraction(npc, creature)
--- 			return true
--- 		else
--- 			npcHandler:say("Oh, two t-trolls. Hellooo, wittle twolls. <hicks>", npc, creature)
--- 			endConversationWithDelay(npcHandler, npc, creature)
--- 			return false
--- 		end
--- 	end
--- 
--- 	npcHandler:setMessage(MESSAGE_GREET, "Ohhh it's you again! Did you bring what I asked for? <hicks>")
--- 	npcHandler:setInteraction(npc, creature)
--- 	return true
--- end
+local function greetCallback(cid)
+	local player = Player(cid)
+	local drunk = player:getCondition(CONDITION_DRUNK)
+	local questState = player:getStorageValue(Storage.Quest.U7_8.AssassinOutfits.AssassinBaseOutfit)
+
+	if questState < 1 then
+		if drunk then
+			npcHandler:setMessage(MESSAGE_GREET, "Hey t-there, you look like someone who enjoys a good {booze}.")
+			npcHandler:setInteraction(npc, cid)
+			return true
+		else
+			npcHandler:say("Oh, two t-trolls. Hellooo, wittle twolls. <hicks>", cid)
+			endConversationWithDelay(npcHandler, cid)
+			return false
+		end
+	end
+
+	npcHandler:setMessage(MESSAGE_GREET, "Ohhh it's you again! Did you bring what I asked for? <hicks>")
+	npcHandler:setInteraction(npc, cid)
+	return true
+end
 
 local function creatureSayCallback(cid, type, msg)
 	local player = Player(cid)
@@ -161,7 +161,7 @@ end
 npcHandler:setMessage(MESSAGE_FAREWELL, "T-time for another b-beer. <hicks>")
 npcHandler:setMessage(MESSAGE_WALKAWAY, "Oh, two t-trolls. Hellooo, wittle twolls. <hicks>")
 
--- npcHandler:setCallback(CALLBACK_GREET, greetCallback)
+npcHandler:setCallback(CALLBACK_GREET, greetCallback)
 npcHandler:setCallback(CALLBACK_MESSAGE_DEFAULT, creatureSayCallback)
 npcHandler:setCallback(CALLBACK_ONRELEASEFOCUS, onReleaseFocus)
 
