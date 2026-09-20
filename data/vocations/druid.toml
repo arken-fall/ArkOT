@@ -26,7 +26,7 @@ skillrates = [
 
 [ElderDruid]
 id = 6
-cid = 4
+cid = 14
 pvp = true
 name = "Elder Druid"
 description = "an elder druid"

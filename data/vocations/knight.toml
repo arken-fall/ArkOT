@@ -25,7 +25,7 @@ skillrates = [
 
 [EliteKnight]
 id = 8
-cid = 1
+cid = 11
 pvp = true
 name = "Elite Knight"
 description = "an elite knight"

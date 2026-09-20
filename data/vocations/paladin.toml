@@ -26,7 +26,7 @@ skillrates = [
 
 [RoyalPaladin]
 id = 7
-cid = 2
+cid = 12
 pvp = true
 name = "Royal Paladin"
 description = "a royal paladin"

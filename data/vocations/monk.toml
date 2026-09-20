@@ -47,7 +47,7 @@ skillrates = [
 
 [ExaltedMonk]
 id = 10
-cid = 5
+cid = 15
 pvp = true
 name = "Exalted Monk"
 description = "an exalted monk"

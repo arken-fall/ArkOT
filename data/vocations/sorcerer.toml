@@ -26,7 +26,7 @@ skillrates = [
 
 [MasterSorcerer]
 id = 5
-cid = 3
+cid = 13
 pvp = true
 name = "Master Sorcerer"
 description = "a master sorcerer"
