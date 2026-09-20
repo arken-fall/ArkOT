@@ -39,5 +39,5 @@ end
 local realmapEvent1 = ItemEvent()
 realmapEvent1:type("use")
 realmapEvent1.onUse = onUse
-realmapEvent1:uid(3091, 3092, 3093, 3094, 3095, 3096, 3097, 3098, 3099, 3100, 3101, 3102, 9235, 9236)
+realmapEvent1:uid(9235, 9236)
 realmapEvent1:register()

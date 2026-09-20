@@ -39,5 +39,5 @@ end
 local realmapEvent1 = ItemEvent()
 realmapEvent1:type("use")
 realmapEvent1.onUse = onUse
-realmapEvent1:id(2692, 2693, 2694, 5467, 6277, 8846)
+realmapEvent1:id(2693, 6277, 8846)
 realmapEvent1:register()
