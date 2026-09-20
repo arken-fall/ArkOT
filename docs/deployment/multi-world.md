@@ -22,8 +22,14 @@ Multi-world has two phases, and both are in the tree:
 | World | Map | Port | Schema | Who may enter |
 | --- | --- | --- | --- | --- |
 | `Avarion` | canary | 7172 | `blacktek` | anyone |
-| `Avarion Test` | forgotten | 7272 | `arkot_test` | anyone |
-| `Testing` | forgotten | 7372 | `arkot_testing` | staff, and accounts holding the `tester` role |
+| `Avarion Test` | forgotten | 7173 | `arkot_test` | anyone |
+| `Testing` | forgotten | 7174 | `arkot_testing` | staff, and accounts holding the `tester` role |
+
+Game ports run contiguously from the login port — 7171 login, then one per world — and status ports
+sit in their own block at 7181 upward, so a new world extends the game range without ever colliding
+with a status listener. A home router forwarding a **range** then covers every world it will ever
+have: the first attempt at a third world was unreachable only because 7372 sat outside the range
+that already covered 7171-7272.
 
 The first two were converted in place from the single-world deployment on 2026-09-16 and were named
 `ArkOT` and `ArkOT Test` until 2026-09-20 — **observations recorded below quote the names as they
@@ -43,7 +49,7 @@ A world row may name the role an account must hold:
 id      = 2
 name    = "Testing"
 address = "127.0.0.1"
-port    = 7372
+port    = 7174
 schema  = "arkot_testing"
 access  = "tester"
 ```
@@ -72,7 +78,7 @@ below.
 | Live conversion of a single-world deployment | Backed up, then sections 1, 2, 3 and 4 of `auth_schema.sql` applied to the live schema. Both accounts and all 23 sessions survived, and every character still joined its account. The login container kept working through the views. |
 | Character creation on a chosen world | The website inserted into the chosen world's `players`, at a town read from that world's `towns`. |
 | One login, every world | The HTTP login returned both worlds and both characters, each tagged with its `worldid`. |
-| One session key, both game servers | The same key was accepted on 7172 and on 7272. |
+| One session key, both game servers | The same key was accepted on both worlds' game ports. |
 | One session per account, on real servers | Online on `ArkOT`, a login on `ArkOT Test` was refused: "Your account is already online on ArkOT as …". |
 | A real 15.25 client on the second world | The owner created `Arkit` on `ArkOT Test` from the website and played it after one login. |
 | The Gamemaster exemption | The owner's God account was online on `ArkOT Test` with no claim row. |

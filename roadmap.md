@@ -148,8 +148,8 @@ full list is in `docs/deployment/multi-world.md`.
 
 **Three worlds are live on the production host.** The single-world deployment was converted in
 place on 2026-09-16, backed up first: `Avarion` (Canary map, port 7172, schema `blacktek`) and
-`Avarion Test` (the small `forgotten` map, port 7272, schema `arkot_test`). On 2026-09-20 they were
-joined by `Testing` (small map, port 7372, schema `arkot_testing`), which is **private**: its world
+`Avarion Test` (the small `forgotten` map, port 7173, schema `arkot_test`). On 2026-09-20 they were
+joined by `Testing` (small map, port 7174, schema `arkot_testing`), which is **private**: its world
 row names a role, and only accounts holding it — or staff — may enter. The first two were called
 `ArkOT` and `ArkOT Test` until that same day; the schema names still carry the old spelling, because
 renaming a schema is a migration and a name is not. The
@@ -171,7 +171,9 @@ client logs in over HTTP.
 
 **A new world needs its game port forwarded.** The first live attempt on `Avarion Test` failed with
 the client's "Connection refused (ERROR 111)": the server was listening and the VM firewall was open,
-but the router had no rule for 7272.
+but the router's forwarded range stopped short of it. The ports were renumbered contiguously the
+same day — 7171 login, 7172, 7173, 7174 for the worlds, status ports at 7181 upward — so every world
+falls inside a range the router already forwards.
 
 **Not proven yet:** behaviour under player load, and worlds on separate hosts.
 
