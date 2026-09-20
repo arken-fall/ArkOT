@@ -373,3 +373,163 @@ BT_TEST(worldRegistryRefusesASchemaMismatch)
 
 	expectError(loadWorlds(self), Registry::Error::SelfSchemaMismatch, "schema disagreeing with worlds.toml");
 }
+
+// `access` is a security key, so the cases that matter are the ones where a
+// misreading would open a private world rather than close a public one: an absent
+// key and the explicit "public" must both mean public, and anything the registry
+// cannot read as a role name must refuse the boot rather than default to "off".
+
+BT_TEST(worldRegistryTreatsAnAbsentAccessAsPublic)
+{
+	// TwoWorlds declares no `access` at all - which is exactly what the live public
+	// worlds deploy, and what must keep meaning "anyone may log in here".
+	const WorldsDirectory fixture{ TwoWorlds };
+
+	expectLoaded(loadWorlds(localIdentity()), "worlds declaring no access");
+
+	const auto& worlds = Registry::GetInstance();
+
+	const Entry* local = worlds.Find(Id{ 0 });
+	BT_CHECK(local != nullptr);
+	BT_CHECK(local->required_role.empty());
+
+	const Entry* foreign = worlds.Find(Id{ 1 });
+	BT_CHECK(foreign != nullptr);
+	BT_CHECK(foreign->required_role.empty());
+}
+
+BT_TEST(worldRegistryNormalisesPublicAccessToNoRole)
+{
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+access  = "public"
+)" };
+
+	expectLoaded(loadWorlds(localIdentity()), "access = public");
+
+	const Entry* local = Registry::GetInstance().Find(Id{ 0 });
+	BT_CHECK(local != nullptr);
+
+	// "public" is a spelling of the default, not a role named "public": the access
+	// gate keys entirely off required_role being empty.
+	BT_CHECK(local->required_role.empty());
+}
+
+BT_TEST(worldRegistryKeepsANamedAccessRole)
+{
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+
+[[world]]
+id      = 1
+name    = "Arkenfall-Hardcore"
+address = "127.0.0.2"
+port    = 7283
+schema  = "arkot_world_1"
+access  = "tester"
+)" };
+
+	expectLoaded(loadWorlds(localIdentity()), "access = tester");
+
+	const auto& worlds = Registry::GetInstance();
+
+	// the row that named a role carries it; the row that did not stays public
+	const Entry* foreign = worlds.Find(Id{ 1 });
+	BT_CHECK(foreign != nullptr);
+	BT_CHECK(foreign->required_role == "tester");
+
+	const Entry* local = worlds.Find(Id{ 0 });
+	BT_CHECK(local != nullptr);
+	BT_CHECK(local->required_role.empty());
+}
+
+BT_TEST(worldRegistryRefusesANonStringAccess)
+{
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+access  = true
+)" };
+
+	expectError(loadWorlds(localIdentity()), Registry::Error::InvalidAccess, "access that is not a string");
+}
+
+BT_TEST(worldRegistryRefusesAnOverLongAccessRole)
+{
+	// 33 characters: one past the varchar(32) the `account_roles`.`role` column
+	// declares, so it could never match a granted row
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+access  = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+)" };
+
+	expectError(loadWorlds(localIdentity()), Registry::Error::InvalidAccess, "access role longer than the role column");
+}
+
+BT_TEST(worldRegistryRefusesAnUpperCaseAccessRole)
+{
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+access  = "Tester"
+)" };
+
+	expectError(loadWorlds(localIdentity()), Registry::Error::InvalidAccess, "access role that is not lowercase");
+}
+
+BT_TEST(worldRegistryRefusesAnAccessRoleOutsideTheAlphabet)
+{
+	// a quote would otherwise reach a query built with fmt rather than escaped,
+	// which is precisely why the accepted alphabet is narrower than the column
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+access  = "tes'ter"
+)" };
+
+	expectError(loadWorlds(localIdentity()), Registry::Error::InvalidAccess, "access role outside the accepted alphabet");
+}
+
+BT_TEST(worldRegistryRefusesAnEmptyAccessRole)
+{
+	// an empty string is not "public": it is an operator who meant to write a role
+	// and wrote nothing, and guessing which they meant is what this refuses to do
+	const WorldsDirectory fixture{ R"(
+[[world]]
+id      = 0
+name    = "Arkenfall"
+address = "127.0.0.1"
+port    = 7183
+schema  = "arkot_world_0"
+access  = ""
+)" };
+
+	expectError(loadWorlds(localIdentity()), Registry::Error::InvalidAccess, "empty access role");
+}

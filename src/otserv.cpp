@@ -35,6 +35,7 @@
 #include "metrics.h"
 #include "world.h"
 #include "presence.h"
+#include "worldaccess.h"
 #include "simd_dispatch.h"
 #include <algorithm>
 #include <array>
@@ -254,6 +255,8 @@ namespace
 
 	// Tables that live only in the auth schema, as base tables with deliberately no
 	// per-world view. BlackTek::World::Presence names the auth schema in every query.
+	// `account_roles` is deliberately absent: it is only needed by a world whose row
+	// declares an `access` role, and BlackTek::World::Access probes it for itself.
 	constexpr std::array<std::string_view, 2> AuthOnlyTables{ "world_presence", "account_presence" };
 
 	// The shared tables IOBan reads `banned_by_name` from.
@@ -770,6 +773,19 @@ void mainLoader(int, char*[], ServiceManager* services)
 
 			ProbeWorldSchemas();
 		}
+	}
+
+	// Private-world access. Only this world's own row in config/worlds.toml decides
+	// whether anything is required at all: a public world - which is what a row with
+	// no `access` is - needs no auth schema, no grant table, and adds no query to the
+	// login path. A world that does name a role has to prove here that it can read
+	// the grant table, because a world that cannot check its own key would turn away
+	// every player it was provisioned to admit. Both the registry and the database
+	// connection are already established by this point, which is all this needs.
+	if (const auto started = BlackTek::World::Access::GetInstance().Start(SharedAuthSchema()); not started)
+	{
+		startupErrorMessage(started.error());
+		return;
 	}
 
 	Console::printInfo("Compiler", BOOST_COMPILER);

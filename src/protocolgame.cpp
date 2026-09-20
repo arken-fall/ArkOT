@@ -28,6 +28,7 @@
 #include "scheduler.h"
 #include "world.h"
 #include "presence.h"
+#include "worldaccess.h"
 
 #include <ranges>
 #include <fmt/format.h>
@@ -193,10 +194,11 @@ namespace
 	}
 
 	// account-level, so it is shared across worlds through the `accounts` view;
-	// the same accounts the per-world rule has always exempted
+	// the same accounts the per-world rule has always exempted. Delegated so that
+	// "is staff" has exactly one spelling, shared with the world access gate.
 	[[nodiscard]] bool IsSingleSessionExempt(const PlayerConstPtr& player) noexcept
 	{
-		return player->getAccountType() >= ACCOUNT_TYPE_GAMEMASTER;
+		return BlackTek::World::IsStaffAccount(player->getAccountType());
 	}
 
 	[[nodiscard]] std::string DescribePresenceRefusal(const BlackTek::World::Presence::Refused& refused)
@@ -218,6 +220,28 @@ namespace
 
 		// fails closed: a presence check that could not run refuses the login
 		return "Your login could not be checked right now.\nPlease try again in a moment.";
+	}
+
+	[[nodiscard]] std::string DescribeAccessRefusal(BlackTek::World::Access::Refusal refusal)
+	{
+		using BlackTek::World::Access;
+
+		switch (refusal)
+		{
+			case Access::Refusal::NotInvited:
+			{
+				// this gate only ever judges the world this process is, so naming
+				// Local() names the world the player was actually turned away from
+				const auto& world = BlackTek::World::Local();
+				return fmt::format("{:s} is not open to your account.\nVisit the website to request access to this world.", world.name);
+			}
+
+			case Access::Refusal::Unavailable:
+				break;
+		}
+
+		// fails closed: an access check that could not run refuses the login
+		return "Your access to this world could not be checked right now.\nPlease try again in a moment.";
 	}
 
 }
@@ -769,6 +793,18 @@ void ProtocolGame::authenticateAndLogin(std::string accountName, std::string pas
 		}
 
 		disconnectClient("Account name or password is not correct.");
+		return;
+	}
+
+	// The private-world gate belongs here, not inside login(). All three
+	// authentication routes above converge on this point holding the id of the
+	// account that actually authenticated. Inside login() the only account to hand
+	// is the one attached to the *character* - preloadPlayer joins `players` to
+	// `accounts` on the character's account_id (src/iologindata.cpp:580) - which on
+	// the Account Manager path is the seeded account, not the authenticated one.
+	if (const auto admitted = BlackTek::World::Access::GetInstance().Admit(accountId, BlackTek::World::Local().id); not admitted)
+	{
+		disconnectClient(DescribeAccessRefusal(admitted.error()));
 		return;
 	}
 

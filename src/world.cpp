@@ -40,6 +40,26 @@ namespace BlackTek::World
 		{
 			return caseInsensitiveEqual(Trimmed(declared), Trimmed(candidate));
 		}
+
+		// `account_roles`.`role` is varchar(32), so a longer name could never match a
+		// granted row and is a typo, not a role. The alphabet is deliberately narrower
+		// than the column: a name accepted here is spliced into SQL by the access
+		// subsystem, where identifiers and literals are built with fmt rather than
+		// escaped, so lowercase a-z, digits and underscore keep it quotation-free by
+		// construction. Refusing the boot is the point - a security key that read as
+		// "off" because it was misspelled would open a private world silently.
+		[[nodiscard]] constexpr bool IsRoleName(std::string_view role) noexcept
+		{
+			constexpr size_t RoleColumnLength = 32;
+
+			if (role.empty() or role.size() > RoleColumnLength)
+				return false;
+
+			return std::ranges::all_of(role, [](char character) noexcept
+			{
+				return (character >= 'a' and character <= 'z') or (character >= '0' and character <= '9') or character == '_';
+			});
+		}
 	}
 
 	std::expected<void, Registry::Error> Registry::Load(const Identity& self)
@@ -119,6 +139,32 @@ namespace BlackTek::World
 				return fail(Error::EmptyField);
 			}
 
+			// `access` names the role an account must hold to log in to this world.
+			// Absent means public, which is what keeps every existing row valid; the
+			// explicit "public" means the same thing and normalises to no role at all.
+			std::string requiredRole;
+
+			if (const auto accessNode = (*row)["access"])
+			{
+				const auto* accessValue = accessNode.as_string();
+				if (not accessValue)
+				{
+					Console::Error("World::Registry::Load: the [[world]] entry for id {:d} ('{:s}') in {:s} declares an 'access' that is not a string.", declaredId, name, WorldsFile);
+					return fail(Error::InvalidAccess);
+				}
+
+				requiredRole = std::string{Trimmed(accessValue->get())};
+
+				if (requiredRole == "public")
+					requiredRole.clear();
+
+				else if (not IsRoleName(requiredRole))
+				{
+					Console::Error("World::Registry::Load: the [[world]] entry for id {:d} ('{:s}') in {:s} declares access = '{:s}', which is not a role name; use \"public\", or 1 to 32 characters of lowercase a-z, 0-9 and underscore.", declaredId, name, WorldsFile, requiredRole);
+					return fail(Error::InvalidAccess);
+				}
+			}
+
 			const auto declared = static_cast<Id>(declaredId);
 
 			if (Find(declared))
@@ -134,11 +180,12 @@ namespace BlackTek::World
 			}
 
 			entries.push_back(Entry{
-				.name    = std::move(name),
-				.address = std::move(address),
-				.schema  = std::move(schema),
-				.port    = static_cast<uint16_t>(declaredPort),
-				.id      = declared });
+				.name          = std::move(name),
+				.address       = std::move(address),
+				.schema        = std::move(schema),
+				.port          = static_cast<uint16_t>(declaredPort),
+				.id            = declared,
+				.required_role = std::move(requiredRole) });
 		}
 
 		const auto selfPosition = std::ranges::find(entries, self.id, &Entry::id);
@@ -221,6 +268,7 @@ namespace BlackTek::World
 			case Error::SelfAddressMismatch:	return "this world's declared address does not match [network].ip";
 			case Error::SelfPortMismatch:		return "this world's declared port does not match [network].game_port_modern";
 			case Error::SelfSchemaMismatch:		return "this world's declared schema does not match [mysql].database";
+			case Error::InvalidAccess:			return "a [[world]] entry declares an 'access' that is not \"public\" or a valid role name";
 		}
 
 		return "unknown world registry error";

@@ -23,6 +23,16 @@
 #   schema   - that world's MySQL database, on the shared MySQL instance.
 #              Every world's schema must live on ONE MySQL instance, since a
 #              single connection serves them all.
+#   access   - OPTIONAL. Omit it, or write "public", and anyone may log in to
+#              that world. Any other value is the name of the role an account
+#              must hold in the shared auth schema's `account_roles` table to
+#              be let in, e.g. "tester" or "staff"; staff accounts
+#              (gamemaster and above) are always admitted. The name must be 1
+#              to 32 characters of lowercase a-z, 0-9 and underscore - a value
+#              that is not, or is not a string, refuses the boot rather than
+#              quietly reading as "public". Naming a role here also requires
+#              [mysql].auth_database to be set, since that is where the grants
+#              live.
 #
 # Deleting this file is supported: a process with no config/worlds.toml
 # synthesises the single world described by its own configuration and boots

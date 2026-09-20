@@ -347,6 +347,33 @@ CREATE TABLE IF NOT EXISTS `__AUTH_SCHEMA__`.`account_presence` (
     FOREIGN KEY (`account_id`) REFERENCES `__AUTH_SCHEMA__`.`accounts` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
 
+--
+-- `account_roles` -- what an account is, beyond its type. One row per role held.
+--
+-- Auth schema only, no view: nothing old queries it, and a world names it through
+-- the auth schema the way the presence tables are named. That is also what keeps a
+-- second role from ever obliging a section 3 re-run -- adding a row is not adding
+-- a column.
+--
+-- A world declaring `access = "<role>"` in config/worlds.toml admits an account
+-- holding that role, and any account of type >= 4 (ACCOUNT_TYPE_GAMEMASTER)
+-- regardless. A world that declares no `access` is public and never reads this
+-- table at all.
+--
+-- Role names are lowercase [a-z0-9_], at most 32 characters, and carry no order:
+-- holding the string is the whole meaning. `granted_by_name` freezes the granting
+-- character's name at grant time, the same discipline `banned_by_name` settled on.
+--
+CREATE TABLE IF NOT EXISTS `__AUTH_SCHEMA__`.`account_roles` (
+    `account_id`      int NOT NULL,
+    `role`            varchar(32) NOT NULL,
+    `granted_at`      bigint NOT NULL DEFAULT '0',
+    `granted_by_name` varchar(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (`account_id`, `role`),
+    INDEX `role` (`role`),
+    FOREIGN KEY (`account_id`) REFERENCES `__AUTH_SCHEMA__`.`accounts` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
+
 
 -- =============================================================================
 -- SECTION 2 -- ONE-TIME HOIST of an existing world schema.  *** COMMENTED OUT ***

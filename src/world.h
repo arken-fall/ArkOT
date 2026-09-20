@@ -24,6 +24,7 @@ namespace BlackTek::World
 		std::string	schema;		// that world's MySQL database
 		uint16_t	port = 0;	// that world's game_port_modern
 		Id			id = 0;
+		std::string	required_role;	// empty means public; otherwise the role an account must hold
 	};
 
 	// Loaded once in mainLoader, immutable afterwards. Boot refuses on any
@@ -43,6 +44,7 @@ namespace BlackTek::World
 				SelfAddressMismatch,
 				SelfPortMismatch,
 				SelfSchemaMismatch,
+				InvalidAccess,
 			};
 
 			// what this process believes it is, handed in from config
