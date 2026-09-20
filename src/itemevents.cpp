@@ -36,6 +36,38 @@ namespace
 		return index < SlotBitmasks.size() ? SlotBitmasks[index] : 0;
 	}
 
+	[[nodiscard]] constexpr std::string_view HookName(BlackTek::ItemEvents::HookType hook) noexcept
+	{
+		switch (hook)
+		{
+			case BlackTek::ItemEvents::HookType::OnUse:				return "onUse";
+			case BlackTek::ItemEvents::HookType::OnUseAsWeapon:		return "onUseAsWeapon";
+			case BlackTek::ItemEvents::HookType::OnEquip:			return "onEquip";
+			case BlackTek::ItemEvents::HookType::OnDeEquip:			return "onDeEquip";
+			case BlackTek::ItemEvents::HookType::OnStepOn:			return "onStepOn";
+			case BlackTek::ItemEvents::HookType::OnStepOff:			return "onStepOff";
+			case BlackTek::ItemEvents::HookType::OnAddItem:			return "onAddItem";
+			case BlackTek::ItemEvents::HookType::OnRemoveItem:		return "onRemoveItem";
+			case BlackTek::ItemEvents::HookType::OnAttack:			return "onAttack";
+			case BlackTek::ItemEvents::HookType::OnDefend:			return "onDefend";
+			case BlackTek::ItemEvents::HookType::OnAugment:			return "onAugment";
+			case BlackTek::ItemEvents::HookType::OnRemoveAugment:	return "onRemoveAugment";
+			case BlackTek::ItemEvents::HookType::OnAttackMod:		return "onAttackMod";
+			case BlackTek::ItemEvents::HookType::OnDefenseMod:		return "onDefenseMod";
+			default:												return {};
+		}
+	}
+
+	// A collision is only triageable if both sides name the script that owns them, so
+	// every duplicate warning resolves its events through here rather than printing ids.
+	[[nodiscard]] std::string_view DescribeScript(const ItemEvent* event) noexcept
+	{
+		if (not event)
+			return "(unknown script)";
+
+		return event->GetScriptFile();
+	}
+
 	std::optional<ItemEvent::Register::Type> ToRegisterCategory(WeaponType_t type)
 	{
 		switch (type)
@@ -334,26 +366,13 @@ ItemEvent::ItemEvent(LuaScriptInterface* interface) : Event(interface) {}
 
 std::string_view ItemEvent::getScriptEventName() const
 {
-	switch (hook)
-	{
-		case BlackTek::ItemEvents::HookType::OnUse:					return "onUse";
-		case BlackTek::ItemEvents::HookType::OnUseAsWeapon:			return "onUseAsWeapon";
-		case BlackTek::ItemEvents::HookType::OnEquip:				return "onEquip";
-		case BlackTek::ItemEvents::HookType::OnDeEquip:				return "onDeEquip";
-		case BlackTek::ItemEvents::HookType::OnStepOn:				return "onStepOn";
-		case BlackTek::ItemEvents::HookType::OnStepOff:				return "onStepOff";
-		case BlackTek::ItemEvents::HookType::OnAddItem:				return "onAddItem";
-		case BlackTek::ItemEvents::HookType::OnRemoveItem:			return "onRemoveItem";
-		case BlackTek::ItemEvents::HookType::OnAttack:				return "onAttack";
-		case BlackTek::ItemEvents::HookType::OnDefend:				return "onDefend";
-		case BlackTek::ItemEvents::HookType::OnAugment:				return "onAugment";
-		case BlackTek::ItemEvents::HookType::OnRemoveAugment:		return "onRemoveAugment";
-		case BlackTek::ItemEvents::HookType::OnAttackMod:			return "onAttackMod";
-		case BlackTek::ItemEvents::HookType::OnDefenseMod:			return "onDefenseMod";
-		default:
-			BlackTek::Console::Error("ItemEvent::getScriptEventName: Invalid hook type");
-			return "";
-	}
+	// HookName is shared with the registration warnings, so the two can never drift apart.
+	const auto name = HookName(hook);
+
+	if (name.empty())
+		BlackTek::Console::Error("ItemEvent::getScriptEventName: Invalid hook type");
+
+	return name;
 }
 
 bool ItemEvent::executeUse(const PlayerPtr& player, const ItemPtr& item, const Position& fromPosition, const BlackTek::GameModel& target, const Position& toPosition, bool isHotkey) const
@@ -620,6 +639,9 @@ bool ItemEvents::AddRegistration(ItemEvent& definition)
 		definition.slot = Item::items.getItemType(definition.itemIds.front()).slotPosition;
 
 	const auto hookIdx = static_cast<size_t>(definition.hook);
+	// Resolved once, not per id: a collision warning is cold, but this runs for every
+	// registration in the datapack and the name never varies within one definition.
+	const auto hookName = HookName(definition.hook);
 	const uint32_t selectMask = BlackTek::ItemEvents::IsSlotSelected(definition.hook) ? definition.slot : BlackTek::ItemEvents::AnySlot;
 	bool registered = false;
 
@@ -649,7 +671,7 @@ bool ItemEvents::AddRegistration(ItemEvent& definition)
 			{
 				if (ref.select_mask == selectMask)
 				{
-					BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for id {}", id);
+					BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for item id {} hook {} - firing: {} - shadowed: {}", id, hookName, DescribeScript(ref.event), DescribeScript(&definition));
 					break;
 				}
 			}
@@ -672,7 +694,7 @@ bool ItemEvents::AddRegistration(ItemEvent& definition)
 			{
 				if (ref.select_mask == selectMask)
 				{
-					BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for id {}", id);
+					BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for action id {} hook {} - firing: {} - shadowed: {}", id, hookName, DescribeScript(ref.event), DescribeScript(&definition));
 					break;
 				}
 			}
@@ -694,7 +716,7 @@ bool ItemEvents::AddRegistration(ItemEvent& definition)
 			{
 				if (ref.select_mask == selectMask)
 				{
-					BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for id {}", id);
+					BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for unique id {} hook {} - firing: {} - shadowed: {}", id, hookName, DescribeScript(ref.event), DescribeScript(&definition));
 					break;
 				}
 			}
@@ -711,7 +733,7 @@ bool ItemEvents::AddRegistration(ItemEvent& definition)
 		const uint64_t key = BlackTek::ItemEvents::PackKey(pos, definition.hook);
 
 		if (const auto* existing = position_refs.Find(key); existing and not existing->empty())
-			BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for position ({}, {}, {})", pos.x, pos.y, pos.z);
+			BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for position ({}, {}, {}) hook {} - firing: {} - shadowed: {}", pos.x, pos.y, pos.z, hookName, DescribeScript(existing->front().event), DescribeScript(&definition));
 
 		position_refs.Add(key, BlackTek::ItemEvents::EventRef{ &definition, BlackTek::ItemEvents::AnySlot });
 		++hook_counts[hookIdx];
@@ -724,7 +746,7 @@ bool ItemEvents::AddRegistration(ItemEvent& definition)
 		const uint64_t key = BlackTek::ItemEvents::PackKey(std::to_underlying(category), definition.hook);
 
 		if (const auto* existing = category_refs.Find(key); existing and not existing->empty())
-			BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for category {}", std::to_underlying(category));
+			BlackTek::Console::Warn("ItemEvents::addEvent: Duplicate registered item event found for category {} hook {} - firing: {} - shadowed: {}", std::to_underlying(category), hookName, DescribeScript(existing->front().event), DescribeScript(&definition));
 
 		category_refs.Add(key, BlackTek::ItemEvents::EventRef{ &definition, selectMask });
 		++hook_counts[hookIdx];

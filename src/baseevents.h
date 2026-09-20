@@ -29,6 +29,17 @@ class Event
 			return scriptId;
 		}
 
+		// Names the Lua file this event was loaded from, for diagnostics. An engine
+		// registered event has no script behind it at all, so it reports "(native)"
+		// instead of resolving script id 0 into a file that was never its own.
+		[[nodiscard]] std::string_view GetScriptFile() const noexcept
+		{
+			if (not scripted or not scriptInterface)
+				return "(native)";
+
+			return scriptInterface->getFileById(scriptId);
+		}
+
 	protected:
 		virtual std::string_view getScriptEventName() const = 0;
 

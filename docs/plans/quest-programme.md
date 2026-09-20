@@ -237,9 +237,66 @@ before reading it.
 
 Soul Pit first (smaller, self-contained), then Soul War.
 
-### Phase 6 — NPC quest givers
+### Phase 1b — NPC quest givers (independent of Phase 1; runs in parallel)
 
-69 NPCs, 79 callbacks. Being designed; lands here when ready.
+69 NPCs greet, sell and answer keywords but never hand out their quest: 79
+`npcHandler:setCallback` lines are commented out across 69 files.
+
+**The roadmap's explanation is wrong, and the repository says so.** It attributes this to Canary's
+npc object being needed "for its own shop windows". Shop windows are **2 NPCs**. Of the 46 blocking
+`npc:` call sites, **41 are `npc:getId()` (21) and `npc:getPosition()` (20)** — both of which this
+engine has answered all along: `Npc()` with no argument returns the NPC whose script is running
+(`src/luascript.cpp:15128`), because the engine binds it before every event call
+(`src/npc.cpp:1494`), and the shared NPC lib already relies on this
+(`data/npc/lib/npcsystem/npchandler.lua:362`).
+
+**The blocker is one regex.** `harness/build_canary_npcs.py:130` discards a translated callback if
+any token matches `\bnpc[:.]\w+|\bnpc\b(?!Handler)` — so a callback is thrown away for calling two
+accessors we have. Everything else in those callbacks the tool already rewrites correctly.
+
+The genuinely unanswerable residue is five method names across three NPCs: the category shop
+(Rabaz), and Canary's banker module (Lokur — and ArkOT already ships `data/npc/scripts/bank.lua`).
+
+**Steps — all data and harness. None needs a restart; every one lands with `/reload npcs`.**
+
+**1b.1 Narrow the guard and bind the npc.** `harness/build_canary_npcs.py` only: restrict `UNMAPPED`
+to the five genuinely unmapped methods, add rewrites for `npc:openShopWindow(creature)` and the
+`, npc, creature` argument shape, and emit `local npc = Npc()` at the head of any translated callback
+that uses it. *Done:* a dry run reports **≤6 NPCs still carrying a commented callback**, against 69
+today, and the residue is exactly Albinius/Gnomally (shop), Rabaz (categories), Lokur (bank). Any
+other name is an unmapped method nobody has found yet and must be investigated before 1b.3.
+
+**1b.2 `NpcHandler:openShop`.** One additive method in `data/npc/lib/npcsystem/npchandler.lua`,
+doing what `ShopModule.requestTrade` (`modules.lua:1103-1132`) does but reached from dialogue rather
+than a keyword. `requestTrade` is left untouched: collapsing the two would change behaviour for every
+trading NPC on the map for no gain here. *Done:* `/reload npcs`, and every existing trading NPC still
+opens its shop on "trade".
+
+**1b.3 Regenerate and land in three batches of ~23 NPCs.** *Hazard:* the generator rewrites both the
+XML and the script for every NPC it touches, and some of those names were pack-authored and later
+replaced — **diff before copying**, so a regeneration cannot silently revert a hand-tuned shop list.
+*Done per batch:* each NPC drives its quest step against a real client and **the storage value
+actually moves** — a greeting is not evidence. **Flagged behavioural change:** these NPCs currently
+go no further than hello; afterwards they hand out quests, so a player standing in front of one can
+suddenly progress.
+
+**1b.4 The tail.** Rewrite rules for `VOCATION`, `TOWNS_LIST` and `addCustomGreetKeyword` (36
+occurrences over 18 files); point Lokur at our own banker; give Rabaz a flat shop. *Done:* zero
+commented-out callbacks remain, and Rabaz's dropped categories are a named omission in the
+generator's report rather than a silent one.
+
+**Not built: shop categories.** `ShopModule` keeps one flat item list fed from two flat XML strings;
+adding a category dimension touches the parser, the module, the XML schema and every shop NPC's data
+— to serve one NPC. Rabaz sells the same wares without sub-menus. If categories are wanted as a
+feature for all traders, that is its own brief.
+
+**Rejected: a `[[giver]]` block in the quest TOML.** These callbacks branch on storage, keep
+per-player tables, mutate the greeting mid-conversation and release focus conditionally. A schema
+expressive enough to hold that is a scripting language spelled in TOML. What the quest file should
+carry is an `[[npc]]` entry naming the giver and its role — read by nothing, there so one file names
+every moving part of the quest.
+
+**Four dispatches**, and the cheapest player-visible win in the programme.
 
 ---
 
