@@ -639,6 +639,9 @@ namespace BlackTek::Wheel
 			case 2: return Vocation::Druid;
 			case 3: return Vocation::Paladin;
 			case 4: return Vocation::Knight;
+			// the monk sits at 9 because 5 through 8 were already the promotions
+			// when it arrived; the wheel's own Monk and its bonuses were waiting
+			case 9: return Vocation::Monk;
 			default: return Vocation::None;
 		}
 	}

@@ -18,7 +18,8 @@ local config = {
 	[1] = "S O R C E R E R",
 	[2] = "D R U I D",
 	[3] = "P A L A D I N",
-	[4] = "K N I G H T"
+	[4] = "K N I G H T",
+	[9] = "M O N K"
 }
 
 local function greetCallback(cid)
@@ -46,7 +47,7 @@ local function creatureSayCallback(cid, type, msg)
 		end
 	elseif msgcontains(msg, Vocation(vocationId):getName()) then
 		if npcHandler.topic[cid] == 2 then
-			npcHandler:say(config[vocationId] .. ", is that right?! What do you want from me?", cid)
+			npcHandler:say((config[vocationId] or Vocation(vocationId):getName()) .. ", is that right?! What do you want from me?", cid)
 			npcHandler.topic[cid] = 3
 		end
 	elseif msgcontains(msg, "356") then

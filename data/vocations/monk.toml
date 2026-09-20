@@ -26,6 +26,10 @@ speed = 220
 maxsoul = 100
 attackspeed = 2000
 promotedfrom = 9
+# same on both tiers, as the druid, paladin and sorcerer files have it; the
+# knight's base omits it and takes the 60 default, which its own promotion then
+# lowers to 50 -- a quirk worth not copying
+inactivekicktime = 50
 statsperlevel = [
     {cap = 25, hp = 10, mana = 10}
 ]

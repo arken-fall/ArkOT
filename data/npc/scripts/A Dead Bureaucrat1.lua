@@ -18,7 +18,8 @@ local config = {
 	[1] = "wand",
 	[2] = "rod",
 	[3] = "bow",
-	[4] = "sword"
+	[4] = "sword",
+	[9] = "fists"
 }
 
 local function greetCallback(cid)
@@ -50,7 +51,7 @@ local function creatureSayCallback(cid, type, msg)
 		end
 	elseif msgcontains(msg, Vocation(vocationId):getName()) then
 		if npcHandler.topic[cid] == 2 then
-			npcHandler:say("Huhu, please don't hurt me with your " .. config[vocationId] .. "! Reason of your visit?", cid)
+			npcHandler:say("Huhu, please don't hurt me with your " .. (config[vocationId] or "weapon") .. "! Reason of your visit?", cid)
 			npcHandler.topic[cid] = 3
 		end
 	elseif msgcontains(msg, "411") then

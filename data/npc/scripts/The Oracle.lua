@@ -103,7 +103,7 @@ local function creatureSayCallback(cid, type, msg)
 		local cityTable = config.towns[msg:lower()]
 		if cityTable then
 			town[cid] = cityTable
-			npcHandler:say("IN ".. string.upper(msg) .."! AND WHAT PROFESSION HAVE YOU CHOSEN: {KNIGHT}, {PALADIN}, {SORCERER}, OR {DRUID}?", cid)
+			npcHandler:say("IN ".. string.upper(msg) .."! AND WHAT PROFESSION HAVE YOU CHOSEN: {KNIGHT}, {PALADIN}, {SORCERER}, {DRUID}, OR {MONK}?", cid)
 			npcHandler.topic[cid] = 2
 		else
 			npcHandler:say("IN WHICH TOWN DO YOU WANT TO LIVE: {CARLIN}, {THAIS}, OR {VENORE}?", cid)
@@ -115,7 +115,7 @@ local function creatureSayCallback(cid, type, msg)
 			npcHandler.topic[cid] = 3
 			vocation[cid] = vocationTable.vocationId
 		else
-			npcHandler:say("{KNIGHT}, {PALADIN}, {SORCERER}, OR {DRUID}?", cid)
+			npcHandler:say("{KNIGHT}, {PALADIN}, {SORCERER}, {DRUID}, OR {MONK}?", cid)
 		end
 	elseif npcHandler.topic[cid] == 3 then
 		if msgcontains(msg, "yes") then
@@ -135,7 +135,7 @@ local function creatureSayCallback(cid, type, msg)
 				backpack:addItem(targetVocation[2][i][1], targetVocation[2][i][2])
 			end
 		else
-			npcHandler:say("THEN WHAT? {KNIGHT}, {PALADIN}, {SORCERER}, OR {DRUID}?", cid)
+			npcHandler:say("THEN WHAT? {KNIGHT}, {PALADIN}, {SORCERER}, {DRUID}, OR {MONK}?", cid)
 			npcHandler.topic[cid] = 2
 		end
 	end
