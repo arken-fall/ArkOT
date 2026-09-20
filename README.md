@@ -29,6 +29,11 @@ code). C++ rules: `CONTRIBUTING.md`, which is mandatory.
 **Requirements to run the world:** ~12.8 GB RAM resident, GCC 14+, MySQL 8.0 (the multi-world schema is only proven there), a login
 webservice, and a 15.25 client. The world ships with the server; see First boot.
 
+**Running more than one world?** [`docs/multiworld.md`](docs/multiworld.md) explains how it works —
+the world list, how a player reaches a world, what is shared between them, one-session-per-account,
+account-wide bans, private worlds and the ports. [`docs/deployment/multi-world.md`](docs/deployment/multi-world.md)
+is the procedure for provisioning one.
+
 ---
 
 ## Engine
