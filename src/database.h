@@ -205,8 +205,18 @@ class DBTransaction
 		DBTransaction& operator=(const DBTransaction&) = delete;
 
 		bool begin() {
+			// The destructor and commit() both read STATE_START as "this thread holds
+			// databaseLock", so the state may only be set once beginTransaction() has
+			// actually taken it. A BEGIN that fails returns without locking, and a
+			// STATE_START set ahead of that would send the destructor into rollback(),
+			// which unlocks a recursive_mutex this thread never held - undefined
+			// behaviour, reachable on any lost or rejected connection.
+			if (not Database::getInstance().beginTransaction()) {
+				return false;
+			}
+
 			state = STATE_START;
-			return Database::getInstance().beginTransaction();
+			return true;
 		}
 
 		bool commit() {
