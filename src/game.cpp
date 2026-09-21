@@ -44,6 +44,7 @@ extern Spells* g_spells;
 extern Vocations g_vocations;
 extern GlobalEvents* g_globalEvents;
 extern CreatureEvents* g_creatureEvents;
+extern LuaEnvironment g_luaEnvironment;
 extern Events* g_events;
 extern Monsters g_monsters;
 extern Scripts* g_scripts;
@@ -7048,6 +7049,20 @@ void Game::shutdown()
 	raids.clear();
 
 	decay_clean_cycle();
+
+	// Closed here, while this Game and its pools are still alive, rather than
+	// left to the destructor of a global in another translation unit. lua_close
+	// runs the collector's finalizers, and those release the shared_ptr<Item>
+	// and shared_ptr<Creature> held in userdata -- objects allocated out of
+	// this class's arenas. Static destruction order between translation units
+	// is unspecified, so leaving it until then is a race the content-heavy
+	// world lost every time: the crash was in destroySharedUserData<Item>,
+	// called from GCTM, called from lua_close, releasing into freed pools.
+	//
+	// The dispatchers are already stopped above, so no script can be running.
+	// closeState() nulls its own handle and guards on entry, so the eventual
+	// destructor finds nothing to do rather than closing twice.
+	g_luaEnvironment.closeState();
 
 	if (serviceManager) {
 		serviceManager->stop();
