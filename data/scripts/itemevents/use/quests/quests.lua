@@ -8,8 +8,23 @@ local annihilatorReward = {1990, 2400, 2431, 2494}
 -- Rookgaard's bear room chest holds a copper key whose action id is what the
 -- door answers to. The chest already contains one; this hands it over once per
 -- player rather than leaving it to be emptied repeatedly.
+--
+-- Each entry lists what the chest gives. Counts are for stackables; actionId is
+-- for keys, where the action id is the number the door answers to and the key
+-- opens nothing without it.
+--
+-- Which Bear Room chest holds which reward is a choice: the quest's four
+-- rewards were given as one list and there are three empty chests behind the
+-- locked door, so the arrows and the gold share the last one. Moving them
+-- between chests is just moving lines.
 local chestsByTile = {
-	["32150:32112:12"] = {storage = 33531, itemId = 2089, actionId = 4601},
+	-- Bear Room, behind the door the copper key opens
+	["32141:32097:11"] = {storage = 33500, items = {{id = 2464}}},                          -- chain armor
+	["32144:32096:11"] = {storage = 33501, items = {{id = 2460}}},                          -- brass helmet
+	["32146:32097:11"] = {storage = 33502, items = {{id = 2544, count = 12},                -- 12 arrows
+	                                                {id = 2148, count = 40}}},              -- 40 gold
+	-- the chest that holds the key to that door
+	["32150:32112:12"] = {storage = 33531, items = {{id = 2089, actionId = 4601}}},          -- copper key
 }
 
 local questChest = ItemEvent()
@@ -23,23 +38,43 @@ questChest.onUse = function(player, item, fromPosition, target, toPosition, isHo
 			return true
 		end
 
-		local itemType = ItemType(byTile.itemId)
-		if player:getFreeCapacity() < itemType:getWeight() then
-			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You have found " .. itemType:getName() .. ", but it is too heavy.")
+		-- Weighed before anything is created, so a player who cannot carry the
+		-- reward keeps the chance to come back for it rather than losing it.
+		local weight = 0
+		for _, entry in ipairs(byTile.items) do
+			weight = weight + ItemType(entry.id):getWeight(entry.count or 1)
+		end
+
+		if player:getFreeCapacity() < weight then
+			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, string.format("You have found a treasure weighing %.2f oz. It is too heavy.", weight / 100))
 			return true
 		end
 
-		local reward = player:addItem(byTile.itemId, 1)
-		if not reward then
-			player:sendCancelMessage("You have no room to take it.")
-			return true
+		local names = {}
+		for _, entry in ipairs(byTile.items) do
+			local count = entry.count or 1
+			local reward = player:addItem(entry.id, count)
+			if not reward then
+				player:sendCancelMessage("You have no room to take it.")
+				return true
+			end
+
+			-- A key's action id is what makes it fit its door.
+			if entry.actionId then
+				reward:setActionId(entry.actionId)
+			end
+
+			local itemType = ItemType(entry.id)
+			if count > 1 then
+				names[#names + 1] = count .. " " .. itemType:getPluralName()
+			elseif itemType:getArticle() ~= "" then
+				names[#names + 1] = itemType:getArticle() .. " " .. itemType:getName()
+			else
+				names[#names + 1] = itemType:getName()
+			end
 		end
 
-		if byTile.actionId then
-			reward:setActionId(byTile.actionId)
-		end
-
-		player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You have found " .. itemType:getArticle() .. " " .. itemType:getName() .. ".")
+		player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "You have found " .. table.concat(names, " and ") .. ".")
 		player:setStorageValue(byTile.storage, 1)
 		return true
 	end
