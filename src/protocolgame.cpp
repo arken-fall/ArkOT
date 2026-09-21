@@ -921,6 +921,12 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 
 		if (msg.isOverrun())
 		{
+			// The only signal that a parser's idea of a packet's layout and the
+			// client's have diverged. Warn rather than Debug: this path already
+			// ends the session, so it cannot repeat faster than one line per
+			// disconnect.
+			BlackTek::Console::Net::Warn("ProtocolGame::parsePacket: {:s} overran opcode 0x{:02X} in the account manager; disconnecting.",
+				player->getName(), static_cast<uint16_t>(recvbyte));
 			disconnect();
 		}
 		return;
@@ -1043,6 +1049,8 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 
 	if (msg.isOverrun())
 	{
+		BlackTek::Console::Net::Warn("ProtocolGame::parsePacket: {:s} overran opcode 0x{:02X}; disconnecting.",
+			player->getName(), static_cast<uint16_t>(recvbyte));
 		disconnect();
 	}
 }
@@ -1270,9 +1278,20 @@ void ProtocolGame::parseOpenPrivateChannel(NetworkMessage& msg)
 
 void ProtocolGame::parseAutoWalk(NetworkMessage& msg)
 {
-	uint8_t numdirs = msg.getByte();
-	if (numdirs == 0 or (msg.getBufferPosition() + numdirs) != (msg.getLength() + 8))
+	const uint8_t numdirs = msg.getByte();
+
+	// The check exists so that the skipBytes/getPreviousByte walk below, neither
+	// of which bounds-checks, stays inside the payload. "The list fits" is the
+	// real invariant; the old "the list ends exactly at the packet end" was an
+	// accident of legacy layout, and it was spelled as length + 8, which is the
+	// readable end only when the payload starts at offset 8. Modern framing
+	// starts it at 7, so every autowalk a 15.25 client sent was dropped here --
+	// silently, which is why clicking to walk and clicking the minimap both did
+	// nothing at all.
+	if (numdirs == 0 or (msg.getBufferPosition() + numdirs) > msg.GetReadableEnd())
 	{
+		BlackTek::Console::Net::Debug("ProtocolGame::parseAutoWalk: {:s} sent {:d} directions with {:d} readable bytes left; packet ignored.",
+			player->getName(), static_cast<uint32_t>(numdirs), static_cast<uint32_t>(msg.GetReadableEnd() - msg.getBufferPosition()));
 		return;
 	}
 
@@ -1299,6 +1318,11 @@ void ProtocolGame::parseAutoWalk(NetworkMessage& msg)
 
 	if (path.empty())
 	{
+		// Every direction byte was outside 1-8. Debug rather than Warn: a broken
+		// or hostile client can send this at will, and flooding the Net log is
+		// its own denial of service.
+		BlackTek::Console::Net::Debug("ProtocolGame::parseAutoWalk: {:s} sent {:d} directions and none were valid; packet ignored.",
+			player->getName(), static_cast<uint32_t>(numdirs));
 		return;
 	}
 
