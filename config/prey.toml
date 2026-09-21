@@ -10,8 +10,11 @@
 
 enabled = true
 
-# the third slot is unlocked through the store; true hands it out for free
-free_third_slot = false
+# The third slot is handed out free. It is NOT sold: no StoreProduct::Kind can
+# unlock a prey slot (storewindow.h), so with this false the client is told to
+# buy the slot from a store that has nothing to sell it -- see prey.cpp
+# initializeSlots and protocolgame.cpp's PreyUnlockState::Store.
+free_third_slot = true
 
 # gold per character level for a new list before the free reroll is due
 reroll_price_per_level = 200
