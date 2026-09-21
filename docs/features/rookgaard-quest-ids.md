@@ -71,7 +71,26 @@ no id at all, like everything else you found.
 **"Key 4603" is not item 4603.** Item 4603 is *sand*. 4603 is the action id of
 another copper key -- the one the Katana Room gives.
 
-## Most of this no longer needs the map at all
+## Correction: the levers DO need the map
+
+Claimed below that registering a tile position avoided the map edit for the two
+levers. That is wrong, and the reason is the lookup order.
+
+`data/scripts/itemevents/use/others/transforms.lua` holds
+`[1945] = 1946, [1946] = 1945, -- lever` and registers it **by item id**. Item id
+beats position, so that generic handler claims every lever on the map, flips it
+between its two states, and a position-registered quest script never runs at
+all. The lever appearing to change state was that handler, not the quest.
+
+**Action id beats item id**, so setting `5638` and `5637` in the map is what
+makes these two quests work -- exactly as the table below always said. No script
+change is needed once they are set; the registrations are already there.
+
+This does not affect the containers. Nothing claims items 1741, 3058 or 3105 by
+item id, so position reaches them, and item 1740 is handled inside the script
+that does claim it.
+
+## The containers no longer need the map
 
 Item events can register against a **tile position** as well as an id. The
 positions were known exactly, so the quests below are now wired by position and
@@ -79,10 +98,10 @@ work with no map edit and no ids assigned:
 
 | Quest | Where it lives now |
 | --- | --- |
-| Bear Room lever | `bearroom_quest_lever.lua`, position added beside its aid |
-| Katana lever | `katana_quest_lever.lua`, position added beside its aid |
 | Hidden dagger, both katana corpses, dragon corpse, three Mino Hell boxes | `data/scripts/quests/rookgaard/rookgaard_treasures.lua` |
 | Bear room key chest | `quests.lua`, keyed by tile |
+| **Bear Room lever** | needs **aid 5638** in the map -- see the correction above |
+| **Katana lever** | needs **aid 5637** in the map -- see the correction above |
 
 The last one is separate for a reason: position is the **last** thing the event
 lookup tries, after unique id, action id, item id and category. Nothing claims

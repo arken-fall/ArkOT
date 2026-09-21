@@ -43,15 +43,14 @@ local function describeStackedItem(item, label)
 		line = line .. "  (UNNAMED - client shows 'an item of type " .. itemId .. "')"
 	end
 
+	-- Always stated, present or not. "no aid" and "the tool did not look" are
+	-- the same silence otherwise, and the difference between them is usually the
+	-- whole question when a lever or a chest does nothing.
 	local actionId = item:getActionId()
-	if actionId and actionId ~= 0 then
-		line = line .. string.format("  aid %d", actionId)
-	end
+	line = line .. string.format("  aid %s", (actionId and actionId ~= 0) and actionId or "-")
 
 	local uniqueId = item:getAttribute(ITEM_ATTRIBUTE_UNIQUEID)
-	if uniqueId and uniqueId > 0 then
-		line = line .. string.format("  uid %d", uniqueId)
-	end
+	line = line .. string.format("  uid %s", (uniqueId and uniqueId > 0) and uniqueId or "-")
 
 	local count = item:getCount()
 	if count and count > 1 then
@@ -130,15 +129,16 @@ ec.onLook = function(self, thing, position, distance, description)
 				description = description .. "  (UNNAMED - the client cannot name this item either)"
 			end
 
+			-- Reported whether or not they are set: an item with no action id is
+			-- the commonest reason a script never fires, and it should be
+			-- visible rather than inferred from an absent line.
 			local actionId = thing:getActionId()
-			if actionId ~= 0 then
-				description = string.format("%s, Action ID: %d", description, actionId)
-			end
+			description = string.format("%s, Action ID: %s", description,
+				actionId ~= 0 and actionId or "none")
 
 			local uniqueId = thing:getAttribute(ITEM_ATTRIBUTE_UNIQUEID)
-			if uniqueId > 0 and uniqueId < 65536 then
-				description = string.format("%s, Unique ID: %d", description, uniqueId)
-			end
+			description = string.format("%s, Unique ID: %s", description,
+				(uniqueId > 0 and uniqueId < 65536) and uniqueId or "none")
 
 			local itemType = thing:getType()
 
