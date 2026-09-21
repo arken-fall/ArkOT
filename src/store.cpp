@@ -103,6 +103,31 @@ namespace BlackTek::Store
 			return true;
 		}
 
+		// A credit to an account this process has no player for: the recipient of a
+		// transfer may be offline, and ApplyCoinDelta needs a player to refresh the
+		// cache of. The write is checked exactly the way ApplyCoinDelta checks its
+		// own - an unchecked credit is how a transfer destroys coins. No guard is
+		// needed in the WHERE clause because a credit cannot take a column below
+		// zero; the row simply has to exist, which is what the affected-row count
+		// proves. `coins_transferable` is int UNSIGNED, so a credit that would
+		// overflow it fails the statement rather than wrapping.
+		[[nodiscard]] bool CreditTransferableCoins(uint32_t accountId, uint32_t amount)
+		{
+			Database& db = Database::getInstance();
+			if (not db.executeQuery(fmt::format("UPDATE `accounts` SET `coins_transferable` = `coins_transferable` + {:d} WHERE `id` = {:d}", amount, accountId)))
+			{
+				Console::Database::Error("Store::System::CreditTransferableCoins: the credit of {:d} transferable coins to account {:d} failed", amount, accountId);
+				return false;
+			}
+
+			if (db.getAffectedRows() != 1)
+			{
+				Console::Database::Error("Store::System::CreditTransferableCoins: account {:d} did not take a credit of {:d} transferable coins", accountId, amount);
+				return false;
+			}
+			return true;
+		}
+
 		// what a spend costs each of the two columns
 		struct CoinDelta
 		{
@@ -466,8 +491,25 @@ namespace BlackTek::Store
 			return;
 		}
 
-		Database& db = Database::getInstance();
-		db.executeQuery(fmt::format("UPDATE `accounts` SET `coins_transferable` = `coins_transferable` + {:d} WHERE `id` = {:d}", amount, recipientAccount));
+		// The coins have already left the sender's row, so the credit is what decides
+		// whether this was a transfer or a destruction. Checked, and undone on
+		// failure: an unchecked credit leaves the sender poorer, the recipient no
+		// richer, and a gift row in the history saying the coins arrived.
+		if (not CreditTransferableCoins(recipientAccount, amount))
+		{
+			// the refund goes back through the same guarded write the debit used, and
+			// to the same column, so no transferable coin turns into a regular one
+			if (not addCoins(player, amount, Coins::Transferable, fmt::format("Refund: the transfer to {:s} failed.", recipientName), Mode::Refund))
+			{
+				Console::Database::Error("Store::System::transfer: account {:d} was debited {:d} transferable coins for a transfer to account {:d} that never landed, and the refund was refused; the balance needs a manual correction",
+					player->getAccount(), amount, recipientAccount);
+			}
+			player->sendStoreError(Error::Transfer, "The transfer failed.");
+			return;
+		}
+
+		// only now is there a gift to record and a balance to refresh: the history
+		// follows the outcome of the credit rather than the attempt at it
 		record(recipientAccount, Mode::Gift, static_cast<int32_t>(amount), Coins::Transferable, fmt::format("{:s} transferred coins to you.", player->getName()));
 		if (const auto& recipient = g_game.getPlayerByName(recipientName); recipient and recipient->getAccount() == recipientAccount)
 		{
