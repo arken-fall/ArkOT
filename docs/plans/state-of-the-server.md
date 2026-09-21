@@ -150,10 +150,15 @@ carries an inline `-- < Knight; FIXME !!!`.
 **D-8 — six NPCs still tell players there are four vocations.** `Seymour.lua:85`, `Cipfried.lua:52`,
 `Oressa.lua:52`, `Gregor.lua:252`, `Muriel.lua:299`, `Elane.lua:295`. The monk is live; these are stale.
 
-**D-9 — 20 quest-log missions display `|STATE|`.** `data/quests/bigfoot_s_burden.toml` (7),
-`spike_task.toml` (3), `dawnport.toml` (3), `wrath_of_the_emperor.toml` (2), and one each in
-`cults_of_tibia.toml`, `tibia_tales.toml`, `adventurers_guild.toml`, `the_rookie_guard.toml`,
-`the_first_dragon.toml`.
+**D-9 — WITHDRAWN. `|STATE|` is a working substitution token, not a placeholder.**
+The original finding claimed 20 quest-log missions ship a literal `|STATE|` to players.
+`Mission::getDescription` (`src/quests.cpp:13-22`) replaces `|STATE|` with the player's current
+storage value before the description is sent. Every one of those 20 entries is a kill-count task
+(`start = 0, end = 20`) that renders as, for example, "Task: A Toll on Trolls: 7". They are correct
+content and need no work.
+
+The error: a token was assumed to be a placeholder on the strength of its appearance, without
+reading the one function that consumes it.
 
 **D-10 — a monster asks for a creature event that does not exist.**
 `data/scripts/monsters/monsters/canary/quests/soul_war/normal_monsters/furious_crater/cloak_of_terror.lua:31`
@@ -320,12 +325,11 @@ Sizes are rough dispatch counts. "Restart" means all three live worlds.
 | # | Step | Kind | Done when |
 | --- | --- | --- | --- |
 | A1 | Fix the six four-vocation lines and Seymour's placeholder (D-7, D-8) | Datapack | `/reload npcs`; each NPC names five vocations; no `<missing message` string remains in `data/npc/`. Reading the greeting is not evidence — the vocation line must be read. |
-| A2 | Write the 20 missing mission descriptions (D-9) | Datapack | `/reload quests`; `rg '\|STATE\|' data/quests` returns nothing; the quest log renders each description. |
-| A3 | `CloakOfTerrorHealthLoss` — write the script or drop the line (D-10) | Datapack | No boot warning for that event name. |
-| A4 | First Dragon lair entrance action id (D-11) | Map + datapack | Zero duplicate item-event registrations at boot. |
-| A5 | `free_third_slot = true` in `config/prey.toml:14` (D-5) — **pending Q6** | Config | A fresh login shows three usable slots and the client takes the `None` branch at `src/protocolgame.cpp:3172`. **Behavioural change: every player gains a slot they did not have.** Config loads at `src/otserv.cpp:943`; check Q8 before promising no restart. |
+| A2 | `CloakOfTerrorHealthLoss` — write the script or drop the line (D-10) | Datapack | No boot warning for that event name. |
+| A3 | First Dragon lair entrance action id (D-11) | Map + datapack | Zero duplicate item-event registrations at boot. |
+| A4 | `free_third_slot = true` in `config/prey.toml:14` (D-5) — **pending Q6** | Config | A fresh login shows three usable slots and the client takes the `None` branch at `src/protocolgame.cpp:3172`. **Behavioural change: every player gains a slot they did not have.** Config loads at `src/otserv.cpp:943`; check Q8 before promising no restart. |
 
-**A1-A3 are the cheapest player-visible wins in the tree.**
+**A1 and A2 are the cheapest player-visible wins in the tree.**
 
 ### Tier B — small engine fixes, correctness stakes, one restart
 
@@ -397,7 +401,7 @@ says 1,696 loaded; `README.md:85` and `roadmap.md:190` imply 1,713. The README d
 **Q5 — should the 29 fist weapons be monk-exclusive, and at what levels?** Not derivable from the
 repository. Blocks `data/scripts/itemevents/weapons/Melee/fists.lua`.
 
-**Q6 — is the third prey slot meant to be free, or sold?** A5 is one character either way; the
+**Q6 — is the third prey slot meant to be free, or sold?** A4 is one character either way; the
 alternative is a real `StoreProduct::Kind` plus a persisted per-character unlock flag — ~2 dispatches
 and a migration.
 
@@ -406,8 +410,8 @@ load, never reproduced. Not actionable without a core dump. *Resolve by* running
 and `Black-Tek-Server.sym` ready, so the next occurrence is diagnosable. A monitoring change, not a code
 change.
 
-**Q8 — does prey config have a reload path?** A5 changes a config read at `src/otserv.cpp:943` with no
-reload path found. Check `RELOAD_TYPE_*` in `src/game.cpp` before promising A5 lands without a restart.
+**Q8 — does prey config have a reload path?** A4 changes a config read at `src/otserv.cpp:943` with no
+reload path found. Check `RELOAD_TYPE_*` in `src/game.cpp` before promising A4 lands without a restart.
 
 ---
 
