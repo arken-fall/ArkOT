@@ -47,7 +47,13 @@ local function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 
 			tile:relocateTo(config.relocatePosition, true, config.relocateMonsterPosition)
 			tile:getGround():transform(bridge.groundId)
-			Game.createItem(bridge.itemId, 1, bridge.position)
+
+			-- the middle tile is open water and configures no itemId; asking for
+			-- a nil one used to create a nameless item here, because createItem
+			-- falls back to a lookup by name and nil reads as the empty string
+			if bridge.itemId then
+				Game.createItem(bridge.itemId, 1, bridge.position)
+			end
 		end
 
 	end

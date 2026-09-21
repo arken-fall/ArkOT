@@ -501,7 +501,15 @@ void Items::parseItemToml(const toml::table& itemTable, uint16_t id)
         else if (keyStr == "name") {
             if (value.is_string()) {
                 it.name = value.as_string()->get();
-                nameToItems.emplace(asLowerCaseString(it.name), id);
+
+                // 7,729 generated items ship with an empty name. Indexing them
+                // under "" gives that key a winner, and every lookup that lands
+                // there -- Game.createItem(nil) reads its argument as a name,
+                // and a nil one stringifies to "" -- silently returns whichever
+                // nameless item got there first.
+                if (not it.name.empty()) {
+                    nameToItems.emplace(asLowerCaseString(it.name), id);
+                }
             }
             continue;
         }
@@ -1151,6 +1159,11 @@ const ItemType& Items::getItemType(size_t id) const
 
 uint16_t Items::getItemIdByName(const std::string& name)
 {
+	// Nothing is called "". Answering the empty string with a real item turns a
+	// caller's missing argument into a silently wrong one.
+	if (name.empty())
+		return 0;
+
 	auto result = nameToItems.find(asLowerCaseString(name));
 
 	if (result == nameToItems.end())
