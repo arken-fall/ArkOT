@@ -237,7 +237,9 @@ void Connection::parseHeader(const boost::system::error_code& error)
 					Connection::handleTimeout(thisPtr, error);
 				}));
 
-		msg->setLength(static_cast<NetworkMessage::MsgSize_t>(size + NetworkMessage::HEADER_LENGTH));
+		// The frame starts at buffer offset 0, so the whole frame - outer length
+		// header included - is what is readable until a decrypt narrows it.
+		msg->SetReadableRange(0, static_cast<NetworkMessage::MsgSize_t>(size + NetworkMessage::HEADER_LENGTH));
 		boost::asio::async_read(socket,
 			boost::asio::buffer(msg->getBodyBuffer(), size),
 			boost::asio::bind_executor(strand,
@@ -341,15 +343,17 @@ void Connection::parsePacket(const boost::system::error_code& error)
 			const uint8_t paddingAmount = msg->getByte();
 			const uint16_t framedLength = msg->getLength();
 
-			// setLength takes a uint16_t; an unguarded subtraction would wrap and
-			// hand canRead a bound far past the payload.
+			// The readable length is a uint16_t; an unguarded subtraction would
+			// wrap and hand canRead a bound far past the payload.
 			if (framedLength < firstFrameOverhead + paddingAmount)
 			{
 				close(FORCE_CLOSE);
 				return;
 			}
 
-			msg->setLength(static_cast<NetworkMessage::MsgSize_t>(framedLength - paddingAmount));
+			// Still counted from buffer offset 0 - the first frame is plaintext,
+			// so nothing moved it - but trimmed of the client's trailing padding.
+			msg->SetReadableRange(0, static_cast<NetworkMessage::MsgSize_t>(framedLength - paddingAmount));
 			msg->skipBytes(1); // protocol identifier / first opcode
 			protocol->onRecvFirstMessage(*msg);
 		}

@@ -38,25 +38,35 @@ void XTEA_encrypt(OutputMessage& msg, const xtea::round_keys& key)
 
 bool XTEA_decrypt(NetworkMessage& msg, const xtea::round_keys& key, TransportGeneration generation)
 {
-	if (((msg.getLength() - 6) & 7) != 0) {
+	// Both generations put the ciphertext right after the outer length header
+	// and the 4 checksum/sequence bytes, so that offset is where it starts.
+	constexpr uint16_t cipherStart = NetworkMessage::HEADER_LENGTH + NetworkMessage::CHECKSUM_LENGTH;
+
+	if (((msg.getLength() - cipherStart) & 7) != 0) {
 		return false;
 	}
 
 	uint8_t* buffer = msg.getBuffer() + msg.getBufferPosition();
-	xtea::decrypt(buffer, msg.getLength() - 6, key);
+	xtea::decrypt(buffer, msg.getLength() - cipherStart, key);
 
 	if (generation == TransportGeneration::Modern)
 	{
 		// Modern payload leads with how many padding bytes trail the packets,
 		// instead of the legacy inner length up front.
-		uint16_t decryptedLength = msg.getLength() - 6;
+		uint16_t decryptedLength = msg.getLength() - cipherStart;
 		uint8_t paddingSize = msg.getByte();
 		if (paddingSize >= decryptedLength)
 		{
 			return false;
 		}
 
-		msg.setLength(decryptedLength - paddingSize);
+		// decryptedLength still counts the padding-count byte getByte() just
+		// consumed, so the payload is one byte shorter than it; the cursor now
+		// sits exactly on the first payload byte, which is the base to count
+		// from. The guard above admits paddingSize == decryptedLength - 1, i.e.
+		// an empty payload - ProtocolGame::parsePacket rejects that on length 0,
+		// where before it would have read an opcode out of the padding.
+		msg.SetReadableRange(msg.getBufferPosition(), static_cast<NetworkMessage::MsgSize_t>(decryptedLength - paddingSize - 1));
 		return true;
 	}
 
@@ -65,7 +75,9 @@ bool XTEA_decrypt(NetworkMessage& msg, const xtea::round_keys& key, TransportGen
 		return false;
 	}
 
-	msg.setLength(innerLength);
+	// Legacy counts its inner length from the end of the two headers plus the
+	// inner length field itself, which is INITIAL_BUFFER_POSITION.
+	msg.SetReadableRange(NetworkMessage::INITIAL_BUFFER_POSITION, innerLength);
 	return true;
 }
 

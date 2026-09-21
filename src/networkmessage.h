@@ -105,8 +105,18 @@ class NetworkMessage
 			return info.length;
 		}
 
-		void setLength(MsgSize_t newLength) {
-			info.length = newLength;
+		// Establishes what is readable: absolute buffer range [base, base + length).
+		// Called once by whichever layer learns where this message's payload ends -
+		// Connection when the frame arrives, XTEA_decrypt when it is unwrapped.
+		void SetReadableRange(MsgSize_t base, MsgSize_t length) noexcept
+		{
+			info.length_base = base;
+			info.length = length;
+		}
+
+		[[nodiscard]] MsgSize_t GetReadableEnd() const noexcept
+		{
+			return static_cast<MsgSize_t>(info.length_base + info.length);
 		}
 
 		MsgSize_t getBufferPosition() const {
@@ -145,6 +155,7 @@ class NetworkMessage
 	protected:
 		struct NetworkMessageInfo {
 			MsgSize_t length = 0;
+			MsgSize_t length_base = INITIAL_BUFFER_POSITION;
 			MsgSize_t position = INITIAL_BUFFER_POSITION;
 			bool overrun = false;
 		};
@@ -157,8 +168,10 @@ class NetworkMessage
 			return (size + info.position) < MAX_BODY_LENGTH;
 		}
 
-		bool canRead(int32_t size) {
-			if ((info.position + size) > (info.length + 8) || size >= (NETWORKMESSAGE_MAXSIZE - info.position)) {
+		bool canRead(int32_t size)
+		{
+			if ((info.position + size) > GetReadableEnd() or size >= (NETWORKMESSAGE_MAXSIZE - info.position))
+			{
 				info.overrun = true;
 				return false;
 			}
