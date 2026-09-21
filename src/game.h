@@ -690,6 +690,17 @@ class Game
 
 		std::pmr::unsynchronized_pool_resource item_pool;
 
+		// Declared before `map`, and therefore destroyed after it. Every Tile is
+		// allocated out of this arena (IOMap::createTile takes a polymorphic
+		// allocator over map_block), so the memory holding the tiles -- and the
+		// control block of every shared_ptr<Tile> -- lives in raw_map_block. A
+		// member declared after `map` would be destroyed before it, and ~Map
+		// would then release those shared_ptrs into freed memory. That is what
+		// crashed the server on every clean shutdown, in _Sp_counted_base
+		// ::_M_release, after the save had already completed.
+		std::vector<std::byte> raw_map_block;
+		std::optional<std::pmr::monotonic_buffer_resource> map_block;
+
 	public:
 		Groups groups;
 		Map map;
@@ -775,8 +786,6 @@ class Game
 		void internalDecayItem(const ItemPtr& item);
 
 		// Todo : the entire game class's memory layout needs rearranged
-        std::vector<std::byte> raw_map_block;
-        std::optional<std::pmr::monotonic_buffer_resource> map_block;
 		std::pmr::unsynchronized_pool_resource player_pool;
 		std::pmr::unsynchronized_pool_resource monster_pool;
 		std::pmr::unsynchronized_pool_resource npc_pool;

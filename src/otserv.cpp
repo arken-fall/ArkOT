@@ -46,6 +46,13 @@
 #include <span>
 #include <string_view>
 
+#if defined(__linux__) or defined(__unix__)
+#include <execinfo.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <unistd.h>
+#endif
+
 #if __has_include("gitmetadata.h")
 	#include "gitmetadata.h"
 #endif
@@ -542,8 +549,90 @@ void badAllocationHandler()
 	exit(-1);
 }
 
+#if defined(__linux__) or defined(__unix__)
+namespace
+{
+	// A signal handler may only call async-signal-safe functions. That rules out
+	// BlackTek::Console, fmt, and anything that allocates -- which is why this
+	// writes with write() and backtrace_symbols_fd() rather than the facilities
+	// used everywhere else in the server. It also has to keep working after main
+	// has returned, because the crash being chased happens during static
+	// destruction, when the console worker is already stopped.
+	constexpr int CRASH_FRAMES = 64;
+
+	void WriteAll(int fd, const char* text) noexcept
+	{
+		size_t remaining = std::char_traits<char>::length(text);
+		while (remaining > 0)
+		{
+			const ssize_t written = write(fd, text, remaining);
+			if (written <= 0)
+				return;
+
+			text += written;
+			remaining -= static_cast<size_t>(written);
+		}
+	}
+
+	void ReportCrash(int signalNumber) noexcept
+	{
+		// Named rather than numbered: a stack trace is read by whoever is awake
+		// at the time, not by someone with the signal table to hand.
+		const char* name = "unknown signal";
+		switch (signalNumber)
+		{
+			case SIGSEGV: name = "SIGSEGV (invalid memory access)"; break;
+			case SIGBUS:  name = "SIGBUS (bad address)"; break;
+			case SIGFPE:  name = "SIGFPE (arithmetic error)"; break;
+			case SIGILL:  name = "SIGILL (illegal instruction)"; break;
+			case SIGABRT: name = "SIGABRT (abort)"; break;
+			default: break;
+		}
+
+		WriteAll(STDERR_FILENO, "\n=== Black-Tek-Server crashed: ");
+		WriteAll(STDERR_FILENO, name);
+		WriteAll(STDERR_FILENO, " ===\n");
+
+		void* frames[CRASH_FRAMES];
+		const int depth = backtrace(frames, CRASH_FRAMES);
+		backtrace_symbols_fd(frames, depth, STDERR_FILENO);
+		WriteAll(STDERR_FILENO, "=== end of backtrace ===\n");
+
+		// Also to a file, because stderr is whatever the service manager made it
+		// and a crash at shutdown is easy to lose in a restart.
+		const int fd = open("crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+		if (fd >= 0)
+		{
+			WriteAll(fd, "\n=== crash: ");
+			WriteAll(fd, name);
+			WriteAll(fd, " ===\n");
+			backtrace_symbols_fd(frames, depth, fd);
+			close(fd);
+		}
+
+		// Restore the default and re-raise, so the exit status still says what
+		// happened. Swallowing the signal here would hide the crash from systemd
+		// and from anyone reading the service state.
+		signal(signalNumber, SIG_DFL);
+		raise(signalNumber);
+	}
+
+	void InstallCrashHandler() noexcept
+	{
+		for (const int signalNumber : {SIGSEGV, SIGBUS, SIGFPE, SIGILL, SIGABRT})
+			signal(signalNumber, ReportCrash);
+	}
+}
+#else
+namespace { void InstallCrashHandler() noexcept {} }
+#endif
+
 int main(int argc, char* argv[])
 {
+	// First, so that a crash anywhere after this point -- including during static
+	// destruction once main has returned -- leaves a stack trace behind.
+	InstallCrashHandler();
+
 	StringVector args = StringVector(argv, argv + argc);
 	if(argc > 1 && !argumentsHandler(args))
 	{

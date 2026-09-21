@@ -109,8 +109,12 @@ Game::Game()
 
 Game::~Game()
 {
-	curl_global_cleanup();
+	// Easy handle first. curl_global_cleanup tears down the library state the
+	// easy handle is still holding, so cleaning up globally and then touching
+	// the handle is a use-after-free -- libcurl documents this order and the
+	// two calls were the wrong way round.
 	curl_easy_cleanup(curl);
+	curl_global_cleanup();
 }
 
 void Game::start(ServiceManager* manager)
