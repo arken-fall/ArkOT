@@ -82,11 +82,12 @@ keywordHandler:addKeyword({'citizen'}, StdModule.say, {npcHandler = npcHandler, 
 keywordHandler:addKeyword({'merchant'}, StdModule.say, {npcHandler = npcHandler, text = 'Merchants buy and sell goods. Just ask them for a {trade} to see what they offer or buy from you.'})
 keywordHandler:addKeyword({'troll'}, StdModule.say, {npcHandler = npcHandler, text = 'Trolls are quite nasty monsters which you shouldn\'t face before level 3 or 4 depending on your {equipment}. Ask the bridge {guards} for their locations!'})
 keywordHandler:addKeyword({'guard'}, StdModule.say, {npcHandler = npcHandler, text = 'The guards {Dallheim} and {Zerbrus} protect our village from {monsters} trying to enter. They also mark useful {dungeon} locations on your map.'})
-keywordHandler:addKeyword({'vocation'}, StdModule.say, {npcHandler = npcHandler, text = 'There are four vocations: {knights}, {paladins}, {sorcerers} and {druids}. You can choose your vocation once you are level 8 and have talked to the {oracle}.'})
+keywordHandler:addKeyword({'vocation'}, StdModule.say, {npcHandler = npcHandler, text = 'There are five vocations: {knights}, {paladins}, {sorcerers}, {druids} and {monks}. You can choose your vocation once you are level 8 and have talked to the {oracle}.'})
 keywordHandler:addKeyword({'sorcerer'}, StdModule.say, {npcHandler = npcHandler, text = 'Sorcerers are talented elemental magicians. You will learn all about them once you are level 8 and reached the Island of {Destiny}.'})
 keywordHandler:addKeyword({'knight'}, StdModule.say, {npcHandler = npcHandler, text = 'Knights are strong melee fighters. You will learn all about them once you are level 8 and reached the Island of {Destiny}.'})
 keywordHandler:addKeyword({'druid'}, StdModule.say, {npcHandler = npcHandler, text = 'Druids are nature magic users and great healers. You will learn all about them once you are level 8 and reached the Island of {Destiny}.'})
 keywordHandler:addKeyword({'paladin'}, StdModule.say, {npcHandler = npcHandler, text = 'Paladins are swift distance fighters. You will learn all about them once you are level 8 and reached the Island of {Destiny}.'})
+keywordHandler:addKeyword({'monk'}, StdModule.say, {npcHandler = npcHandler, text = 'Monks are disciplined fighters who need no weapon but their own hands. You will learn all about them once you are level 8 and reached the Island of {Destiny}.'})
 keywordHandler:addKeyword({'shop'}, StdModule.say, {npcHandler = npcHandler, text = 'We have a {weapon} and an {armor} shop south of the academy. {Equipment} such as {ropes} are sold to the north-west. {Potions} can be bought to the south. And then there are the {farms}.'})
 keywordHandler:addKeyword({'tibia'}, StdModule.say, {npcHandler = npcHandler, text = 'The world of Tibia is very large with tons of places to explore. Vast deserts, Caribbean islands, deep jungles, green meadows and jagged mountains await you!'})
 keywordHandler:addKeyword({'temple'}, StdModule.say, {npcHandler = npcHandler, text = 'The temple is the place to go when you are very low on {health} or poisoned. Ask {Cipfried} for a heal - he usually notices emergencies by himself.'})
@@ -136,15 +137,17 @@ keywordHandler:addAliasKeyword({'information'})
 local destinyKeyword = keywordHandler:addKeyword({'destiny'}, StdModule.say, {npcHandler = npcHandler, text = 'Shall I try and take a guess at your destiny?'}, function(player) return player:getStorageValue(Storage.RookgaardDestiny) == -1 end)
 destinyKeyword:addChildKeyword({'yes'}, StdModule.say, {npcHandler = npcHandler, reset = true}, nil,
 	function(player)
-		local destiny = math.random(1, 4)
+		local destiny = math.random(1, 5)
 		if destiny == 1 then
 			npcHandler:say('Hmmm, let me look at you. You got that intelligent sparkle in your eyes and you\'d love to handle great power - that must be a future sorcerer!', player.uid)
 		elseif destiny == 2 then
 			npcHandler:say('Hmmm, let me look at you. You have an aura of great wisdom and may have healing hands as well as a sense for the powers of nature - I think you\'re a natural born druid!', player.uid)
 		elseif destiny == 3 then
-			npcHandler:say('Hmmm, let me look at you. <missing message, destiny for paladin>!', player.uid)
+			npcHandler:say('Hmmm, let me look at you. A keen eye and a steady hand, and you never seem to miss what you aim at - you have the makings of a paladin!', player.uid)
 		elseif destiny == 4 then
 			npcHandler:say('Hmmm, let me look at you. Strong and sturdy, with a determined look in your eyes - no doubt the knight profession would be suited for you!', player.uid)
+		elseif destiny == 5 then
+			npcHandler:say('Hmmm, let me look at you. Calm, patient, and perfectly still even now - I would not be surprised if you walked the path of a monk!', player.uid)
 		end
 		player:setStorageValue(Storage.RookgaardDestiny, destiny)
 	end
@@ -154,6 +157,7 @@ keywordHandler:addKeyword({'destiny'}, StdModule.say, {npcHandler = npcHandler, 
 keywordHandler:addKeyword({'destiny'}, StdModule.say, {npcHandler = npcHandler, text = 'Well, like I told you before, I really think you got that spirit of a druid in you. But of course it\'s completely up to you!'}, function(player) return player:getStorageValue(Storage.RookgaardDestiny) == 2 end)
 keywordHandler:addKeyword({'destiny'}, StdModule.say, {npcHandler = npcHandler, text = 'Well, like I told you before, I really think you got that spirit of a paladin in you. But of course it\'s completely up to you!'}, function(player) return player:getStorageValue(Storage.RookgaardDestiny) == 3 end)
 keywordHandler:addKeyword({'destiny'}, StdModule.say, {npcHandler = npcHandler, text = 'Well, like I told you before, I really think you got that spirit of a knight in you. But of course it\'s completely up to you!'}, function(player) return player:getStorageValue(Storage.RookgaardDestiny) == 4 end)
+keywordHandler:addKeyword({'destiny'}, StdModule.say, {npcHandler = npcHandler, text = 'Well, like I told you before, I really think you got that spirit of a monk in you. But of course it\'s completely up to you!'}, function(player) return player:getStorageValue(Storage.RookgaardDestiny) == 5 end)
 
 -- Names
 keywordHandler:addKeyword({'obi'}, StdModule.say, {npcHandler = npcHandler, text = 'Obi sells and buys {weapons}. You can find his shop south of the academy.'})

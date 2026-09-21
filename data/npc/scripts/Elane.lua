@@ -292,7 +292,7 @@ keywordHandler:addKeyword({ "the first dragon" }, StdModule.say, { npcHandler = 
 keywordHandler:addKeyword({ "hooded cloak" }, StdModule.say, { npcHandler = npcHandler, text = "Those are traditionally awarded after having completed a difficult task for our guild." })
 keywordHandler:addKeyword({ "excalibug" }, StdModule.say, { npcHandler = npcHandler, text = "A weapon of myth. I don't believe that this weapon exists." })
 keywordHandler:addKeyword({ "ferumbras" }, StdModule.say, { npcHandler = npcHandler, text = "Someday I will slay that bastard!" })
-keywordHandler:addKeyword({ "vocation" }, StdModule.say, { npcHandler = npcHandler, text = "Your vocation is your profession. There are four vocations in Tibia: Paladins, knights, sorcerers, and druids." })
+keywordHandler:addKeyword({ "vocation" }, StdModule.say, { npcHandler = npcHandler, text = "Your vocation is your profession. There are five vocations in Tibia: Paladins, knights, sorcerers, druids, and monks." })
 keywordHandler:addKeyword({ "name" }, StdModule.say, { npcHandler = npcHandler, text = "My name is Elane. I am the famous leader of the Paladins." })
 keywordHandler:addKeyword({ "time" }, StdModule.say, { npcHandler = npcHandler, text = "Oops. I have forgotten my watch." })
 

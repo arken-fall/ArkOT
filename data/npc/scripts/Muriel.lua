@@ -296,7 +296,7 @@ keywordHandler:addKeyword({ "excalibug" }, StdModule.say, { npcHandler = npcHand
 keywordHandler:addKeyword({ "tibianus" }, StdModule.say, { npcHandler = npcHandler, text = "The king is a patron of the arcane arts." })
 keywordHandler:addKeyword({ "ancestor" }, StdModule.say, { npcHandler = npcHandler, text = "There have been many generations of sorcerers in the past. Today, a lot of people want to join us." })
 keywordHandler:addKeyword({ "sorcerer" }, StdModule.say, { npcHandler = npcHandler, text = "A sorcerer spends his lifetime studying spells to gain power." })
-keywordHandler:addKeyword({ "vocation" }, StdModule.say, { npcHandler = npcHandler, text = "Your vocation is your profession. There are four vocations in Tibia: Sorcerers, paladins, knights, and druids." })
+keywordHandler:addKeyword({ "vocation" }, StdModule.say, { npcHandler = npcHandler, text = "Your vocation is your profession. There are five vocations in Tibia: Sorcerers, paladins, knights, druids, and monks." })
 keywordHandler:addKeyword({ "lungelen" }, StdModule.say, { npcHandler = npcHandler, text = "She keeps the whole wisdom of our ancestors and leads our guild." })
 keywordHandler:addKeyword({ "mcronald" }, StdModule.say, { npcHandler = npcHandler, text = "Simple farmers." })
 keywordHandler:addKeyword({ "eclesius" }, StdModule.say, { npcHandler = npcHandler, text = "I don't think he's any competition. I rarely see him anyway and I don't deem his skills noteworthy." })

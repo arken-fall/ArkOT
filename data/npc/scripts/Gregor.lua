@@ -249,7 +249,7 @@ keywordHandler:addKeyword({ "harkath bloodblade" }, StdModule.say, { npcHandler 
 keywordHandler:addKeyword({ "the first dragon" }, StdModule.say, { npcHandler = npcHandler, text = "I heard he moved to a dungeon." })
 keywordHandler:addKeyword({ "spellbook" }, StdModule.say, { npcHandler = npcHandler, text = "In a spellbook, your spells are listed. There you will find the pronunciation of each spell. If you want to buy one, visit Muriel, the sorcerer." })
 keywordHandler:addKeyword({ "excalibug" }, StdModule.say, { npcHandler = npcHandler, text = "Many brave warriors died on the quest to find that fabled weapon." })
-keywordHandler:addKeyword({ "vocation" }, StdModule.say, { npcHandler = npcHandler, text = "Your vocation is your profession. There are four vocations in Tibia: Knights, paladins, sorcerers, and druids." })
+keywordHandler:addKeyword({ "vocation" }, StdModule.say, { npcHandler = npcHandler, text = "Your vocation is your profession. There are five vocations in Tibia: Knights, paladins, sorcerers, druids, and monks." })
 keywordHandler:addKeyword({ "eclesius" }, StdModule.say, { npcHandler = npcHandler, text = "Now what would I have to do with a sorcerer? I have no need to talk to sorcerers." })
 keywordHandler:addKeyword({ "general" }, StdModule.say, { npcHandler = npcHandler, text = "General Harkath Bloodblade, a rolemodel." })
 keywordHandler:addKeyword({ "marvik" }, StdModule.say, { npcHandler = npcHandler, text = "Old Marvik saved life and limb of many of my boys and girls." })
