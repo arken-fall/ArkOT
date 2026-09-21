@@ -184,8 +184,8 @@ outfits:product(5002, "Winter Warden Outfit", 120, "", "The winter warden outfit
 outfits:product(5003, "Arena Champion Outfit", 120, "", "The arena champion outfit with both addons.", { outfit = { male = 884, female = 885, addons = 3 } })
 
 local mounts = store:category("Mounts", "Category_Mounts.png")
-mounts:product(6001, "Racing Bird", 90, "", "A swift bird that never tires.", { mount = 1, home = true })
-mounts:product(6002, "War Bear", 90, "", "A bear bred for the battlefield.", { mount = 2 })
-mounts:product(6003, "Midnight Panther", 90, "", "A silent hunter of the night.", { mount = 4 })
+mounts:product(6001, "Racing Bird", 90, "", "A swift bird that never tires.", { mount = 2, home = true })
+mounts:product(6002, "War Bear", 90, "", "A bear bred for the battlefield.", { mount = 3 })
+mounts:product(6003, "Midnight Panther", 90, "", "A silent hunter of the night.", { mount = 5 })
 
 store:register()
