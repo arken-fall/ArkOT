@@ -1,11 +1,18 @@
 # Experience rates and reward system configuration
 
 [rates]
-# rateExp is ignored when experience stages are enabled in config/stages.toml
-experience = 3
-skill      = 2
+# rateExp is ignored when experience stages are enabled in config/stages.toml.
+# Stages are currently disabled, so these are the live numbers.
+#
+# 10x across the three progression rates, for playtesting the feature list on a
+# single character. magic is raised with skill deliberately: leaving it at 1
+# would mean a sorcerer, druid or monk got no speed-up at all on the stat that
+# actually gates their progression, which is not what "10x" is meant to mean.
+# Revert to 3 / 2 / 1 for normal play.
+experience = 10
+skill      = 10
 loot       = 2
-magic      = 1
+magic      = 10
 spawn      = 1
 
 [reward]
