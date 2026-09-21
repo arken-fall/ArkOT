@@ -21,4 +21,9 @@ local realmapEvent1 = ItemEvent()
 realmapEvent1:type("use")
 realmapEvent1.onUse = onUse
 realmapEvent1:aid(5638)
+-- The map gives this lever no action id, so the aid above never matches and
+-- the quest simply did nothing. Registering the bear room lever's tile as
+-- well makes it work without a map edit; the aid stays so that setting it
+-- later also works, and nothing else on the map uses 5638.
+realmapEvent1:position(Position(32148, 32105, 11))
 realmapEvent1:register()

@@ -61,7 +61,44 @@ An empty result is what you want. Anything else means the id is taken.
 
 ---
 
-## What to set
+## Correction: two things this document got wrong
+
+**`aid 4601` is not on the chest.** It is on the **copper key (item 2089) inside
+it**. A key's action id is the number its door answers to, which is why the key
+carries one and the chest carries nothing. The chest at `32150, 32112, 12` has
+no id at all, like everything else you found.
+
+**"Key 4603" is not item 4603.** Item 4603 is *sand*. 4603 is the action id of
+another copper key -- the one the Katana Room gives.
+
+## Most of this no longer needs the map at all
+
+Item events can register against a **tile position** as well as an id. The
+positions were known exactly, so the quests below are now wired by position and
+work with no map edit and no ids assigned:
+
+| Quest | Where it lives now |
+| --- | --- |
+| Bear Room lever | `bearroom_quest_lever.lua`, position added beside its aid |
+| Katana lever | `katana_quest_lever.lua`, position added beside its aid |
+| Hidden dagger, both katana corpses, dragon corpse, three Mino Hell boxes | `data/scripts/quests/rookgaard/rookgaard_treasures.lua` |
+| Bear room key chest | `quests.lua`, keyed by tile |
+
+The last one is separate for a reason: position is the **last** thing the event
+lookup tries, after unique id, action id, item id and category. Nothing claims
+the boxes or corpses by item id, so position reaches them. The chest is item
+1740, which `quests.lua` registers globally, so a position-registered script
+would never run -- it is handled inside the script that already owns that id.
+
+The reward is defined in the script rather than left in the container, so the
+six empty containers now give something. Storage keys still come from the
+reserved block, so the once-per-player behaviour is unchanged.
+
+**The ids below are therefore optional**, and worth setting only if you would
+rather the map carried them. The scripts keep their aid registrations, so
+setting them later also works and changes nothing.
+
+## What to set, if you want the map to carry it
 
 **Containers need two things**: action id **2000** and a unique id from the
 block. 2000 is what `system.lua` registers on; the unique id is what makes the
@@ -77,7 +114,7 @@ these numbers.
 | **Bear Room lever** | `32148, 32105, 11` | 1945 | **5638** | — |
 | **Katana lever** | `32182, 32145, 11` | 1946 | **5637** | — |
 | Hidden dagger box | `32102, 32235, 8` | 1741 | 2000 | **33530** |
-| Key chest | `32150, 32112, 12` | 1740 | 2000 *(replaces 4601)* | **33531** |
+| Key chest | `32150, 32112, 12` | 1740 | — *(handled in quests.lua)* | **33531** |
 | Katana key corpse | `32176, 32132, 9` | 3058 | 2000 | **33510** |
 | Katana reward corpse | `32174, 32149, 11` | 3058 | 2000 | **33511** |
 | Dragon corpse | `32179, 32224, 9` | 3105 | 2000 | **33540** |
@@ -103,13 +140,12 @@ tie because they are written for the items actually on these tiles — levers 19
 and 1946 and stone 1304 — while Canary's expect 2772, 2773 and 1791, which are
 not what is there.
 
-### The key chest already has an id, and it is a dead one
+### The key chest
 
-`32150, 32112, 12` carries **aid 4601**, and nothing in the datapack registers
-4601. It is the only thing you found that the map identified at all. Since it
-needs a unique id regardless, the tidy fix is to change its action id to 2000 at
-the same time and let the generic system handle it, rather than write a script
-for an id used nowhere else.
+`32150, 32112, 12` is item 1740 and carries no id. The **copper key inside it**
+is item 2089 with action id 4601 -- that action id is what its door answers to,
+and the key must keep it or it opens nothing. It is handed over once per player
+by `quests.lua`, with the action id set on the granted key.
 
 ### Corpses are containers
 
@@ -123,14 +159,15 @@ once-per-player.
 
 ## What this does not fix
 
-**Empty containers stay empty.** `system.lua` hands out what is inside; it does
-not invent contents. Of the containers above, the ones you inspected reported
-`[container, 0 item(s)]` — the dagger box, both katana corpses, the dragon
-corpse, and two of the three Mino Hell boxes. Those need their rewards placed in
-the map editor as well, or the quest will politely announce that you found
-nothing.
+**Empty containers are no longer a problem** for the quests wired above: the
+reward is defined in the script, so nothing needs placing in the map. Six of
+those containers reported `[container, 0 item(s)]` and will now give something.
+It would still be a problem for any container left to `system.lua`, which hands
+out contents rather than inventing them.
 
-Known from your own notes, so the contents are not a guess:
+Rewards, from your own notes. Where a quest listed several items across several
+containers, which container holds which part was a choice, and the script says
+so at each entry:
 
 | Quest | Reward |
 | --- | --- |
