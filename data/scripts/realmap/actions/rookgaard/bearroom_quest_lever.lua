@@ -1,16 +1,59 @@
 local stonePosition = Position(32145, 32101, 11)
 local relocatePosition = Position(32145, 32102, 11)
+local STONE_ID = 1304
+
+-- A tile cannot hold an unbounded pile of these, and a removal that keeps
+-- failing must not spin the game thread, so the sweep is bounded and reports
+-- what it managed rather than looping until the tile is clear.
+local MAX_STONES = 8
+
+-- Removes the stones blocking the passage and says whether the tile actually
+-- ended up clear. The result matters: the lever must not flip to its "open"
+-- state while the stone is still standing, and that desync is exactly what left
+-- the lever reading 1946 with the passage still blocked.
+local function clearStones()
+	local tile = Tile(stonePosition)
+	if not tile then
+		return false
+	end
+
+	for _ = 1, MAX_STONES do
+		local stone = tile:getItemById(STONE_ID)
+		if not stone then
+			return true
+		end
+
+		if not stone:remove() then
+			-- Item:remove() returns the result of internalRemoveItem, which the
+			-- old script discarded. Saying so is the difference between a quest
+			-- that is broken and a quest that is broken for a known reason.
+			print(string.format("[bearroom] stone %d at %d,%d,%d refused removal",
+				STONE_ID, stonePosition.x, stonePosition.y, stonePosition.z))
+			return false
+		end
+	end
+
+	return tile:getItemById(STONE_ID) == nil
+end
 
 local function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	if item.itemid == 1945 then
-		local stoneItem = Tile(stonePosition):getItemById(1304)
-		if stoneItem then
-			stoneItem:remove()
+		if clearStones() then
 			item:transform(1946)
+		else
+			player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "The lever grinds, but nothing moves.")
 		end
 	else
-		Tile(stonePosition):relocateTo(relocatePosition)
-		Game.createItem(1304, 1, stonePosition)
+		local tile = Tile(stonePosition)
+		tile:relocateTo(relocatePosition)
+
+		-- Only place a stone if the passage is actually open. Creating one
+		-- unconditionally stacks a second stone whenever the lever and the world
+		-- have drifted apart, which makes the drift worse on every pull.
+		if not tile:getItemById(STONE_ID) then
+			Game.createItem(STONE_ID, 1, stonePosition)
+		end
+
 		item:transform(1945)
 	end
 	return true

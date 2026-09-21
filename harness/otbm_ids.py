@@ -120,8 +120,13 @@ def parse_attributes(props):
     return action_id, unique_id
 
 
-def walk(path):
-    """Yield (x, y, z, item_id, action_id, unique_id) for every identified item."""
+def walk(path, everything=False):
+    """Yield (x, y, z, item_id, action_id, unique_id) for identified items.
+
+    With everything=True, yield every item the map places rather than only the
+    ones carrying an action or unique id -- which is what answers "how many of
+    these are actually stacked on this tile".
+    """
     with open(path, "rb") as handle:
         data = handle.read()
 
@@ -178,7 +183,7 @@ def walk(path):
                 elif node_type == OTBM_ITEM and tile is not None:
                     item_id = props.u16()
                     action_id, unique_id = parse_attributes(props)
-                    if action_id or unique_id:
+                    if everything or action_id or unique_id:
                         yield (*tile, item_id, action_id, unique_id)
 
             except (ValueError, IndexError, struct.error) as exc:
@@ -213,10 +218,12 @@ def main():
     ap.add_argument("--uid", type=int, help="only this unique id")
     ap.add_argument("--summary", action="store_true",
                     help="count by action id instead of listing positions")
+    ap.add_argument("--all-items", action="store_true",
+                    help="every item the map places, not just identified ones")
     args = ap.parse_args()
 
     rows = []
-    for x, y, z, item_id, action_id, unique_id in walk(args.map):
+    for x, y, z, item_id, action_id, unique_id in walk(args.map, everything=args.all_items):
         if args.area:
             x1, y1, x2, y2 = args.area
             if not (x1 <= x <= x2 and y1 <= y <= y2):
