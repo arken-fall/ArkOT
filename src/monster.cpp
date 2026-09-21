@@ -22,6 +22,19 @@ int32_t Monster::despawnRadius;
 
 uint32_t Monster::monsterAutoID = 0x40000000;
 
+namespace
+{
+	// Every monster naming an undefined creature event used to log one line from the
+	// constructor, so 82 distinct missing names across the initial map spawn produced
+	// 2,970 identical warnings. Keyed by name, the first sighting warns and the rest stay
+	// quiet: 82 lines, none of the information lost.
+	//
+	// No lock: monsters are only ever constructed on the game thread (spawns, summons and
+	// the Lua createMonster binding all run there), so this set has a single writer. If a
+	// monster is ever constructed off that thread, this must become a guarded structure.
+	gtl::flat_hash_set<std::string> WarnedUnknownMonsterEvents;
+}
+
 MonsterPtr Monster::createMonster(const std::string& name)
 {
 	const auto& mType = g_monsters.getMonsterType(name);
@@ -48,8 +61,8 @@ Monster::Monster(MonsterType* mType) :
 
 	// register creature events
 	for (const std::string& scriptName : mType->info.scripts) {
-		if (!registerCreatureEvent(scriptName)) {
-			std::cout << "[Warning - Monster::Monster] Unknown event name: " << scriptName << std::endl;
+		if (not registerCreatureEvent(scriptName) and WarnedUnknownMonsterEvents.insert(scriptName).second) {
+			BlackTek::Console::Warn("Monster::Monster: unknown event name '{}'; no further warnings for this name", scriptName);
 		}
 	}
 }

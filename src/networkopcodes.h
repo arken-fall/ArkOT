@@ -51,7 +51,7 @@ namespace BlackTek {
             UseItemEx = 0x83,
             UseWithCreature = 0x84,
             RotateItem = 0x85,
-            // missing = 0x86,
+            // 0x86 is ConfigureShowOffSocket, declared under Podium below
             CloseContainer = 0x87,
             UpArrowContainer = 0x88,
             TextWindow = 0x89,
@@ -106,7 +106,7 @@ namespace BlackTek {
             StoreOfferDescription = 0xE8, // 12.x+: the client asks for an offer's text; older clients sent debug asserts here
             StoreEvent = 0xE9,
             TransferCoins = 0xEF,
-            // missing = 0xEE,
+            // 0xEE is Greet, declared under Client state & misc below
 
             // Quests
             ShowQuestLog = 0xF0,

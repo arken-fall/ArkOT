@@ -61,7 +61,22 @@ namespace BlackTek {
 			ExtendedMagicEffects  = 1ULL << 5,  // 0x83 carries u16 effect ids and a loop terminator
 			PlayerLevelPercentU16 = 1ULL << 6,  // 0xA0 level percent is a centesimal u16, not u8
 
-			// modern side systems (each one is a stub until its phase lands)
+			// Modern side systems. Only four of these bits are actually branched on today:
+			// ResourceBalance, PreySystem, Forge and BlessingsDialog, all tested through
+			// ProtocolGame::hasFeature. The rest are declared and never read, for two
+			// different reasons.
+			//
+			// Implemented, but not gated on the bit - bestiary, wheel, store and cyclopedia
+			// all ship working code, which branches on usesModernLayout() (the generation)
+			// instead of testing its feature bit. Those four are candidates for conversion
+			// the next time that code is touched.
+			//
+			// Not implemented at all - bosstiary, client check, typing indicator, weapon
+			// proficiency, quick loot and stash, depot search, imbuements, analyzers,
+			// podiums and object inspection have no handler; the bit is the only trace.
+			//
+			// Keep the unread bits regardless. They cost nothing at runtime and are the
+			// declared seam the 13.40/14.12 profiles are meant to differ on.
 			ResourceBalance       = 1ULL << 7,
 			PreySystem            = 1ULL << 8,
 			Bestiary              = 1ULL << 9,
