@@ -93,7 +93,7 @@ class NetworkMessage
 
 		void addString(std::string_view value);
 
-		void addDouble(double value, uint8_t precision = 2);
+		void addDouble(double value, uint8_t precision = 2) noexcept;
 
 		// write functions for complex types
 		void addPosition(const Position& pos);

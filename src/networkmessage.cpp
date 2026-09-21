@@ -8,6 +8,10 @@
 #include "itemcontainer.h"
 #include "creature.h"
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
 std::string_view NetworkMessage::getString(uint16_t stringLen /* = 0*/)
 {
 	if (stringLen == 0) {
@@ -45,10 +49,20 @@ void NetworkMessage::addString(std::string_view value)
 	info.length += stringLen;
 }
 
-void NetworkMessage::addDouble(double value, uint8_t precision/* = 2*/)
+void NetworkMessage::addDouble(double value, uint8_t precision/* = 2*/) noexcept
 {
+	double scaled = value * std::pow(static_cast<float>(10), precision)
+		+ static_cast<double>(std::numeric_limits<int32_t>::max());
+
+	// A float-to-integer cast is undefined behavior outside the target type's range,
+	// so clamp into uint32_t first. This leaves in-range values (including the
+	// window [4294967295.0, 4294967296.0), which all truncate to 4294967295) untouched,
+	// so in-range inputs keep the original encoding exactly. The comparison makes
+	// -inf and NaN fall to 0.0, while +inf clamps to 4294967295.0.
+	scaled = (scaled >= 0.0) ? std::min(scaled, static_cast<double>(std::numeric_limits<uint32_t>::max())) : 0.0;
+
 	addByte(precision);
-	add<uint32_t>(static_cast<uint32_t>((value * std::pow(static_cast<float>(10), precision)) + std::numeric_limits<int32_t>::max()));
+	add<uint32_t>(static_cast<uint32_t>(scaled));
 }
 
 void NetworkMessage::addBytes(const char* bytes, size_t size)
