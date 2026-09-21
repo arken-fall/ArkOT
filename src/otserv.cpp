@@ -39,6 +39,7 @@
 #include "simd_dispatch.h"
 #include <algorithm>
 #include <array>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <ranges>
@@ -499,7 +500,7 @@ namespace
 	// world whose ban tables lack the column lets every banned account in. Unlike the
 	// shared-auth probe, this runs whatever [mysql].auth_database says, and after the
 	// migrations: a single-world install gets the column from the version-8 migration,
-	// which can fail and simply stop, and a world with views whose auth_database was
+	// refuses boot when it fails, and a world with views whose auth_database was
 	// cleared skips the shared-auth probe entirely. The query asks about whatever the
 	// ban names are in this world's schema - base tables or views - since that is
 	// exactly what every unqualified ban query reads. Returns the reason to refuse.
@@ -755,11 +756,12 @@ void mainLoader(int, char*[], ServiceManager* services)
 	// world whose views were never created must stop here rather than serve logins
 	// against its own stale account table.
 	//
-	// This runs before DatabaseManager::updateDatabase(), and that ordering is safe
+	// This runs before DatabaseManager::UpdateDatabase(), and that ordering is safe
 	// for the ban column check: on a shared install the ban names are views, and
 	// the version-8 migration never alters a view, so the columns seen here are the
 	// columns every ban query will see. It also means a stale view refuses boot
-	// here, before that migration can merely decline and let boot carry on.
+	// here, naming the views as the remedy, rather than later through a migration
+	// that has nothing to say about them.
 	{
 		const std::string_view authSchema = SharedAuthSchema();
 
@@ -800,12 +802,23 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 	g_databaseTasks.start();
-	DatabaseManager::updateDatabase();
+
+	// A migration that fails leaves the schema half-applied, and every query written
+	// against the finished schema then reads whatever the unfinished one happens to
+	// hold. That is not a state to serve players from, so boot refuses here and names
+	// the migration, which is the one thing an operator needs to go and look at.
+	if (const auto migrated = DatabaseManager::UpdateDatabase(); not migrated)
+	{
+		startupErrorMessage(fmt::format("{:s} The schema is left part-migrated, so the server will not start on it. Fix that migration, then start the server again.", migrated.error()));
+		return;
+	}
 
 	// After the migration, which is what adds `banned_by_name` on a single-world
-	// install, and before anything reads a ban. updateDatabase() reports no failure,
-	// so this is the only thing standing between a failed migration and a server
-	// that reads every banned account as not banned.
+	// install, and before anything reads a ban. UpdateDatabase() now refuses boot on
+	// a migration that failed, but this is the narrower guarantee it cannot give: a
+	// chain that ended cleanly without ever adding the column - a world whose ban
+	// tables are views, or a schema restored past the version that adds it - would
+	// still read every banned account as not banned.
 	if (const auto failure = ProbeBannedByName(g_config.GetString(ConfigManager::MYSQL_DB)))
 	{
 		startupErrorMessage(*failure);
@@ -978,6 +991,32 @@ void mainLoader(int, char*[], ServiceManager* services)
 	const auto modernPort = g_config.GetNumber(ConfigManager::GAME_PORT_MODERN);
 	const auto loginPort = g_config.GetNumber(ConfigManager::LOGIN_PORT);
 	const auto statusPort = g_config.GetNumber(ConfigManager::STATUS_PORT);
+
+	// A port is read as the config's int32_t and handed to a listener as a uint16_t.
+	// Anything that does not fit is narrowed into some other port entirely - or into
+	// 0, which reads as "this listener is disabled" - and the server then comes up
+	// looking healthy with a listener silently missing. The multi-world guard further
+	// down only catches that for an install with a shared auth schema, because it
+	// tests the already-narrowed value, so the refusal belongs here, where it covers
+	// every install and can still name the port the operator actually wrote.
+	const std::array<std::pair<std::string_view, int32_t>, 4> configuredPorts
+	{{
+		{ "game_port", gamePort },
+		{ "game_port_modern", modernPort },
+		{ "login_port", loginPort },
+		{ "status_port", statusPort }
+	}};
+
+	constexpr auto fitsInPort = [](const std::pair<std::string_view, int32_t>& entry) noexcept
+	{
+		return entry.second >= 0 and entry.second <= static_cast<int32_t>(std::numeric_limits<uint16_t>::max());
+	};
+
+	if (const auto offender = std::ranges::find_if_not(configuredPorts, fitsInPort); offender != configuredPorts.end())
+	{
+		startupErrorMessage(fmt::format("{:s} = {:d} in config/server.toml is not a port: a port must be between 0 and {:d}, where 0 disables that listener. Left as it is, it would be narrowed to a different port or to none at all, and the server would start with that listener silently missing. Correct it, then start the server again.", offender->first, offender->second, std::numeric_limits<uint16_t>::max()));
+		return;
+	}
 
 	// shared spectator payloads are built once for every client, so they
 	// can only follow one generation; serving both ports at once is not

@@ -5,6 +5,9 @@
 #define FS_DATABASEMANAGER_H
 #include "database.h"
 
+#include <expected>
+#include <string>
+
 class DatabaseManager
 {
 	public:
@@ -14,7 +17,12 @@ class DatabaseManager
 		static bool isDatabaseSetup();
 
 		static bool optimizeTables();
-		static void updateDatabase();
+
+		// The version the schema reached, or why a migration stopped. A migration
+		// that fails leaves a half-migrated schema, which the caller has to refuse
+		// to run on rather than discover later through a query that silently reads
+		// the wrong thing.
+		[[nodiscard]] static std::expected<int32_t, std::string> UpdateDatabase();
 
 		static bool getDatabaseConfig(const std::string& config, int32_t& value);
 		static void registerDatabaseConfig(const std::string& config, int32_t value);

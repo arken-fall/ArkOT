@@ -4,12 +4,25 @@
 #include "otpch.h"
 
 #include "configmanager.h"
+#include "console.h"
 #include "databasemanager.h"
 #include "luascript.h"
 
 #include <fmt/format.h>
 
 extern ConfigManager g_config;
+
+namespace
+{
+	// A Lua error value is usually a string, but a script is free to raise
+	// anything, and lua_tostring returns nullptr for a value it cannot convert.
+	// The message a refused boot carries must never be built from that.
+	[[nodiscard]] std::string LuaErrorText(lua_State* state)
+	{
+		const char* text = lua_tostring(state, -1);
+		return text ? std::string{ text } : std::string{ "the script raised a non-textual error" };
+	}
+}
 
 bool DatabaseManager::optimizeTables()
 {
@@ -67,13 +80,18 @@ int32_t DatabaseManager::getDatabaseVersion()
 	}
 }
 
-void DatabaseManager::updateDatabase()
+std::expected<int32_t, std::string> DatabaseManager::UpdateDatabase()
 {
 	lua_State* L = luaL_newstate();
 	if (not L)
 	{
-		return;
+		return std::unexpected<std::string>("Database migrations: a Lua state could not be created, so no migration could be run.");
 	}
+
+	// every exit below carries a message out of this function, so the state is
+	// closed by scope rather than by a close call on each of those paths
+	const auto closeState = [](lua_State* state) noexcept { lua_close(state); };
+	const std::unique_ptr<lua_State, decltype(closeState)> stateGuard{ L, closeState };
 
 	luaL_openlibs(L);
 
@@ -86,24 +104,46 @@ void DatabaseManager::updateDatabase()
 	int32_t version = getDatabaseVersion();
 	do
 	{
-		if (luaL_dofile(L, fmt::format("data/migrations/{:d}.lua", version).c_str()) != 0)
+		const std::string migration = fmt::format("data/migrations/{:d}.lua", version);
+
+		// A schema at the head of the chain has no next file, which is what a fully
+		// migrated database looks like, not a failure. Only a file that is there and
+		// will not load is one. exists() is asked with an error_code so that a
+		// directory this process cannot read is reported rather than mistaken for
+		// the end of the chain.
+		std::error_code probe;
+		const bool present = std::filesystem::exists(migration, probe);
+		if (probe)
 		{
-			std::cout << "[Error - DatabaseManager::updateDatabase - Version: " << version << "] " << lua_tostring(L, -1) << std::endl;
+			return std::unexpected(fmt::format("Database migration {:d}: '{:s}' could not be read: {:s}.", version, migration, probe.message()));
+		}
+
+		if (not present)
+		{
 			break;
+		}
+
+		if (luaL_dofile(L, migration.c_str()) != 0)
+		{
+			return std::unexpected(fmt::format("Database migration {:d} ('{:s}') failed to load: {:s}.", version, migration, LuaErrorText(L)));
 		}
 
 		if (not LuaScriptInterface::reserveScriptEnv())
 		{
-			break;
+			return std::unexpected(fmt::format("Database migration {:d} ('{:s}') could not reserve a script environment.", version, migration));
 		}
 
 		lua_getglobal(L, "onUpdateDatabase");
-		if (lua_pcall(L, 0, 1, 0) != 0) {
+		if (lua_pcall(L, 0, 1, 0) != 0)
+		{
+			// read before the reset, which is free to disturb the Lua stack
+			const std::string error = LuaErrorText(L);
 			LuaScriptInterface::resetScriptEnv();
-			std::cout << "[Error - DatabaseManager::updateDatabase - Version: " << version << "] " << lua_tostring(L, -1) << std::endl;
-			break;
+			return std::unexpected(fmt::format("Database migration {:d} ('{:s}') failed: {:s}.", version, migration, error));
 		}
 
+		// a script that returns false has decided there is nothing left to migrate:
+		// the chain ending, not the chain breaking
 		if (not LuaScriptInterface::getBoolean(L, -1, false))
 		{
 			LuaScriptInterface::resetScriptEnv();
@@ -111,12 +151,13 @@ void DatabaseManager::updateDatabase()
 		}
 
 		version++;
-		std::cout << "> Database has been updated to version " << version << '.' << std::endl;
+		BlackTek::Console::Print("> Database has been updated to version {:d}.", version);
 		registerDatabaseConfig("db_version", version);
 
 		LuaScriptInterface::resetScriptEnv();
 	} while (true);
-	lua_close(L);
+
+	return version;
 }
 
 bool DatabaseManager::getDatabaseConfig(const std::string& config, int32_t& value)
