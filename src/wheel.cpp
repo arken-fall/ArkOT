@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <mutex>
 #include <ranges>
 #include <toml++/toml.hpp>
 
@@ -1349,6 +1350,19 @@ namespace BlackTek::Wheel
 	void System::clear(const PlayerPtr& player) const
 	{
 		auto& state = player->getWheelState();
+
+		// Removed unconditionally, and deliberately ahead of the applied_any guard, because the
+		// two live in different places: applied_any is memory only, while the augment is saved
+		// with the character. On login IOLoginData restores the stored augment and only then
+		// calls apply(), so applied_any is false while the augment is already on the player --
+		// a guarded removal leaves it there and apply() adds a second copy. Every wheel modifier
+		// would then count twice, once more again on each relog, until the augment count passes
+		// MAX_AUGMENT_COUNT and savePlayer fails inside its transaction, leaving a character that
+		// can no longer be saved at all. removeAugment erases every augment of this name, so a
+		// character that already accumulated duplicates is repaired on its next login.
+		// Prey does the same thing for the same reason, unconditionally.
+		player->removeAugment(augmentName());
+
 		if (not state.applied_any)
 		{
 			return;
@@ -1363,7 +1377,6 @@ namespace BlackTek::Wheel
 		player->setVarSkill(SKILL_DISTANCE, -applied.distance);
 		player->setVarSkill(SKILL_FIST, -applied.fist);
 		player->wheel_capacity = 0;
-		player->removeAugment(augmentName());
 		state.applied = Bonuses{};
 		state.applied_any = false;
 	}
@@ -1417,9 +1430,36 @@ namespace BlackTek::Wheel
 			}
 		}
 		addModifier(Stance::Defense, std::to_underlying(Defense::Resist), bonuses.mitigation, COMBAT_NONE);
+		addModifier(Stance::Attack, std::to_underlying(Attack::Critical), bonuses.critical_damage, COMBAT_NONE);
 		addModifier(Stance::Attack, std::to_underlying(Attack::Lifesteal), bonuses.life_leech, COMBAT_NONE);
 		addModifier(Stance::Attack, std::to_underlying(Attack::Manasteal), bonuses.mana_leech, COMBAT_NONE);
 		addModifier(Stance::Attack, std::to_underlying(Attack::Regeneration), bonuses.healing * 100, COMBAT_NONE);
+
+		// dodge and flat damage are earned but unpayable: DefenseType carries no dodge, and no
+		// AttackType carries plain damage, so there is nothing to hand these to yet. Say so out
+		// loud rather than dropping them. apply() runs once per character, on every login and
+		// every wheel save, so an unguarded warning would repeat per player per relog; call_once
+		// latches it to one line for the lifetime of the process. std::call_once also keeps it
+		// correct if apply is ever reached from something other than the game thread.
+		static std::once_flag dodgeWarned;
+		static std::once_flag damageWarned;
+
+		if (bonuses.dodge != 0)
+		{
+			std::call_once(dodgeWarned, []
+			{
+				Console::Warn("Wheel::System::apply: a wheel gem granted a Dodge bonus, but no dodge mechanic exists yet; the bonus is earned and not applied");
+			});
+		}
+
+		if (bonuses.damage != 0)
+		{
+			std::call_once(damageWarned, []
+			{
+				Console::Warn("Wheel::System::apply: a revelation stage granted a damage bonus, but no matching attack modifier exists yet; the bonus is earned and not applied");
+			});
+		}
+
 		if (anyModifier)
 		{
 			player->addAugment(augment);
