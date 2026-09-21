@@ -1963,6 +1963,7 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(WEAPON_WAND)
 	registerEnum(WEAPON_AMMO)
 	registerEnum(WEAPON_QUIVER);
+	registerEnum(WEAPON_FIST);
 
 	registerEnum(WORLD_TYPE_NO_PVP)
 	registerEnum(WORLD_TYPE_PVP)
@@ -3896,6 +3897,7 @@ void LuaScriptInterface::registerFunctions()
 	registerVariable("RegisterType", "Distance", static_cast<lua_Number>(std::to_underlying(ItemEvent::Register::Type::Distance)));
 	registerVariable("RegisterType", "Wand", static_cast<lua_Number>(std::to_underlying(ItemEvent::Register::Type::Wand)));
 	registerVariable("RegisterType", "Ammo", static_cast<lua_Number>(std::to_underlying(ItemEvent::Register::Type::Ammo)));
+	registerVariable("RegisterType", "Fist", static_cast<lua_Number>(std::to_underlying(ItemEvent::Register::Type::Fist)));
 	registerVariable("RegisterType", "Any", static_cast<lua_Number>(std::to_underlying(ItemEvent::Register::Type::Any)));
 
 	// ItemEvent

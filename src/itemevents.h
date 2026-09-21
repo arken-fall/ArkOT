@@ -159,7 +159,10 @@ class ItemEvent final : public Event
 				Distance,
 				Wand,
 				Ammo,
+				Fist,
 
+				// Any stays last because it is the catch-all category; these values are produced
+				// and consumed within a single process run, so inserting ahead of it is free.
 				Any,
 			};
 		};

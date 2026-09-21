@@ -979,6 +979,13 @@ int32_t Player::getWeaponSkill(const ItemConstPtr& item) const
 			break;
 		}
 
+		// Feeds both the attack path and Player::getDefense's defenceSkill; without it a fist
+		// weapon would fall to default and be defended with a skill of zero.
+		case WEAPON_FIST: {
+			attackSkill = getSkillLevel(SKILL_FIST);
+			break;
+		}
+
 		default: {
 			attackSkill = 0;
 			break;

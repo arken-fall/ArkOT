@@ -495,6 +495,11 @@ enum WeaponType_t : uint8_t {
 	WEAPON_WAND,
 	WEAPON_AMMO,
 	WEAPON_QUIVER,
+	// Appended, never inserted: the value is a uint8_t consumed as (1u << value) against a
+	// uint16_t mask, and private datapack content may already persist the numeric order.
+	// Consequence: the melee types are no longer numerically contiguous, so membership must
+	// always be expressed by enumerating cases, never by a range test such as (type <= WEAPON_AXE).
+	WEAPON_FIST,
 };
 
 enum Ammo_t : uint8_t {

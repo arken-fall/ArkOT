@@ -79,6 +79,7 @@ namespace
 			case WEAPON_DISTANCE: return ItemEvent::Register::Type::Distance;
 			case WEAPON_WAND: return ItemEvent::Register::Type::Wand;
 			case WEAPON_AMMO: return ItemEvent::Register::Type::Ammo;
+			case WEAPON_FIST: return ItemEvent::Register::Type::Fist;
 			default: return std::nullopt;
 		}
 	}
@@ -1562,6 +1563,7 @@ namespace
 			case WEAPON_SWORD: skill = SKILL_SWORD; return true;
 			case WEAPON_CLUB: skill = SKILL_CLUB; return true;
 			case WEAPON_AXE: skill = SKILL_AXE; return true;
+			case WEAPON_FIST: skill = SKILL_FIST; return true;
 			default: break;
 		}
 		return false;
@@ -1905,6 +1907,9 @@ bool ItemEvents::hasWeaponBehavior(const ItemConstPtr& item)
 		case WEAPON_AXE:
 		case WEAPON_DISTANCE:
 		case WEAPON_AMMO:
+		// A fist weapon is an ordinary melee weapon whose skill is SKILL_FIST; returning true
+		// here is what moves it off the unarmed path in Player's attack handling.
+		case WEAPON_FIST:
 			return true;
 		case WEAPON_WAND:
 			return getEvent(item, BlackTek::ItemEvents::HookType::OnUseAsWeapon) != nullptr;
@@ -1922,6 +1927,7 @@ bool ItemEvents::useAsWeapon(const PlayerPtr& player, const ItemPtr& item, const
 		case WEAPON_SWORD:
 		case WEAPON_CLUB:
 		case WEAPON_AXE:
+		case WEAPON_FIST:
 			return useMeleeWeapon(event, player, item, target);
 		case WEAPON_DISTANCE:
 		case WEAPON_AMMO:

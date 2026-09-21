@@ -174,6 +174,7 @@ const gtl::flat_hash_map<std::string, WeaponType_t> WeaponTypesMap = {
 	{"wand", WEAPON_WAND},
 	{"ammunition", WEAPON_AMMO},
 	{"quiver", WEAPON_QUIVER},
+	{"fist", WEAPON_FIST},
 };
 
 const gtl::flat_hash_map<std::string, FluidTypes_t> FluidTypesMap = {
@@ -717,6 +718,11 @@ void Items::parseItemToml(const toml::table& itemTable, uint16_t id)
                 std::string weaponTypeStr = asLowerCaseString(value.as_string()->get());
                 if (auto it2 = WeaponTypesMap.find(weaponTypeStr); it2 != WeaponTypesMap.end()) {
                     it.weaponType = it2->second;
+                } else {
+                    // An unrecognised weapontype used to be dropped in silence, which is how items
+                    // shipped for years believing they were weapons. Warn, but still load the item:
+                    // the rest of its definition is valid and rejecting it would lose more than it saves.
+                    BlackTek::Console::Warn("Items::parseItemToml: item id {} declares unrecognised weapontype '{}', the item will load without a weapon type", id, weaponTypeStr);
                 }
             }
             break;

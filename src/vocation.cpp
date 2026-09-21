@@ -235,7 +235,10 @@ bool Vocations::loadFromToml() {
 								{
 									std::string_view s = sv->get();
 									if      (s == "all")               { mask = 0; break; }
-									else if (s == "melee")             mask |= (1u << WEAPON_SWORD) | (1u << WEAPON_CLUB) | (1u << WEAPON_AXE);
+									// "melee" widens on purpose: a fist weapon is an ordinary melee weapon, so a
+									// datapack that already dual-wields melee should get the new type as well.
+									else if (s == "melee")             mask |= (1u << WEAPON_SWORD) | (1u << WEAPON_CLUB) | (1u << WEAPON_AXE) | (1u << WEAPON_FIST);
+									else if (s == "fist")              mask |= (1u << WEAPON_FIST);
 									else if (s == "magic")             mask |= (1u << WEAPON_WAND);
 									else if (s == "ranged")            mask |= (1u << WEAPON_DISTANCE);
 									else if (s == "non_magical_ranged") { mask |= (1u << WEAPON_DISTANCE); throwable_only = true; }
